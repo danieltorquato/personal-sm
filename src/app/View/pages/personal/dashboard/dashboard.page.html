@@ -1,0 +1,195 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar color="dark" class="transparent-toolbar">
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title class="animate__animated animate__fadeInDown">Painel de Controle</ion-title>
+    <ion-buttons slot="end">
+      <ion-button class="notification-button animate__animated animate__fadeInDown">
+        <ion-icon name="notifications-outline"></ion-icon>
+        <ion-badge color="danger">3</ion-badge>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content fullscreen="true" class="ion-padding">
+  <div class="background-gradient"></div>
+
+  <!-- Quick Stats -->
+  <ion-row class="animate__animated animate__fadeInUp">
+    <ion-col size="12">
+      <h2 class="section-title">
+        <ion-icon name="analytics-outline"></ion-icon>
+        Estatísticas Rápidas
+      </h2>
+    </ion-col>
+  </ion-row>
+
+  <ion-row class="stats-row animate__animated animate__fadeInUp animate__delay-1s">
+    <ion-col size="4">
+      <ion-card class="stat-card">
+        <ion-card-content>
+          <div class="stat-icon">
+            <ion-icon name="people-outline"></ion-icon>
+          </div>
+          <div class="stat-value">{{dashboardData.stats.students}}</div>
+          <div class="stat-label">Alunos</div>
+        </ion-card-content>
+      </ion-card>
+    </ion-col>
+
+    <ion-col size="4">
+      <ion-card class="stat-card">
+        <ion-card-content>
+          <div class="stat-icon">
+            <ion-icon name="clipboard-outline"></ion-icon>
+          </div>
+          <div class="stat-value">{{dashboardData.stats.activePlans}}</div>
+          <div class="stat-label">Planos Ativos</div>
+        </ion-card-content>
+      </ion-card>
+    </ion-col>
+
+    <ion-col size="4">
+      <ion-card class="stat-card">
+        <ion-card-content>
+          <div class="stat-icon">
+            <ion-icon name="calendar-outline"></ion-icon>
+          </div>
+          <div class="stat-value">{{dashboardData.stats.sessions}}</div>
+          <div class="stat-label">Sessões</div>
+        </ion-card-content>
+      </ion-card>
+    </ion-col>
+  </ion-row>
+
+  <!-- Today's Schedule -->
+  <ion-row class="animate__animated animate__fadeInUp animate__delay-2s">
+    <ion-col size="12">
+      <ion-card class="schedule-card">
+        <ion-card-header>
+          <ion-card-title>
+            <ion-icon name="time-outline" class="header-icon"></ion-icon>
+            Agenda de Hoje
+          </ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <ion-list lines="none">
+            <ion-item *ngFor="let appointment of dashboardData.schedule" class="schedule-item animate__animated animate__slideInRight">
+              <ion-avatar slot="start">
+                <img src="" alt="Avatar" onError="this.src=''">
+              </ion-avatar>
+              <ion-label>
+                <h2>{{appointment.name}}</h2>
+                <p>
+                  <ion-icon name="time-outline" class="small-icon"></ion-icon> {{appointment.time}} •
+                  <ion-icon name="fitness-outline" class="small-icon"></ion-icon> {{appointment.activity}}
+                </p>
+              </ion-label>
+            </ion-item>
+          </ion-list>
+        </ion-card-content>
+      </ion-card>
+    </ion-col>
+  </ion-row>
+
+  <!-- Performance Data -->
+  <ion-row class="animate__animated animate__fadeInUp animate__delay-3s">
+    <ion-col size="12">
+      <ion-card class="performance-card">
+        <ion-card-header>
+          <ion-card-title>
+            <ion-icon name="analytics-outline" class="header-icon"></ion-icon>
+            Dados de Desempenho
+          </ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <div class="chart-placeholder">
+            <p>O gráfico de desempenho semanal será exibido aqui</p>
+          </div>
+          <ion-button expand="block" fill="outline" color="light" (click)="viewAnalytics()">
+            Ver Análise Detalhada
+            <ion-icon name="arrow-forward-outline" slot="end"></ion-icon>
+          </ion-button>
+        </ion-card-content>
+      </ion-card>
+    </ion-col>
+  </ion-row>
+
+  <!-- Quick Actions -->
+  <ion-row class="animate__animated animate__fadeInUp animate__delay-4s">
+    <ion-col size="12">
+      <h2 class="section-title">
+        <ion-icon name="barbell-outline"></ion-icon>
+        Ações Rápidas
+      </h2>
+    </ion-col>
+  </ion-row>
+
+  <ion-row class="animate__animated animate__fadeInUp animate__delay-4s">
+    <ion-col size="6">
+      <ion-card class="action-card" (click)="createWorkout()">
+        <ion-card-content>
+          <div class="action-icon">
+            <ion-icon name="fitness-outline"></ion-icon>
+          </div>
+          <div class="action-label">Criar Treino</div>
+        </ion-card-content>
+      </ion-card>
+    </ion-col>
+
+    <ion-col size="6">
+      <ion-card class="action-card" (click)="manageClients()">
+        <ion-card-content>
+          <div class="action-icon">
+            <ion-icon name="people-outline"></ion-icon>
+          </div>
+          <div class="action-label">Gerenciar Alunos</div>
+        </ion-card-content>
+      </ion-card>
+    </ion-col>
+  </ion-row>
+
+  <!-- Adicionar um card para o treino dinâmico de natação após os outros cards -->
+  <ion-card class="action-card pool-workout-card" (click)="startDynamicPoolWorkout()">
+    <ion-card-content>
+      <ion-icon name="water-outline"></ion-icon>
+      <h2>Treino de Natação</h2>
+      <p>Inicie uma sessão de treino dinâmico na piscina</p>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Card para criar treino de natação -->
+  <ion-card class="action-card pool-workout-card" (click)="createPoolWorkout()">
+    <ion-card-content>
+      <ion-icon name="create-outline"></ion-icon>
+      <h2>Criar Treino de Natação</h2>
+      <p>Crie e personalize treinos de natação para seus alunos</p>
+    </ion-card-content>
+  </ion-card>
+</ion-content>
+
+<!-- Floating Action Button -->
+<ion-fab vertical="bottom" horizontal="end" slot="fixed" class="animate__animated animate__fadeInUp animate__delay-5s">
+  <ion-fab-button color="light">
+    <ion-icon name="add"></ion-icon>
+  </ion-fab-button>
+  <ion-fab-list side="top">
+    <ion-fab-button color="light">
+      <ion-icon name="person-add-outline"></ion-icon>
+    </ion-fab-button>
+    <ion-fab-button color="light">
+      <ion-icon name="fitness-outline"></ion-icon>
+    </ion-fab-button>
+    <ion-fab-button color="light">
+      <ion-icon name="calendar-clear-outline"></ion-icon>
+    </ion-fab-button>
+  </ion-fab-list>
+</ion-fab>
+
+<ion-footer class="ion-no-border">
+  <ion-toolbar color="dark" class="transparent-toolbar">
+    <p class="copyright-text">Personal SM &copy; 2025</p>
+  </ion-toolbar>
+</ion-footer>

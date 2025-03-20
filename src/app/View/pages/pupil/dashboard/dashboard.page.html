@@ -1,0 +1,162 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar color="dark" class="transparent-toolbar">
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Meu Painel</ion-title>
+    <ion-buttons slot="end">
+      <ion-button class="notification-button">
+        <ion-icon name="notifications-outline"></ion-icon>
+        <ion-badge color="danger">2</ion-badge>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content fullscreen="true" class="ion-padding">
+  <div class="background-gradient"></div>
+
+  <!-- Perfil resumido -->
+  <div class="profile-header">
+    <ion-avatar>
+      <img src="" alt="Avatar">
+    </ion-avatar>
+    <div class="profile-info">
+      <h2>Olá, João!</h2>
+      <p>Tudo pronto para treinar hoje?</p>
+    </div>
+  </div>
+
+  <!-- Próximo Treino -->
+  <ion-card class="next-workout-card">
+    <ion-card-content>
+      <div class="workout-header">
+        <h2>Próximo Treino</h2>
+        <ion-badge color="primary">Hoje</ion-badge>
+      </div>
+      <div class="workout-info">
+        <h3>Treino de Membros Superiores</h3>
+        <p>Foco em Força e Hipertrofia</p>
+        <ion-button expand="block" class="start-workout-btn" routerLink="/pupil/current-workout">
+          <ion-icon name="play-outline" slot="start"></ion-icon>
+          Iniciar Treino
+        </ion-button>
+      </div>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Treino de Piscina -->
+  <ion-card class="pool-workout-card">
+    <ion-card-content>
+      <div class="workout-header">
+        <h2>Treino Aquático</h2>
+        <ion-badge color="tertiary">Disponível</ion-badge>
+      </div>
+      <div class="workout-info">
+        <h3>Treinamento Aquático</h3>
+        <p>Adaptação e Condicionamento</p>
+        <ion-button expand="block" class="pool-workout-btn" routerLink="/pupil/pool-workout">
+          <ion-icon name="water" slot="start"></ion-icon>
+          Iniciar Treino Aquático
+        </ion-button>
+      </div>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Progresso -->
+  <ion-card class="progress-card">
+    <ion-card-header>
+      <ion-card-title>Meu Progresso</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <div class="progress-stats">
+        <div class="stat-item">
+          <div class="stat-value">85%</div>
+          <div class="stat-label">Presença</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">12</div>
+          <div class="stat-label">Treinos</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">+5kg</div>
+          <div class="stat-label">Força</div>
+        </div>
+      </div>
+      <div class="chart-placeholder">
+        <p>Gráfico de progresso será exibido aqui</p>
+      </div>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Histórico de Treinos -->
+  <ion-card class="history-card">
+    <ion-card-header>
+      <ion-card-title>Histórico de Treinos</ion-card-title>
+      <ion-button fill="clear" size="small">
+        <ion-icon name="calendar-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-list lines="none">
+        <ion-item>
+          <ion-label>
+            <h2>Treino de Membros Inferiores</h2>
+            <p>20/03/2024 • 45 min</p>
+          </ion-label>
+          <ion-badge slot="end" color="success">Completo</ion-badge>
+        </ion-item>
+        <ion-item>
+          <ion-label>
+            <h2>Treino de Força</h2>
+            <p>18/03/2024 • 60 min</p>
+          </ion-label>
+          <ion-badge slot="end" color="success">Completo</ion-badge>
+        </ion-item>
+      </ion-list>
+      <ion-button expand="block" fill="outline" class="view-all-button ion-margin-top">
+        Ver Histórico Completo
+      </ion-button>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Mensagens do Personal -->
+  <ion-card class="messages-card">
+    <ion-card-header>
+      <ion-card-title>Mensagens do Personal</ion-card-title>
+      <ion-button fill="clear" size="small">
+        <ion-icon name="chatbubble-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-list lines="none">
+        <ion-item>
+          <ion-avatar slot="start">
+            <img src="" alt="Avatar">
+          </ion-avatar>
+          <ion-label>
+            <h2>Personal Trainer</h2>
+            <p>Ótimo progresso no treino de hoje!</p>
+          </ion-label>
+          <ion-note slot="end">2h atrás</ion-note>
+        </ion-item>
+        <ion-item>
+          <ion-avatar slot="start">
+            <img src="" alt="Avatar">
+          </ion-avatar>
+          <ion-label>
+            <h2>Personal Trainer</h2>
+            <p>Lembre-se de se hidratar durante o treino</p>
+          </ion-label>
+          <ion-note slot="end">1d atrás</ion-note>
+        </ion-item>
+      </ion-list>
+    </ion-card-content>
+  </ion-card>
+</ion-content>
+
+<ion-footer class="ion-no-border">
+  <ion-toolbar color="dark" class="transparent-toolbar">
+    <p class="copyright-text">Personal SM &copy; 2025</p>
+  </ion-toolbar>
+</ion-footer>

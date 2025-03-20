@@ -1,0 +1,246 @@
+.background-gradient {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+  z-index: -1;
+}
+
+.transparent-toolbar {
+  --background: transparent;
+}
+
+.profile-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 24px;
+
+  ion-avatar {
+    width: 60px;
+    height: 60px;
+    margin-right: 16px;
+  }
+
+  .profile-info {
+    h2 {
+      color: var(--ion-color-light);
+      margin: 0 0 4px 0;
+      font-size: 20px;
+      font-weight: 600;
+    }
+
+    p {
+      color: var(--ion-color-medium);
+      margin: 0;
+      font-size: 14px;
+    }
+  }
+}
+
+.next-workout-card, .progress-card, .history-card, .messages-card {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  backdrop-filter: blur(10px);
+  margin-bottom: 16px;
+}
+
+.workout-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+
+  h2 {
+    color: var(--ion-color-light);
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+  }
+}
+
+.workout-info {
+  h3 {
+    color: var(--ion-color-light);
+    margin-bottom: 8px;
+  }
+
+  p {
+    color: var(--ion-color-medium);
+    margin-bottom: 16px;
+  }
+}
+
+.start-workout-btn {
+  --border-radius: 10px;
+}
+
+ion-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 8px;
+}
+
+ion-card-title {
+  color: var(--ion-color-light);
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.progress-stats {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 16px;
+
+  .stat-item {
+    text-align: center;
+    flex: 1;
+
+    .stat-value {
+      font-size: 22px;
+      font-weight: bold;
+      color: var(--ion-color-light);
+      margin-bottom: 4px;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: var(--ion-color-medium);
+    }
+  }
+}
+
+.chart-placeholder {
+  height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  color: var(--ion-color-medium);
+  font-size: 14px;
+}
+
+ion-item {
+  --background: rgba(255, 255, 255, 0.05);
+  --border-radius: 10px;
+  margin-bottom: 8px;
+  --padding-start: 16px;
+  --padding-end: 16px;
+  --inner-padding-end: 8px;
+
+  h2 {
+    color: var(--ion-color-light);
+    margin-bottom: 4px;
+    font-size: 16px;
+  }
+
+  p {
+    color: var(--ion-color-medium);
+    font-size: 13px;
+  }
+}
+
+ion-avatar {
+  width: 40px;
+  height: 40px;
+}
+
+ion-badge {
+  padding: 6px 10px;
+  border-radius: 20px;
+}
+
+ion-note {
+  color: var(--ion-color-medium);
+  font-size: 12px;
+}
+
+.view-all-button {
+  font-size: 14px;
+  --border-color: var(--ion-color-medium);
+  --color: var(--ion-color-light);
+}
+
+.copyright-text {
+  text-align: center;
+  color: var(--ion-color-medium);
+  font-size: 0.9em;
+  margin: 0;
+  padding: 8px 0;
+}
+
+ion-button[fill="clear"] {
+  --padding-start: 8px;
+  --padding-end: 8px;
+  --padding-top: 8px;
+  --padding-bottom: 8px;
+  height: auto;
+  --color: var(--ion-color-light);
+}
+
+.notification-button {
+  position: relative;
+
+  ion-badge {
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding: 3px 5px;
+    font-size: 10px;
+  }
+}
+
+// Estilo para o card de treino de piscina
+.pool-workout-card {
+  background: linear-gradient(135deg, rgba(33, 83, 135, 0.7), rgba(30, 30, 30, 0.7));
+  border-left: 3px solid #4fb3ff;
+  overflow: hidden;
+  position: relative;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: -30px;
+    right: -30px;
+    width: 100px;
+    height: 100px;
+    background: rgba(79, 179, 255, 0.2);
+    border-radius: 50%;
+    filter: blur(20px);
+    z-index: 0;
+  }
+
+  .workout-header {
+    h2 {
+      color: #4fb3ff;
+    }
+  }
+
+  .pool-workout-btn {
+    --background: #4fb3ff;
+    --background-hover: #3a9fe9;
+    --color: #ffffff;
+    margin-top: 15px;
+
+    ion-icon {
+      margin-right: 8px;
+      animation: wave 2s infinite;
+    }
+  }
+}
+
+@keyframes wave {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}

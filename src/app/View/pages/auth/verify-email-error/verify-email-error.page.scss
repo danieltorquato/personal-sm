@@ -1,0 +1,74 @@
+.background-gradient {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+  z-index: -1;
+}
+
+.transparent-toolbar {
+  --background: transparent;
+}
+
+.logo-container {
+  text-align: center;
+  padding: 40px 0;
+
+  .logo {
+    width: 120px;
+    height: 120px;
+    margin-bottom: 16px;
+  }
+
+  h1 {
+    color: var(--ion-color-light);
+    font-size: 24px;
+    font-weight: 600;
+    margin: 0;
+  }
+}
+
+.error-card {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  backdrop-filter: blur(10px);
+  margin: 0 16px;
+  padding: 24px;
+
+  .error-content {
+    text-align: center;
+
+    .error-icon {
+      font-size: 64px;
+      color: var(--ion-color-danger);
+      margin-bottom: 24px;
+    }
+
+    h2 {
+      color: var(--ion-color-light);
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+
+    p {
+      color: var(--ion-color-medium);
+      font-size: 0.9em;
+      line-height: 1.5;
+      margin-bottom: 32px;
+    }
+  }
+}
+
+.form-actions {
+  .resend-button {
+    margin-bottom: 16px;
+    --border-radius: 10px;
+  }
+
+  ion-button[fill="clear"] {
+    --color: var(--ion-color-medium);
+  }
+}

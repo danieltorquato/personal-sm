@@ -1,0 +1,182 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/pupil/dashboard"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Resumo do Treino</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="shareWorkout()">
+        <ion-icon name="share-social-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content fullscreen="true">
+  <div class="background-gradient"></div>
+
+  <div class="summary-container">
+    <!-- Cabeçalho do resumo -->
+    <div class="summary-header">
+      <div class="workout-complete-banner">
+        <ion-icon name="checkmark-circle"></ion-icon>
+        <h1>Treino Concluído!</h1>
+      </div>
+
+      <div class="workout-info">
+        <h2>{{workoutSummary.name}}</h2>
+        <p class="workout-date">{{workoutSummary.completedDate | date: 'dd/MM/yyyy'}} • {{workoutSummary.startTime}} - {{workoutSummary.endTime}}</p>
+      </div>
+    </div>
+
+    <!-- Estatísticas principais -->
+    <ion-card class="stats-card">
+      <ion-card-content>
+        <div class="main-stats">
+          <div class="stat-item">
+            <div class="stat-value">{{workoutSummary.totalDistance}}</div>
+            <div class="stat-label">Metros</div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="stat-item">
+            <div class="stat-value">{{formatDuration(workoutSummary.duration)}}</div>
+            <div class="stat-label">Tempo Total</div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="stat-item">
+            <div class="stat-value">{{workoutSummary.completedSets}}/{{workoutSummary.totalSets}}</div>
+            <div class="stat-label">Séries</div>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Performance -->
+    <h3 class="section-title">Sua Performance</h3>
+    <ion-card class="performance-card">
+      <ion-card-content>
+        <div class="performance-stats">
+          <div class="performance-item">
+            <ion-icon name="speedometer-outline"></ion-icon>
+            <div class="perf-info">
+              <div class="perf-label">Ritmo Médio</div>
+              <div class="perf-value">{{workoutSummary.averagePace}}/100m</div>
+            </div>
+          </div>
+
+          <div class="performance-item">
+            <ion-icon name="flame-outline"></ion-icon>
+            <div class="perf-info">
+              <div class="perf-label">Calorias</div>
+              <div class="perf-value">{{workoutSummary.calories}} kcal</div>
+            </div>
+          </div>
+
+          <div class="performance-item">
+            <ion-icon name="pulse-outline"></ion-icon>
+            <div class="perf-info">
+              <div class="perf-label">FC Média</div>
+              <div class="perf-value">{{workoutSummary.averageHeartRate}} bpm</div>
+            </div>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Detalhe das séries -->
+    <h3 class="section-title">Detalhe por Série</h3>
+    <ion-card class="sets-card">
+      <ion-card-content>
+        <div class="set-list">
+          <div *ngFor="let set of workoutSummary.sets; let i = index" class="set-item">
+            <div class="set-header">
+              <div class="set-title">Série {{i+1}}: {{set.exerciseName}}</div>
+              <div class="set-status" [class.completed]="set.completed">
+                {{set.completed ? 'Concluído' : 'Não Concluído'}}
+              </div>
+            </div>
+
+            <div class="set-details">
+              <div class="set-detail-item">
+                <ion-icon name="resize-outline"></ion-icon>
+                <span>{{set.distance}}m x {{set.repetitions}}</span>
+              </div>
+
+              <div class="set-detail-item">
+                <ion-icon name="time-outline"></ion-icon>
+                <span>{{formatTime(set.totalTime)}}</span>
+              </div>
+
+              <div class="set-detail-item">
+                <ion-icon name="speedometer-outline"></ion-icon>
+                <span>{{set.pace}}/100m</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Comparação com treinos anteriores -->
+    <h3 class="section-title">Progresso</h3>
+    <ion-card class="progress-card">
+      <ion-card-content>
+        <div class="progress-header">
+          <div class="progress-info">
+            <div class="progress-title">Comparado ao último treino</div>
+            <div class="progress-value" [class.improved]="workoutSummary.improvement > 0" [class.declined]="workoutSummary.improvement < 0">
+              <ion-icon [name]="workoutSummary.improvement > 0 ? 'arrow-up-outline' : 'arrow-down-outline'" *ngIf="workoutSummary.improvement != 0"></ion-icon>
+              {{workoutSummary.improvement > 0 ? '+' : ''}}{{workoutSummary.improvement}}%
+            </div>
+          </div>
+        </div>
+
+        <div class="progress-chart">
+          <div class="chart-placeholder">
+            <p>Gráfico de progresso será exibido aqui</p>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Feedback do personal -->
+    <h3 class="section-title">Feedback do Personal</h3>
+    <ion-card class="feedback-card">
+      <ion-card-content>
+        <div class="feedback-content" *ngIf="workoutSummary.feedback">
+          <ion-avatar>
+            <img [src]="workoutSummary.personalAvatar || ''" alt="Personal Trainer">
+          </ion-avatar>
+          <div class="feedback-message">
+            <div class="feedback-header">
+              <span class="feedback-name">{{workoutSummary.personalName}}</span>
+              <span class="feedback-time">{{workoutSummary.feedbackTime}}</span>
+            </div>
+            <p>{{workoutSummary.feedback}}</p>
+          </div>
+        </div>
+
+        <div class="no-feedback" *ngIf="!workoutSummary.feedback">
+          <p>Seu personal ainda não deixou um feedback para este treino.</p>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Botões de ação -->
+    <div class="action-buttons">
+      <ion-button expand="block" color="primary" (click)="backToDashboard()">
+        <ion-icon name="home-outline" slot="start"></ion-icon>
+        Voltar ao Início
+      </ion-button>
+
+      <ion-button expand="block" color="secondary" (click)="seeHistory()">
+        <ion-icon name="time-outline" slot="start"></ion-icon>
+        Ver Histórico
+      </ion-button>
+    </div>
+  </div>
+</ion-content>

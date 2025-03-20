@@ -1,0 +1,111 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar color="dark" class="transparent-toolbar">
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Configurações</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content fullscreen="true" class="ion-padding">
+  <div class="background-gradient"></div>
+
+  <!-- Perfil -->
+  <ion-card class="profile-card">
+    <ion-card-content>
+      <div class="profile-header">
+        <ion-avatar>
+          <img src="" alt="Avatar">
+        </ion-avatar>
+        <h2>Nome do Aluno</h2>
+        <p>aluno&#64;email.com</p>
+      </div>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Configurações -->
+  <ion-card class="settings-card">
+    <ion-card-content>
+      <ion-list lines="none">
+        <ion-item-group>
+          <ion-item-divider>
+            <ion-label>Conta</ion-label>
+          </ion-item-divider>
+
+          <ion-item>
+            <ion-label>
+              <h2>Editar Perfil</h2>
+              <p>Alterar informações pessoais</p>
+            </ion-label>
+            <ion-icon name="chevron-forward" slot="end"></ion-icon>
+          </ion-item>
+
+          <ion-item>
+            <ion-label>
+              <h2>Alterar Senha</h2>
+              <p>Atualizar senha de acesso</p>
+            </ion-label>
+            <ion-icon name="chevron-forward" slot="end"></ion-icon>
+          </ion-item>
+        </ion-item-group>
+
+        <ion-item-group>
+          <ion-item-divider>
+            <ion-label>Preferências</ion-label>
+          </ion-item-divider>
+
+          <ion-item>
+            <ion-label>
+              <h2>Notificações</h2>
+              <p>Configurar alertas e notificações</p>
+            </ion-label>
+            <ion-icon name="chevron-forward" slot="end"></ion-icon>
+          </ion-item>
+
+          <ion-item>
+            <ion-label>
+              <h2>Idioma</h2>
+              <p>Português (Brasil)</p>
+            </ion-label>
+            <ion-icon name="chevron-forward" slot="end"></ion-icon>
+          </ion-item>
+        </ion-item-group>
+
+        <ion-item-group>
+          <ion-item-divider>
+            <ion-label>Sobre</ion-label>
+          </ion-item-divider>
+
+          <ion-item>
+            <ion-label>
+              <h2>Versão do App</h2>
+              <p>1.0.0</p>
+            </ion-label>
+          </ion-item>
+
+          <ion-item>
+            <ion-label>
+              <h2>Termos de Uso</h2>
+              <p>Políticas e termos do aplicativo</p>
+            </ion-label>
+            <ion-icon name="chevron-forward" slot="end"></ion-icon>
+          </ion-item>
+
+          <ion-item>
+            <ion-label>
+              <h2>Política de Privacidade</h2>
+              <p>Como seus dados são tratados</p>
+            </ion-label>
+            <ion-icon name="chevron-forward" slot="end"></ion-icon>
+          </ion-item>
+        </ion-item-group>
+      </ion-list>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Botão de Sair -->
+  <ion-button expand="block" color="danger" class="logout-button">
+    <ion-icon name="log-out-outline" slot="start"></ion-icon>
+    Sair
+  </ion-button>
+</ion-content>

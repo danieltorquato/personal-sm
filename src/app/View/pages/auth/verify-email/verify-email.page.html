@@ -1,0 +1,42 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar color="dark" class="transparent-toolbar">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/login"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Verificar E-mail</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content fullscreen="true" class="ion-padding">
+  <div class="background-gradient"></div>
+
+  <!-- Logo -->
+  <div class="logo-container">
+    <img src="" alt="Logo" class="logo">
+    <h1>Personal SM</h1>
+  </div>
+
+  <!-- Mensagem de Verificação -->
+  <ion-card class="verify-email-card">
+    <ion-card-content>
+      <div class="verify-content">
+        <ion-icon name="mail-outline" class="verify-icon"></ion-icon>
+
+        <h2>Verifique seu E-mail</h2>
+
+        <p>Enviamos um link de verificação para o seu e-mail. Por favor, verifique sua caixa de entrada e clique no link para confirmar sua conta.</p>
+
+        <div class="form-actions">
+          <ion-button expand="block" class="resend-button">
+            <ion-icon name="refresh-outline" slot="start"></ion-icon>
+            Reenviar E-mail
+          </ion-button>
+
+          <ion-button expand="block" fill="clear" routerLink="/login">
+            Voltar para o Login
+          </ion-button>
+        </div>
+      </div>
+    </ion-card-content>
+  </ion-card>
+</ion-content>

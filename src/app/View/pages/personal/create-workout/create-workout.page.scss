@@ -1,0 +1,68 @@
+.background-gradient {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+  z-index: -1;
+}
+
+.transparent-toolbar {
+  --background: transparent;
+}
+
+.workout-form {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  backdrop-filter: blur(10px);
+  margin: 16px 0;
+}
+
+ion-item-group {
+  margin-bottom: 16px;
+}
+
+ion-item-divider {
+  --background: transparent;
+  --color: var(--ion-color-light);
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+ion-item {
+  --background: rgba(255, 255, 255, 0.05);
+  --border-radius: 10px;
+  margin-bottom: 8px;
+  --padding-start: 16px;
+  --padding-end: 16px;
+  --inner-padding-end: 8px;
+
+  h2 {
+    color: var(--ion-color-light);
+    margin-bottom: 4px;
+  }
+
+  p {
+    color: var(--ion-color-medium);
+    font-size: 0.9em;
+  }
+}
+
+ion-input, ion-select, ion-textarea {
+  --background: transparent;
+  --color: var(--ion-color-light);
+}
+
+ion-textarea {
+  min-height: 100px;
+}
+
+ion-button[fill="clear"] {
+  --color: var(--ion-color-light);
+}
+
+.save-button {
+  margin: 0 16px 16px;
+  --border-radius: 10px;
+}

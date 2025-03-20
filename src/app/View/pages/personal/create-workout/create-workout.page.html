@@ -1,0 +1,105 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar color="dark" class="transparent-toolbar">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/personal/dashboard"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Criar Treino</ion-title>
+    <ion-buttons slot="end">
+      <ion-button>
+        <ion-icon name="save-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content fullscreen="true" class="ion-padding">
+  <div class="background-gradient"></div>
+
+  <!-- Formulário de Criação -->
+  <ion-card class="workout-form">
+    <ion-card-content>
+      <!-- Informações Básicas -->
+      <ion-item-group>
+        <ion-item-divider>
+          <ion-label>Informações Básicas</ion-label>
+        </ion-item-divider>
+
+        <ion-item>
+          <ion-label position="stacked">Nome do Treino</ion-label>
+          <ion-input placeholder="Ex: Treino de Força A"></ion-input>
+        </ion-item>
+
+        <ion-item>
+          <ion-label position="stacked">Nível</ion-label>
+          <ion-select placeholder="Selecione o nível">
+            <ion-select-option value="beginner">Iniciante</ion-select-option>
+            <ion-select-option value="intermediate">Intermediário</ion-select-option>
+            <ion-select-option value="advanced">Avançado</ion-select-option>
+          </ion-select>
+        </ion-item>
+
+        <ion-item>
+          <ion-label position="stacked">Duração Estimada</ion-label>
+          <ion-input type="number" placeholder="Minutos"></ion-input>
+        </ion-item>
+      </ion-item-group>
+
+      <!-- Exercícios -->
+      <ion-item-group class="ion-margin-top">
+        <ion-item-divider>
+          <ion-label>Exercícios</ion-label>
+          <ion-button slot="end" fill="clear" size="small">
+            <ion-icon name="add-circle-outline" slot="icon-only"></ion-icon>
+          </ion-button>
+        </ion-item-divider>
+
+        <ion-item>
+          <ion-label>
+            <h2>Supino Reto</h2>
+            <p>3 séries x 12 repetições</p>
+          </ion-label>
+          <ion-buttons slot="end">
+            <ion-button>
+              <ion-icon name="create-outline"></ion-icon>
+            </ion-button>
+            <ion-button>
+              <ion-icon name="trash-outline"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+        </ion-item>
+
+        <ion-item>
+          <ion-label>
+            <h2>Puxada Frontal</h2>
+            <p>4 séries x 10 repetições</p>
+          </ion-label>
+          <ion-buttons slot="end">
+            <ion-button>
+              <ion-icon name="create-outline"></ion-icon>
+            </ion-button>
+            <ion-button>
+              <ion-icon name="trash-outline"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+        </ion-item>
+      </ion-item-group>
+
+      <!-- Observações -->
+      <ion-item-group class="ion-margin-top">
+        <ion-item-divider>
+          <ion-label>Observações</ion-label>
+        </ion-item-divider>
+
+        <ion-item>
+          <ion-textarea placeholder="Adicione observações sobre o treino..." rows="4"></ion-textarea>
+        </ion-item>
+      </ion-item-group>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Botão Salvar -->
+  <ion-button expand="block" class="save-button ion-margin-top">
+    <ion-icon name="save-outline" slot="start"></ion-icon>
+    Salvar Treino
+  </ion-button>
+</ion-content>

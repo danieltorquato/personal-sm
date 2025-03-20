@@ -1,0 +1,139 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar color="dark" class="transparent-toolbar">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/pupil/dashboard"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Histórico de Treinos</ion-title>
+    <ion-buttons slot="end">
+      <ion-button>
+        <ion-icon name="filter-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content fullscreen="true" class="ion-padding">
+  <div class="background-gradient"></div>
+
+  <!-- Filtros -->
+  <ion-card class="filter-card">
+    <ion-card-content>
+      <ion-item-group>
+        <ion-item>
+          <ion-label position="stacked">Período</ion-label>
+          <ion-select placeholder="Selecione o período">
+            <ion-select-option value="week">Última Semana</ion-select-option>
+            <ion-select-option value="month">Último Mês</ion-select-option>
+            <ion-select-option value="year">Último Ano</ion-select-option>
+          </ion-select>
+        </ion-item>
+
+        <ion-item>
+          <ion-label position="stacked">Tipo de Treino</ion-label>
+          <ion-select placeholder="Todos os tipos">
+            <ion-select-option value="all">Todos</ion-select-option>
+            <ion-select-option value="strength">Força</ion-select-option>
+            <ion-select-option value="cardio">Cardio</ion-select-option>
+            <ion-select-option value="flexibility">Flexibilidade</ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-item-group>
+
+      <ion-button expand="block" class="apply-filter-button ion-margin-top">
+        <ion-icon name="search-outline" slot="start"></ion-icon>
+        Aplicar Filtros
+      </ion-button>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Lista de Treinos -->
+  <ion-card class="workout-list">
+    <ion-card-content>
+      <ion-list lines="none">
+        <!-- Treino Completo -->
+        <ion-item-group>
+          <ion-item-divider>
+            <ion-label>20 de Março, 2024</ion-label>
+            <ion-badge color="success">Completo</ion-badge>
+          </ion-item-divider>
+
+          <ion-item>
+            <ion-label>
+              <h2>Treino de Membros Superiores</h2>
+              <p>Foco em Força e Hipertrofia</p>
+              <div class="workout-details">
+                <span>
+                  <ion-icon name="time-outline"></ion-icon>
+                  45 min
+                </span>
+                <span>
+                  <ion-icon name="barbell-outline"></ion-icon>
+                  8 exercícios
+                </span>
+              </div>
+            </ion-label>
+            <ion-button slot="end" fill="clear" size="small">
+              <ion-icon name="chevron-forward" slot="icon-only"></ion-icon>
+            </ion-button>
+          </ion-item>
+        </ion-item-group>
+
+        <!-- Treino Incompleto -->
+        <ion-item-group>
+          <ion-item-divider>
+            <ion-label>18 de Março, 2024</ion-label>
+            <ion-badge color="warning">Incompleto</ion-badge>
+          </ion-item-divider>
+
+          <ion-item>
+            <ion-label>
+              <h2>Treino de Membros Inferiores</h2>
+              <p>Foco em Resistência</p>
+              <div class="workout-details">
+                <span>
+                  <ion-icon name="time-outline"></ion-icon>
+                  30 min
+                </span>
+                <span>
+                  <ion-icon name="barbell-outline"></ion-icon>
+                  6 exercícios
+                </span>
+              </div>
+            </ion-label>
+            <ion-button slot="end" fill="clear" size="small">
+              <ion-icon name="chevron-forward" slot="icon-only"></ion-icon>
+            </ion-button>
+          </ion-item>
+        </ion-item-group>
+
+        <!-- Treino Completo Anterior -->
+        <ion-item-group>
+          <ion-item-divider>
+            <ion-label>15 de Março, 2024</ion-label>
+            <ion-badge color="success">Completo</ion-badge>
+          </ion-item-divider>
+
+          <ion-item>
+            <ion-label>
+              <h2>Treino de Core</h2>
+              <p>Foco em Estabilidade</p>
+              <div class="workout-details">
+                <span>
+                  <ion-icon name="time-outline"></ion-icon>
+                  40 min
+                </span>
+                <span>
+                  <ion-icon name="barbell-outline"></ion-icon>
+                  7 exercícios
+                </span>
+              </div>
+            </ion-label>
+            <ion-button slot="end" fill="clear" size="small">
+              <ion-icon name="chevron-forward" slot="icon-only"></ion-icon>
+            </ion-button>
+          </ion-item>
+        </ion-item-group>
+      </ion-list>
+    </ion-card-content>
+  </ion-card>
+</ion-content>

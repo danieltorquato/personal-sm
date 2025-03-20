@@ -1,0 +1,138 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar color="dark" class="transparent-toolbar">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/personal/dashboard"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Análise de Desempenho</ion-title>
+    <ion-buttons slot="end">
+      <ion-button>
+        <ion-icon name="calendar-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content fullscreen="true" class="ion-padding">
+  <div class="background-gradient"></div>
+
+  <!-- Filtros -->
+  <ion-card class="filter-card">
+    <ion-card-content>
+      <ion-item-group>
+        <ion-item>
+          <ion-label position="stacked">Período</ion-label>
+          <ion-select placeholder="Selecione o período">
+            <ion-select-option value="week">Última Semana</ion-select-option>
+            <ion-select-option value="month">Último Mês</ion-select-option>
+            <ion-select-option value="year">Último Ano</ion-select-option>
+          </ion-select>
+        </ion-item>
+
+        <ion-item>
+          <ion-label position="stacked">Aluno</ion-label>
+          <ion-select placeholder="Selecione o aluno">
+            <ion-select-option value="all">Todos os Alunos</ion-select-option>
+            <ion-select-option value="1">Carlos Silva</ion-select-option>
+            <ion-select-option value="2">Mariana Oliveira</ion-select-option>
+            <ion-select-option value="3">Pedro Santos</ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-item-group>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Gráficos -->
+  <ion-card class="chart-card">
+    <ion-card-header>
+      <ion-card-title>Desempenho Geral</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <div class="chart-placeholder">
+        <p>Gráfico de desempenho será exibido aqui</p>
+      </div>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Métricas -->
+  <ion-grid>
+    <ion-row>
+      <ion-col size="6">
+        <ion-card class="metric-card">
+          <ion-card-content>
+            <div class="metric-value">85%</div>
+            <div class="metric-label">Taxa de Presença</div>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+      <ion-col size="6">
+        <ion-card class="metric-card">
+          <ion-card-content>
+            <div class="metric-value">12</div>
+            <div class="metric-label">Treinos Completados</div>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col size="6">
+        <ion-card class="metric-card">
+          <ion-card-content>
+            <div class="metric-value">+15%</div>
+            <div class="metric-label">Progresso Mensal</div>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+      <ion-col size="6">
+        <ion-card class="metric-card">
+          <ion-card-content>
+            <div class="metric-value">8</div>
+            <div class="metric-label">Alunos Ativos</div>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+
+  <!-- Lista de Desempenho -->
+  <ion-card class="performance-list">
+    <ion-card-header>
+      <ion-card-title>Desempenho por Aluno</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-list lines="none">
+        <ion-item>
+          <ion-avatar slot="start">
+            <img src="" alt="Avatar">
+          </ion-avatar>
+          <ion-label>
+            <h2>Carlos Silva</h2>
+            <p>Progresso: +15%</p>
+          </ion-label>
+          <ion-badge slot="end" color="success">85%</ion-badge>
+        </ion-item>
+
+        <ion-item>
+          <ion-avatar slot="start">
+            <img src="" alt="Avatar">
+          </ion-avatar>
+          <ion-label>
+            <h2>Mariana Oliveira</h2>
+            <p>Progresso: +8%</p>
+          </ion-label>
+          <ion-badge slot="end" color="warning">70%</ion-badge>
+        </ion-item>
+
+        <ion-item>
+          <ion-avatar slot="start">
+            <img src="" alt="Avatar">
+          </ion-avatar>
+          <ion-label>
+            <h2>Pedro Santos</h2>
+            <p>Progresso: +20%</p>
+          </ion-label>
+          <ion-badge slot="end" color="success">92%</ion-badge>
+        </ion-item>
+      </ion-list>
+    </ion-card-content>
+  </ion-card>
+</ion-content>

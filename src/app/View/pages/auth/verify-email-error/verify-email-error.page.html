@@ -1,0 +1,42 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar color="dark" class="transparent-toolbar">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/login"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Erro na Verificação</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content fullscreen="true" class="ion-padding">
+  <div class="background-gradient"></div>
+
+  <!-- Logo -->
+  <div class="logo-container">
+    <img src="" alt="Logo" class="logo">
+    <h1>Personal SM</h1>
+  </div>
+
+  <!-- Mensagem de Erro -->
+  <ion-card class="error-card">
+    <ion-card-content>
+      <div class="error-content">
+        <ion-icon name="alert-circle-outline" class="error-icon"></ion-icon>
+
+        <h2>Erro na Verificação</h2>
+
+        <p>Ocorreu um erro ao verificar seu e-mail. O link pode ter expirado ou ser inválido. Por favor, solicite um novo link de verificação.</p>
+
+        <div class="form-actions">
+          <ion-button expand="block" class="resend-button">
+            <ion-icon name="refresh-outline" slot="start"></ion-icon>
+            Solicitar Novo Link
+          </ion-button>
+
+          <ion-button expand="block" fill="clear" routerLink="/login">
+            Voltar para o Login
+          </ion-button>
+        </div>
+      </div>
+    </ion-card-content>
+  </ion-card>
+</ion-content>

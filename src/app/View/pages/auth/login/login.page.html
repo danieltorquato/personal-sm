@@ -1,0 +1,54 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar color="dark" class="transparent-toolbar">
+    <ion-title>Login</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content fullscreen="true" class="ion-padding">
+  <div class="background-gradient"></div>
+
+  <!-- Logo -->
+  <div class="logo-container">
+    <img src="" alt="Logo" class="logo">
+    <h1>Personal SM</h1>
+  </div>
+
+  <!-- Formulário de Login -->
+  <ion-card class="login-card">
+    <ion-card-content>
+      <form>
+        <ion-item-group>
+          <ion-item>
+            <ion-label position="stacked">E-mail</ion-label>
+            <ion-input type="email" placeholder="Seu e-mail"></ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">Senha</ion-label>
+            <ion-input type="password" placeholder="Sua senha"></ion-input>
+          </ion-item>
+        </ion-item-group>
+
+        <div class="form-actions">
+          <ion-button expand="block" class="login-button">
+            <ion-icon name="log-in-outline" slot="start"></ion-icon>
+            Entrar
+          </ion-button>
+
+          <ion-button expand="block" fill="clear" class="forgot-password">
+            Esqueceu sua senha?
+          </ion-button>
+        </div>
+      </form>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Registro -->
+  <div class="register-container">
+    <p>Não tem uma conta?</p>
+    <ion-button expand="block" fill="outline" class="register-button">
+      <ion-icon name="person-add-outline" slot="start"></ion-icon>
+      Criar Conta
+    </ion-button>
+  </div>
+</ion-content>

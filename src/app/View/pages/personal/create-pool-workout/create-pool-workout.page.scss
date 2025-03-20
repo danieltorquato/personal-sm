@@ -1,0 +1,416 @@
+:host {
+  --page-padding: 16px;
+  --card-border-radius: 14px;
+  --section-gap: 24px;
+
+  // Cores principais
+  --primary-color: #3880ff;
+  --secondary-color: #3dc2ff;
+  --success-color: #2dd36f;
+  --warning-color: #ffc409;
+  --danger-color: #eb445a;
+
+  // Cores para exercícios
+  --nado-livre-color: #3880ff;
+  --nado-costas-color: #5260ff;
+  --nado-peito-color: #2dd36f;
+  --borboleta-color: #eb445a;
+  --batida-pernas-color: #ffc409;
+  --pullbuoy-color: #3dc2ff;
+  --medley-color: #92949c;
+}
+
+// Estilos para o cabeçalho
+.header-container {
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  border-radius: 0 0 20px 20px;
+  padding: 16px;
+  margin-bottom: 16px;
+  position: relative;
+  overflow: hidden;
+  color: white;
+
+  h1 {
+    font-size: 28px;
+    font-weight: 700;
+    margin: 0;
+    z-index: 2;
+    position: relative;
+  }
+
+  p {
+    margin-top: 8px;
+    opacity: 0.9;
+    font-size: 16px;
+    z-index: 2;
+    position: relative;
+  }
+
+  // Decoração ondulada
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 40px;
+    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="white" fill-opacity="1" d="M0,256L48,266.7C96,277,192,299,288,282.7C384,267,480,213,576,202.7C672,192,768,224,864,213.3C960,203,1056,149,1152,138.7C1248,128,1344,160,1392,176L1440,192L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>');
+    background-size: cover;
+    background-position: center;
+    z-index: 1;
+  }
+}
+
+// Container principal
+.main-container {
+  padding: var(--page-padding);
+}
+
+// Estilos para cards
+.workout-card {
+  border-radius: var(--card-border-radius);
+  margin-bottom: var(--section-gap);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  background-color: #f8f9fa;
+
+  ion-icon {
+    font-size: 24px;
+    margin-right: 12px;
+    color: var(--primary-color);
+  }
+
+  h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+  }
+}
+
+.card-content {
+  padding: 16px;
+}
+
+// Seleção de nível com segmentos coloridos
+.level-segment {
+  --background: transparent;
+
+  ion-segment-button {
+    --color: #86888f;
+    --color-checked: white;
+    --indicator-height: 100%;
+    --indicator-box-shadow: none;
+    --padding-top: 8px;
+    --padding-bottom: 8px;
+    --border-radius: 8px;
+    font-weight: 500;
+
+    &.segment-button-checked {
+      &.iniciante {
+        --background-checked: var(--success-color);
+      }
+
+      &.intermediario {
+        --background-checked: var(--warning-color);
+      }
+
+      &.avancado {
+        --background-checked: var(--danger-color);
+      }
+    }
+  }
+}
+
+// Estilos para área de estudantes
+.student-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+
+  ion-chip {
+    --background: #f1f5ff;
+    --color: var(--primary-color);
+    font-weight: 500;
+
+    ion-avatar {
+      width: 24px;
+      height: 24px;
+    }
+  }
+}
+
+.add-student-button {
+  --background: #f1f5ff;
+  --color: var(--primary-color);
+  --box-shadow: none;
+  --border-radius: 10px;
+  margin-top: 16px;
+  height: 42px;
+
+  ion-icon {
+    margin-right: 8px;
+  }
+}
+
+// Estilo para listas e séries
+.sets-list-container {
+  margin-top: 16px;
+}
+
+.set-item {
+  --padding-start: 12px;
+  --inner-padding-end: 12px;
+  --background: white;
+  --border-radius: 10px;
+  margin-bottom: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+
+  &.nado-livre {
+    border-left: 4px solid var(--nado-livre-color);
+  }
+
+  &.nado-costas {
+    border-left: 4px solid var(--nado-costas-color);
+  }
+
+  &.nado-peito {
+    border-left: 4px solid var(--nado-peito-color);
+  }
+
+  &.borboleta {
+    border-left: 4px solid var(--borboleta-color);
+  }
+
+  &.batida-pernas {
+    border-left: 4px solid var(--batida-pernas-color);
+  }
+
+  &.pullbuoy {
+    border-left: 4px solid var(--pullbuoy-color);
+  }
+
+  &.medley {
+    border-left: 4px solid var(--medley-color);
+  }
+
+  ion-label {
+    h2 {
+      font-weight: 600;
+      font-size: 16px;
+      margin-bottom: 4px;
+    }
+
+    p {
+      margin-top: 2px;
+      color: #666;
+      font-size: 14px;
+    }
+  }
+
+  ion-note {
+    font-size: 13px;
+    color: #86888f;
+  }
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 16px;
+
+  ion-icon {
+    font-size: 48px;
+    color: #d7d8da;
+    margin-bottom: 16px;
+  }
+
+  p {
+    color: #92949c;
+    text-align: center;
+    margin: 0 0 16px;
+  }
+}
+
+// Botão de adicionar série
+.add-set-button {
+  --background: var(--primary-color);
+  --border-radius: 10px;
+  margin-top: 12px;
+  width: 100%;
+}
+
+// Estilos para o modal de séries
+.modal-container {
+  padding: 16px;
+
+  .exercise-selector {
+    margin-bottom: 20px;
+  }
+
+  .exercise-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+    margin-top: 16px;
+  }
+
+  .exercise-card {
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+
+    &.selected {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .exercise-image {
+      height: 100px;
+      background-size: cover;
+      background-position: center;
+    }
+
+    .exercise-info {
+      padding: 10px;
+      text-align: center;
+
+      h3 {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 600;
+      }
+    }
+
+    // Cores de acordo com o tipo de exercício
+    &.nado-livre .exercise-info {
+      background-color: rgba(56, 128, 255, 0.1);
+      h3 { color: var(--nado-livre-color); }
+    }
+
+    &.nado-costas .exercise-info {
+      background-color: rgba(82, 96, 255, 0.1);
+      h3 { color: var(--nado-costas-color); }
+    }
+
+    &.nado-peito .exercise-info {
+      background-color: rgba(45, 211, 111, 0.1);
+      h3 { color: var(--nado-peito-color); }
+    }
+
+    &.borboleta .exercise-info {
+      background-color: rgba(235, 68, 90, 0.1);
+      h3 { color: var(--borboleta-color); }
+    }
+
+    &.batida-pernas .exercise-info {
+      background-color: rgba(255, 196, 9, 0.1);
+      h3 { color: var(--batida-pernas-color); }
+    }
+
+    &.pullbuoy .exercise-info {
+      background-color: rgba(61, 194, 255, 0.1);
+      h3 { color: var(--pullbuoy-color); }
+    }
+
+    &.medley .exercise-info {
+      background-color: rgba(146, 148, 156, 0.1);
+      h3 { color: var(--medley-color); }
+    }
+  }
+
+  .set-details {
+    margin-top: 24px;
+  }
+
+  .form-item {
+    --padding-start: 0;
+    --padding-end: 0;
+    --inner-padding-end: 0;
+  }
+
+  .button-group {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+
+    ion-button {
+      flex: 1;
+      --border-radius: 10px;
+    }
+  }
+}
+
+// Resumo e estatísticas
+.summary-card {
+  border-radius: var(--card-border-radius);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  margin-top: var(--section-gap);
+
+  .summary-header {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    padding: 16px;
+
+    h3 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 600;
+    }
+  }
+
+  .summary-content {
+    padding: 16px;
+  }
+
+  .summary-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+
+    .stat-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 12px;
+      border-radius: 10px;
+      background-color: #f8f9fa;
+
+      .stat-value {
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin-bottom: 4px;
+      }
+
+      .stat-label {
+        font-size: 12px;
+        color: #666;
+      }
+    }
+  }
+}
+
+// Botão de salvar
+.save-button {
+  --background: var(--success-color);
+  --border-radius: 10px;
+  margin-top: var(--section-gap);
+  width: 100%;
+  height: 50px;
+  font-weight: 600;
+  font-size: 16px;
+}

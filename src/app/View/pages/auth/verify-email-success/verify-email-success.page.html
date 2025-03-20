@@ -1,0 +1,35 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar color="dark" class="transparent-toolbar">
+    <ion-title>E-mail Verificado</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content fullscreen="true" class="ion-padding">
+  <div class="background-gradient"></div>
+
+  <!-- Logo -->
+  <div class="logo-container">
+    <img src="" alt="Logo" class="logo">
+    <h1>Personal SM</h1>
+  </div>
+
+  <!-- Mensagem de Sucesso -->
+  <ion-card class="success-card">
+    <ion-card-content>
+      <div class="success-content">
+        <ion-icon name="checkmark-circle-outline" class="success-icon"></ion-icon>
+
+        <h2>E-mail Verificado com Sucesso!</h2>
+
+        <p>Sua conta foi verificada com sucesso. Agora você pode fazer login e começar a usar o Personal SM.</p>
+
+        <div class="form-actions">
+          <ion-button expand="block" class="login-button" routerLink="/login">
+            <ion-icon name="log-in-outline" slot="start"></ion-icon>
+            Fazer Login
+          </ion-button>
+        </div>
+      </div>
+    </ion-card-content>
+  </ion-card>
+</ion-content>

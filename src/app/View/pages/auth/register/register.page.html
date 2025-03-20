@@ -1,0 +1,66 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar color="dark" class="transparent-toolbar">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/login"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Registro</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content fullscreen="true" class="ion-padding">
+  <div class="background-gradient"></div>
+
+  <!-- Logo -->
+  <div class="logo-container">
+    <img src="" alt="Logo" class="logo">
+    <h1>Personal SM</h1>
+  </div>
+
+  <!-- Formulário de Registro -->
+  <ion-card class="register-card">
+    <ion-card-content>
+      <form>
+        <ion-item-group>
+          <ion-item>
+            <ion-label position="stacked">Nome Completo</ion-label>
+            <ion-input type="text" placeholder="Seu nome completo"></ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">E-mail</ion-label>
+            <ion-input type="email" placeholder="Seu e-mail"></ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">Senha</ion-label>
+            <ion-input type="password" placeholder="Crie uma senha"></ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">Confirmar Senha</ion-label>
+            <ion-input type="password" placeholder="Confirme sua senha"></ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">Tipo de Conta</ion-label>
+            <ion-select placeholder="Selecione o tipo de conta">
+              <ion-select-option value="personal">Personal Trainer</ion-select-option>
+              <ion-select-option value="pupil">Aluno</ion-select-option>
+            </ion-select>
+          </ion-item>
+        </ion-item-group>
+
+        <div class="form-actions">
+          <ion-button expand="block" class="register-button">
+            <ion-icon name="person-add-outline" slot="start"></ion-icon>
+            Criar Conta
+          </ion-button>
+
+          <ion-button expand="block" fill="clear" routerLink="/login">
+            Já tem uma conta? Faça login
+          </ion-button>
+        </div>
+      </form>
+    </ion-card-content>
+  </ion-card>
+</ion-content>

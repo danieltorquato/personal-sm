@@ -1,0 +1,363 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+@import url('https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css');
+
+* {
+  font-family: 'Poppins', sans-serif;
+}
+
+/* Gradiente de fundo */
+.background-gradient {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, #111111 0%, #222222 100%);
+  z-index: -1;
+}
+
+/* Header transparente com blur */
+.transparent-toolbar {
+  --background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* Badge com animação */
+.badge-pulse {
+  animation: badgePulse 2s infinite;
+}
+
+@keyframes badgePulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/* Estilo de cards com sombra e borda gradiente */
+ion-card {
+  border-radius: 16px;
+  margin: 10px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Card flutuante com efeito hover */
+.float-card {
+  transform: translateY(0);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.float-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 15px 30px rgba(158, 123, 59, 0.2);
+}
+
+/* Overlay para cards de acesso rápido */
+.card-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.4) 100%);
+  z-index: 1;
+}
+
+/* Efeito vidro para o card de boas-vindas */
+.glass-card {
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.card-blur-bg {
+  position: absolute;
+  top: -50px;
+  right: -50px;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background: rgba(158, 123, 59, 0.3);
+  filter: blur(40px);
+  z-index: 0;
+}
+
+/* Estilo de texto dourado */
+.gold-text {
+  color: #9e7b3b;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+}
+
+/* Linha decorativa dourada */
+.gold-line {
+  height: 3px;
+  width: 50px;
+  background: linear-gradient(to right, #9e7b3b, rgba(158, 123, 59, 0.5));
+  margin-top: 8px;
+  border-radius: 3px;
+}
+
+/* Títulos de seção */
+.section-header {
+  padding-left: 16px;
+  margin-top: 20px;
+  margin-bottom: 10px;
+}
+
+/* Cards de estatísticas */
+.statistic-box {
+  text-align: center;
+  padding: 15px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  transition: all 0.3s ease;
+}
+
+.hover-scale:hover {
+  transform: scale(1.05);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.stat-divider {
+  height: 2px;
+  width: 30px;
+  background-color: #9e7b3b;
+  margin: 8px auto;
+}
+
+.counter-number {
+  font-size: 28px;
+  margin: 0;
+  color: #9e7b3b;
+  font-weight: bold;
+}
+
+/* Ícones de recursos */
+.feature-icon {
+  font-size: 36px;
+  --color: #9e7b3b;
+  margin-bottom: 10px;
+  transition: all 0.3s ease;
+  z-index: 2;
+  position: relative;
+}
+
+.float-card:hover .feature-icon {
+  transform: scale(1.2);
+}
+
+.feature-text {
+  margin: 5px 0 0 0;
+  font-size: 14px;
+  color: #fff;
+  font-weight: 500;
+  z-index: 2;
+  position: relative;
+}
+
+/* Itens de agenda com efeito slide-in */
+.agenda-item {
+  margin-bottom: 10px;
+  border-radius: 12px;
+  --background: rgba(255, 255, 255, 0.03);
+  transition: all 0.3s ease;
+}
+
+.agenda-item:hover {
+  --background: rgba(255, 255, 255, 0.08);
+}
+
+.slide-in {
+  animation: slideIn 0.5s forwards;
+  opacity: 0;
+  transform: translateX(-20px);
+}
+
+.agenda-item:nth-child(1) {
+  animation-delay: 0.1s;
+}
+
+.agenda-item:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.agenda-item:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes slideIn {
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Botão de visualizar com efeito hover */
+.view-button {
+  --color: #9e7b3b;
+  transition: all 0.3s ease;
+}
+
+.view-button:hover {
+  --color: #ffffff;
+}
+
+/* Estilo de botão personalizado */
+.custom-button {
+  margin-top: 15px;
+  --border-radius: 10px;
+  --box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+  overflow: hidden;
+  position: relative;
+}
+
+.custom-button::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: all 0.5s ease;
+}
+
+.custom-button:hover::after {
+  left: 100%;
+}
+
+/* Ícones pequenos para detalhes */
+.small-icon {
+  font-size: 14px;
+  vertical-align: middle;
+  margin-right: 3px;
+}
+
+/* Ícones de cabeçalho */
+.header-icon {
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+/* Exercício ícone */
+.exercise-icon {
+  font-size: 24px;
+  color: #9e7b3b;
+}
+
+/* Estilos para feedbacks */
+.feedback-item {
+  margin-bottom: 10px;
+  border-radius: 12px;
+  --background: rgba(255, 255, 255, 0.03);
+  transition: all 0.3s ease;
+}
+
+.feedback-item:hover {
+  --background: rgba(255, 255, 255, 0.08);
+}
+
+.name-badge {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.new-badge {
+  --background: #9e7b3b;
+  animation: fadeInOut 2s infinite;
+}
+
+@keyframes fadeInOut {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.feedback-text {
+  margin-top: 5px;
+  white-space: normal;
+  line-height: 1.4;
+}
+
+.feedback-time {
+  font-size: 12px;
+  color: #999;
+  margin-top: 5px;
+}
+
+/* Título de boas-vindas e subtítulo */
+.welcome-title {
+  color: white;
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 5px;
+  position: relative;
+  z-index: 1;
+}
+
+.welcome-subtitle {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
+  position: relative;
+  z-index: 1;
+}
+
+.floating-button {
+  margin-top: 10px;
+  --color: white;
+  --border-color: white;
+  position: relative;
+  z-index: 1;
+  transition: all 0.3s ease;
+}
+
+.floating-button:hover {
+  --background: rgba(255, 255, 255, 0.2);
+}
+
+/* Footer estilizado */
+.footer-toolbar {
+  --background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* Ajuste para layout responsivo */
+@media (max-width: 576px) {
+  .counter-number {
+    font-size: 22px;
+  }
+
+  .feature-icon {
+    font-size: 28px;
+  }
+
+  .welcome-title {
+    font-size: 20px;
+  }
+}

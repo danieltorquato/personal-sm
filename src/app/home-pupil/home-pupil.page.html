@@ -1,0 +1,236 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar color="dark" class="transparent-toolbar">
+    <ion-title class="animate__animated animate__fadeInDown">Personal SM</ion-title>
+    <ion-buttons slot="end">
+      <ion-button class="notification-button animate__animated animate__fadeInDown">
+        <ion-icon name="notifications-outline"></ion-icon>
+        <ion-badge color="warning" style="--background: #9e7b3b;">3</ion-badge>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content fullscreen="true" class="ion-padding">
+  <div class="background-gradient"></div>
+
+  <!-- Banner de boas-vindas com animação -->
+  <ion-row class="animate__animated animate__fadeInUp">
+    <ion-col size="12">
+      <ion-card class="welcome-card glass-card">
+        <div class="card-blur-bg"></div>
+        <ion-card-content>
+          <h1 class="welcome-title">Bem-vindo, Aluno!</h1>
+          <p class="welcome-subtitle">Acompanhe seus treinos e evolução de forma simples.</p>
+          <ion-button shape="round" fill="outline" size="small" color="light" class="floating-button" (click)="navigateTo('current-workout')">
+            Iniciar Treino
+          </ion-button>
+        </ion-card-content>
+      </ion-card>
+    </ion-col>
+  </ion-row>
+
+  <!-- Resumo de Treinos com efeito hover e contadores animados -->
+  <ion-row class="animate__animated animate__fadeInUp animate__delay-1s">
+    <ion-col size="12">
+      <ion-card class="stat-card">
+        <ion-card-header>
+          <ion-card-title class="gold-text">Meu Progresso</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <ion-row>
+            <ion-col size="4">
+              <div class="statistic-box hover-scale">
+                <h2 class="counter-number" data-count="12">12</h2>
+                <div class="stat-divider"></div>
+                <p>Treinos realizados</p>
+              </div>
+            </ion-col>
+            <ion-col size="4">
+              <div class="statistic-box hover-scale">
+                <h2 class="counter-number" data-count="4">4</h2>
+                <div class="stat-divider"></div>
+                <p>Dias seguidos</p>
+              </div>
+            </ion-col>
+            <ion-col size="4">
+              <div class="statistic-box hover-scale">
+                <h2 class="counter-number" data-count="85">85%</h2>
+                <div class="stat-divider"></div>
+                <p>Desempenho</p>
+              </div>
+            </ion-col>
+          </ion-row>
+        </ion-card-content>
+      </ion-card>
+    </ion-col>
+  </ion-row>
+
+  <!-- Acesso Rápido com cards flutuantes e efeito hover -->
+  <div class="section-header animate__animated animate__fadeInUp animate__delay-2s">
+    <h2 class="gold-text">Acesso Rápido</h2>
+    <div class="gold-line"></div>
+  </div>
+
+  <ion-row class="animate__animated animate__fadeInUp animate__delay-2s">
+    <ion-col size="6">
+
+      <ion-card button routerLink="/meus-treinos" class="float-card">
+        <div class="card-overlay"></div>
+        <ion-card-content class="icon-card">
+          <ion-icon name="barbell" color="warning" class="feature-icon"></ion-icon>
+          <p class="feature-text">Meus Treinos</p>
+        </ion-card-content>
+      </ion-card>
+    </ion-col>
+    <ion-col size="6">
+      <ion-card button routerLink="/evolucao" class="float-card">
+        <div class="card-overlay"></div>
+        <ion-card-content class="icon-card">
+          <ion-icon name="trending-up" color="warning" class="feature-icon"></ion-icon>
+          <p class="feature-text">Minha Evolução</p>
+        </ion-card-content>
+      </ion-card>
+    </ion-col>
+    <ion-col size="6">
+      <ion-card button routerLink="/mensagens" class="float-card">
+        <div class="card-overlay"></div>
+        <ion-card-content class="icon-card">
+          <ion-icon name="chatbubbles" color="warning" class="feature-icon"></ion-icon>
+          <p class="feature-text">Falar com Personal</p>
+        </ion-card-content>
+      </ion-card>
+    </ion-col>
+    <ion-col size="6">
+      <ion-card button routerLink="/biblioteca" class="float-card">
+        <div class="card-overlay"></div>
+        <ion-card-content class="icon-card">
+          <ion-icon name="book" color="warning" class="feature-icon"></ion-icon>
+          <p class="feature-text">Biblioteca</p>
+        </ion-card-content>
+      </ion-card>
+    </ion-col>
+  </ion-row>
+
+  <!-- Treino do Dia com efeitos de animação e hover -->
+  <ion-row class="animate__animated animate__fadeInUp animate__delay-3s">
+    <ion-col size="12">
+      <ion-card class="agenda-card">
+        <ion-card-header>
+          <ion-card-title class="gold-text">
+            <ion-icon name="fitness-outline" class="header-icon"></ion-icon>
+            Treino de Hoje
+          </ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <ion-list lines="none">
+            <ion-item class="agenda-item slide-in">
+              <ion-icon name="barbell" slot="start" class="exercise-icon"></ion-icon>
+              <ion-label>
+                <h2>Supino Reto</h2>
+                <p>
+                  <ion-icon name="repeat-outline" class="small-icon"></ion-icon> 4 séries
+                  <ion-icon name="fitness-outline" class="small-icon ion-margin-start"></ion-icon> 12 repetições
+                </p>
+              </ion-label>
+              <ion-button fill="clear" slot="end" class="view-button">
+                <ion-icon slot="icon-only" name="checkmark-circle-outline"></ion-icon>
+              </ion-button>
+            </ion-item>
+            <ion-item class="agenda-item slide-in">
+              <ion-icon name="barbell" slot="start" class="exercise-icon"></ion-icon>
+              <ion-label>
+                <h2>Leg Press</h2>
+                <p>
+                  <ion-icon name="repeat-outline" class="small-icon"></ion-icon> 4 séries
+                  <ion-icon name="fitness-outline" class="small-icon ion-margin-start"></ion-icon> 15 repetições
+                </p>
+              </ion-label>
+              <ion-button fill="clear" slot="end" class="view-button">
+                <ion-icon slot="icon-only" name="checkmark-circle-outline"></ion-icon>
+              </ion-button>
+            </ion-item>
+            <ion-item class="agenda-item slide-in">
+              <ion-icon name="barbell" slot="start" class="exercise-icon"></ion-icon>
+              <ion-label>
+                <h2>Puxada Frontal</h2>
+                <p>
+                  <ion-icon name="repeat-outline" class="small-icon"></ion-icon> 3 séries
+                  <ion-icon name="fitness-outline" class="small-icon ion-margin-start"></ion-icon> 12 repetições
+                </p>
+              </ion-label>
+              <ion-button fill="clear" slot="end" class="view-button">
+                <ion-icon slot="icon-only" name="checkmark-circle-outline"></ion-icon>
+              </ion-button>
+            </ion-item>
+            <ion-button expand="block" color="dark" class="custom-button">
+              Ver treino completo
+              <ion-icon name="arrow-forward" slot="end"></ion-icon>
+            </ion-button>
+          </ion-list>
+        </ion-card-content>
+      </ion-card>
+    </ion-col>
+  </ion-row>
+
+  <!-- Dicas do Personal -->
+  <ion-row class="animate__animated animate__fadeInUp animate__delay-4s">
+    <ion-col size="12">
+      <ion-card class="feedback-card">
+        <ion-card-header>
+          <ion-card-title class="gold-text">
+            <ion-icon name="chatbox-ellipses-outline" class="header-icon"></ion-icon>
+            Dicas do Personal
+          </ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <ion-item class="feedback-item">
+            <ion-avatar slot="start">
+              <img src="assets/personal-avatar.jpg" alt="Personal Avatar">
+            </ion-avatar>
+            <ion-label>
+              <div class="name-badge">
+                <h2>Personal Paulo</h2>
+                <ion-badge color="warning" class="new-badge">Novo</ion-badge>
+              </div>
+              <p class="feedback-text">Lembre-se de manter a postura correta durante os exercícios de costas!</p>
+              <p class="feedback-time">Hoje às 09:35</p>
+            </ion-label>
+          </ion-item>
+          <ion-item class="feedback-item">
+            <ion-avatar slot="start">
+              <img src="assets/personal-avatar.jpg" alt="Personal Avatar">
+            </ion-avatar>
+            <ion-label>
+              <h2>Personal Paulo</h2>
+              <p class="feedback-text">Aumente a carga no leg press na próxima sessão.</p>
+              <p class="feedback-time">Ontem às 15:20</p>
+            </ion-label>
+          </ion-item>
+        </ion-card-content>
+      </ion-card>
+    </ion-col>
+  </ion-row>
+</ion-content>
+
+<ion-fab vertical="bottom" horizontal="end" slot="fixed" class="animate__animated animate__bounceIn animate__delay-5s">
+  <ion-fab-button color="warning" style="--background: #9e7b3b;">
+    <ion-icon name="add"></ion-icon>
+  </ion-fab-button>
+  <ion-fab-list side="top">
+    <ion-fab-button color="dark">
+      <ion-icon name="chatbubbles-outline"></ion-icon>
+    </ion-fab-button>
+    <ion-fab-button color="dark">
+      <ion-icon name="camera-outline"></ion-icon>
+    </ion-fab-button>
+    <ion-fab-button color="dark">
+      <ion-icon name="calendar-outline"></ion-icon>
+    </ion-fab-button>
+  </ion-fab-list>
+</ion-fab>
+
+<ion-footer class="ion-no-border animate__animated animate__fadeInUp">
+  <ion-toolbar color="dark" class="footer-toolbar">
+    <ion-title size="small" class="ion-text-center">Personal SM &copy; 2025</ion-title>
+  </ion-toolbar>
+</ion-footer>

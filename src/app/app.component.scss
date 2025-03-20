@@ -1,0 +1,136 @@
+ion-menu {
+  --ion-background-color: #1a1a1a;
+  --ion-text-color: #ffffff;
+
+  ion-toolbar {
+    --background: #1a1a1a;
+    --border-style: none;
+  }
+
+  ion-header {
+    ion-toolbar {
+      --padding-top: 16px;
+      --padding-bottom: 16px;
+
+      ion-title {
+        font-size: 22px;
+        font-weight: 600;
+        color: #dfc282;
+      }
+    }
+  }
+
+  ion-content {
+    --background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+
+    ion-list {
+      background: transparent;
+      padding-top: 16px;
+
+      ion-item {
+        --background: transparent;
+        --background-hover: rgba(255, 255, 255, 0.05);
+        --background-focused: rgba(255, 255, 255, 0.1);
+        --border-color: rgba(255, 255, 255, 0.05);
+        --padding-start: 16px;
+        margin-bottom: 8px;
+
+        ion-icon {
+          color: #dfc282;
+          margin-right: 16px;
+        }
+
+        ion-label {
+          font-weight: 500;
+        }
+
+        &.selected {
+          --background: rgba(223, 194, 130, 0.15);
+          border-left: 4px solid #dfc282;
+
+          ion-label {
+            color: #dfc282;
+            font-weight: 600;
+          }
+        }
+      }
+    }
+  }
+
+  ion-footer {
+    ion-button {
+      margin: 16px;
+      --border-radius: 10px;
+    }
+  }
+}
+
+.logo-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 24px 0;
+  margin-bottom: 16px;
+
+  img {
+    width: 120px;
+    height: auto;
+  }
+}
+
+.profile-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 16px;
+  margin-bottom: 24px;
+  background: rgba(255, 255, 255, 0.05);
+
+  .avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    margin-bottom: 16px;
+    border: 3px solid rgba(223, 194, 130, 0.5);
+    overflow: hidden;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+
+  .name {
+    font-size: 18px;
+    font-weight: 600;
+    color: #ffffff;
+    margin-bottom: 4px;
+  }
+
+  .email {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.6);
+  }
+}
+
+.divider {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  margin: 8px 16px 24px;
+}
+
+.logout-button {
+  display: flex;
+  align-items: center;
+  margin: 16px;
+  padding: 12px;
+  border-radius: 10px;
+  background-color: rgba(220, 53, 69, 0.15);
+  color: #dc3545;
+  font-weight: 600;
+  cursor: pointer;
+
+  ion-icon {
+    margin-right: 12px;
+  }
+}

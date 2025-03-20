@@ -1,0 +1,82 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar color="dark" class="transparent-toolbar">
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Gerenciar Alunos</ion-title>
+    <ion-buttons slot="end">
+      <ion-button>
+        <ion-icon name="search-outline"></ion-icon>
+      </ion-button>
+      <ion-button>
+        <ion-icon name="person-add"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content fullscreen="true" class="ion-padding">
+  <div class="background-gradient"></div>
+
+  <!-- Lista de Alunos -->
+  <ion-list lines="none" class="ion-margin-top student-list">
+    <ion-item-group>
+      <ion-item-divider sticky>
+        <ion-label>Alunos Ativos</ion-label>
+        <ion-badge slot="end" color="success">12</ion-badge>
+      </ion-item-divider>
+
+      <ion-item>
+        <ion-avatar slot="start">
+          <img src="" alt="Avatar">
+        </ion-avatar>
+        <ion-label>
+          <h2>Nome do Aluno</h2>
+          <p>Último treino: 20/03/2024</p>
+        </ion-label>
+        <ion-buttons slot="end">
+          <ion-button>
+            <ion-icon name="ellipsis-vertical"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+      </ion-item>
+
+      <ion-item>
+        <ion-avatar slot="start">
+          <img src="" alt="Avatar">
+        </ion-avatar>
+        <ion-label>
+          <h2>Nome do Aluno 2</h2>
+          <p>Último treino: 19/03/2024</p>
+        </ion-label>
+        <ion-buttons slot="end">
+          <ion-button>
+            <ion-icon name="ellipsis-vertical"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+      </ion-item>
+
+      <ion-item>
+        <ion-avatar slot="start">
+          <img src="" alt="Avatar">
+        </ion-avatar>
+        <ion-label>
+          <h2>Nome do Aluno 3</h2>
+          <p>Último treino: 18/03/2024</p>
+        </ion-label>
+        <ion-buttons slot="end">
+          <ion-button>
+            <ion-icon name="ellipsis-vertical"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+      </ion-item>
+    </ion-item-group>
+  </ion-list>
+
+  <!-- Botão Adicionar Aluno -->
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button color="light">
+      <ion-icon name="person-add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>

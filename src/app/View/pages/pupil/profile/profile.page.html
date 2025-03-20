@@ -1,0 +1,114 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar color="dark" class="transparent-toolbar">
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Meu Perfil</ion-title>
+    <ion-buttons slot="end">
+      <ion-button>
+        <ion-icon name="create-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content fullscreen="true" class="ion-padding">
+  <div class="background-gradient"></div>
+
+  <!-- Foto de Perfil -->
+  <ion-card class="profile-card">
+    <ion-card-content>
+      <div class="profile-header">
+        <ion-avatar>
+          <img src="" alt="Avatar">
+        </ion-avatar>
+        <h2>Nome do Aluno</h2>
+        <p>aluno&#64;email.com</p>
+      </div>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Informações Pessoais -->
+  <ion-card class="info-card">
+    <ion-card-content>
+      <ion-list lines="none">
+        <ion-item-group>
+          <ion-item-divider>
+            <ion-label>Informações Pessoais</ion-label>
+          </ion-item-divider>
+
+          <ion-item>
+            <ion-label position="stacked">Nome Completo</ion-label>
+            <ion-input value="Nome do Aluno"></ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">Data de Nascimento</ion-label>
+            <ion-input type="date" value="1990-01-01"></ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">Gênero</ion-label>
+            <ion-select value="male">
+              <ion-select-option value="male">Masculino</ion-select-option>
+              <ion-select-option value="female">Feminino</ion-select-option>
+              <ion-select-option value="other">Outro</ion-select-option>
+            </ion-select>
+          </ion-item>
+        </ion-item-group>
+
+        <ion-item-group>
+          <ion-item-divider>
+            <ion-label>Medidas</ion-label>
+          </ion-item-divider>
+
+          <ion-item>
+            <ion-label position="stacked">Altura</ion-label>
+            <ion-input type="number" value="175"></ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">Peso</ion-label>
+            <ion-input type="number" value="75"></ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">IMC</ion-label>
+            <ion-input value="24.5" readonly></ion-input>
+          </ion-item>
+        </ion-item-group>
+
+        <ion-item-group>
+          <ion-item-divider>
+            <ion-label>Objetivos</ion-label>
+          </ion-item-divider>
+
+          <ion-item>
+            <ion-label position="stacked">Objetivo Principal</ion-label>
+            <ion-select value="strength">
+              <ion-select-option value="strength">Ganho de Força</ion-select-option>
+              <ion-select-option value="hypertrophy">Hipertrofia</ion-select-option>
+              <ion-select-option value="endurance">Resistência</ion-select-option>
+              <ion-select-option value="weight-loss">Perda de Peso</ion-select-option>
+            </ion-select>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">Nível de Atividade</ion-label>
+            <ion-select value="intermediate">
+              <ion-select-option value="beginner">Iniciante</ion-select-option>
+              <ion-select-option value="intermediate">Intermediário</ion-select-option>
+              <ion-select-option value="advanced">Avançado</ion-select-option>
+            </ion-select>
+          </ion-item>
+        </ion-item-group>
+      </ion-list>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Botão Salvar -->
+  <ion-button expand="block" class="save-button">
+    <ion-icon name="save-outline" slot="start"></ion-icon>
+    Salvar Alterações
+  </ion-button>
+</ion-content>
