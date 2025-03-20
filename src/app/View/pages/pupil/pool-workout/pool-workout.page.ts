@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, ElementRef, OnDestroy } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule, AlertController, ToastController } from '@ionic/angular';
@@ -47,6 +47,7 @@ interface Lap {
   repetition: number;
   distance: number;
   time: number;
+  pace?: string;
 }
 
 @Component({
@@ -57,6 +58,8 @@ interface Lap {
   imports: [IonicModule, CommonModule, FormsModule]
 })
 export class PoolWorkoutPage implements OnInit, OnDestroy {
+  @ViewChild('audioBeep') audioBeep!: ElementRef;
+
   // Estado do treino
   workout: Workout = {
     id: '12345',
@@ -111,12 +114,22 @@ export class PoolWorkoutPage implements OnInit, OnDestroy {
 
   // Temporizadores
   mainTimer: number = 0;
+  lapTimer: number = 0;
   restTimer: number = 0;
   initialRestTime: number = 0;
+  countdownTimer: number = 0;
+
+  // Estados
   isMainTimerRunning: boolean = false;
   isRestTimerActive: boolean = false;
+  isCountdownActive: boolean = false;
+  isTouchToLapActive: boolean = false;
+  isWorkoutStarted: boolean = false;
+
+  // Intervalos para os timers
   mainTimerInterval: any;
   restTimerInterval: any;
+  countdownInterval: any;
 
   // Estado das séries
   currentSetIndex: number = 0;
@@ -124,6 +137,11 @@ export class PoolWorkoutPage implements OnInit, OnDestroy {
   completedSets: number = 0;
   completedDistance: number = 0;
   laps: Lap[] = [];
+
+  // Sons
+  beepSound: HTMLAudioElement = new Audio('assets/sounds/beep.mp3');
+  startSound: HTMLAudioElement = new Audio('assets/sounds/start.mp3');
+  endSound: HTMLAudioElement = new Audio('assets/sounds/end.mp3');
 
   constructor(
     private router: Router,
@@ -149,9 +167,19 @@ export class PoolWorkoutPage implements OnInit, OnDestroy {
     });
   }
 
+  // Listener para toque na tela quando o modo toque para volta estiver ativo
+  @HostListener('click', ['$event'])
+  onScreenTap(event: MouseEvent): void {
+    if (this.isTouchToLapActive && this.isMainTimerRunning) {
+      this.recordLap();
+    }
+  }
+
   ngOnInit() {
-    // Iniciar o temporizador principal automaticamente
-    this.startMainTimer();
+    // Pré-carregar os sons
+    this.beepSound.load();
+    this.startSound.load();
+    this.endSound.load();
   }
 
   ngOnDestroy() {
@@ -166,14 +194,60 @@ export class PoolWorkoutPage implements OnInit, OnDestroy {
     if (this.restTimerInterval) {
       clearInterval(this.restTimerInterval);
     }
+    if (this.countdownInterval) {
+      clearInterval(this.countdownInterval);
+    }
+  }
+
+  // Iniciar o exercício com contagem regressiva
+  startWorkout() {
+    if (this.isWorkoutStarted) return;
+
+    this.isWorkoutStarted = true;
+    this.startCountdown(3);
+  }
+
+  // Contagem regressiva antes de iniciar
+  startCountdown(seconds: number) {
+    this.countdownTimer = seconds;
+    this.isCountdownActive = true;
+
+    // Tocar som de início
+    this.playSound('beep');
+
+    this.countdownInterval = setInterval(() => {
+      this.countdownTimer--;
+
+      if (this.countdownTimer > 0) {
+        this.playSound('beep');
+      } else {
+        clearInterval(this.countdownInterval);
+        this.isCountdownActive = false;
+        this.playSound('start');
+        this.startMainTimer();
+        this.activateTouchToLap();
+      }
+    }, 1000);
+  }
+
+  // Ativar modo de toque na tela para marcar volta
+  activateTouchToLap() {
+    this.isTouchToLapActive = true;
+  }
+
+  // Desativar modo de toque na tela para marcar volta
+  deactivateTouchToLap() {
+    this.isTouchToLapActive = false;
   }
 
   // Métodos para o temporizador principal
   startMainTimer() {
     if (!this.isMainTimerRunning) {
       this.isMainTimerRunning = true;
+      this.lapTimer = 0;
       this.mainTimerInterval = setInterval(() => {
         this.mainTimer++;
+        this.lapTimer++;
       }, 1000);
     }
   }
@@ -187,26 +261,45 @@ export class PoolWorkoutPage implements OnInit, OnDestroy {
 
   resetMainTimer() {
     this.mainTimer = 0;
+    this.lapTimer = 0;
   }
 
   toggleMainTimer() {
+    if (!this.isWorkoutStarted) {
+      this.startWorkout();
+      return;
+    }
+
     if (this.isMainTimerRunning) {
       this.stopMainTimer();
+      this.deactivateTouchToLap();
     } else {
       this.startMainTimer();
+      this.activateTouchToLap();
     }
   }
 
   // Métodos para o temporizador de descanso
   startRestTimer() {
+    // Desativar toque para volta durante o descanso
+    this.deactivateTouchToLap();
+
     const currentSet = this.workout.sets[this.currentSetIndex];
     this.restTimer = currentSet.restTime;
     this.initialRestTime = currentSet.restTime;
 
     if (this.restTimer > 0) {
+      // Tocar som de início de descanso
+      this.playSound('end');
+
       this.isRestTimerActive = true;
       this.restTimerInterval = setInterval(() => {
         this.restTimer--;
+
+        // Tocar beep nos últimos 3 segundos
+        if (this.restTimer <= 3 && this.restTimer > 0) {
+          this.playSound('beep');
+        }
 
         if (this.restTimer <= 0) {
           this.completeRest();
@@ -219,13 +312,25 @@ export class PoolWorkoutPage implements OnInit, OnDestroy {
   }
 
   skipRest() {
-    this.completeRest();
+    clearInterval(this.restTimerInterval);
+    this.isRestTimerActive = false;
+
+    // Iniciar contagem regressiva antes de continuar
+    this.startCountdown(3);
   }
 
   completeRest() {
     clearInterval(this.restTimerInterval);
     this.isRestTimerActive = false;
+
+    // Tocar som de finalização do descanso
+    this.playSound('start');
+
     this.moveToNextRepetition();
+
+    // Reativar o temporizador e o toque para volta
+    this.startMainTimer();
+    this.activateTouchToLap();
   }
 
   // Métodos para gerenciar séries
@@ -234,7 +339,13 @@ export class PoolWorkoutPage implements OnInit, OnDestroy {
       return;
     }
 
+    // Parar o timer da volta
+    this.stopMainTimer();
+
     const currentSet = this.workout.sets[this.currentSetIndex];
+
+    // Calcular ritmo (pace)
+    const pace = this.calculatePace(this.lapTimer, currentSet.distance);
 
     // Registrar o tempo da volta
     this.laps.push({
@@ -242,75 +353,119 @@ export class PoolWorkoutPage implements OnInit, OnDestroy {
       setIndex: this.currentSetIndex,
       repetition: this.currentRepetition,
       distance: currentSet.distance,
-      time: this.mainTimer
+      time: this.lapTimer,
+      pace: pace
     });
 
     // Atualizar a distância completada
     this.completedDistance += currentSet.distance;
 
-    // Verificar se a repetição atual foi concluída
+    // Resetar o timer da volta
+    this.lapTimer = 0;
+
+    // Verificar se completou todas as repetições do exercício atual
     if (this.currentRepetition >= currentSet.repetitions) {
-      // Série concluída
+      // Completou todas as repetições, mover para o próximo exercício
       this.completedSets++;
-      this.moveToNextSet();
+
+      if (this.currentSetIndex < this.workout.sets.length - 1) {
+        // Se não for o último exercício, iniciar descanso
+        this.startRestTimer();
+      } else {
+        // Completou o último exercício
+        this.currentSetIndex++;
+        this.showToast('Treino completo!');
+      }
     } else {
-      // Iniciar tempo de descanso entre repetições
-      this.currentRepetition++;
-      this.startRestTimer();
+      // Ainda tem repetições do exercício atual
+      if (currentSet.restTime > 0) {
+        // Iniciar descanso entre repetições
+        this.startRestTimer();
+      } else {
+        // Sem descanso, continuar para a próxima repetição
+        this.currentRepetition++;
+        this.startMainTimer();
+      }
     }
   }
 
   moveToNextRepetition() {
-    // Preparar para a próxima repetição
-    if (this.currentSetIndex < this.workout.sets.length) {
-      this.showToast(`Prepare-se para a repetição ${this.currentRepetition}`);
-    }
-  }
+    const currentSet = this.workout.sets[this.currentSetIndex];
 
-  moveToNextSet() {
-    this.currentSetIndex++;
-    this.currentRepetition = 1;
+    if (this.currentRepetition >= currentSet.repetitions) {
+      // Terminou todas as repetições, ir para o próximo exercício
+      this.currentSetIndex++;
+      this.currentRepetition = 1;
 
-    if (this.currentSetIndex < this.workout.sets.length) {
-      // Ainda há mais séries
-      this.showToast(`Próxima série: ${this.workout.sets[this.currentSetIndex].exerciseName}`);
+      if (this.currentSetIndex < this.workout.sets.length) {
+        this.showToast(`Próximo exercício: ${this.workout.sets[this.currentSetIndex].exerciseName}`);
+      }
     } else {
-      // Treino concluído
-      this.showToast('Todas as séries concluídas! Parabéns!');
+      // Ir para a próxima repetição do exercício atual
+      this.currentRepetition++;
+      this.showToast(`Repetição ${this.currentRepetition} de ${currentSet.repetitions}`);
     }
   }
 
   skipCurrentSet() {
+    if (this.currentSetIndex >= this.workout.sets.length) {
+      return;
+    }
+
+    // Perguntar confirmação
     this.presentAlert(
-      'Pular Série',
-      'Tem certeza que deseja pular esta série?',
+      'Pular Exercício',
+      'Tem certeza que deseja pular este exercício?',
       [
         {
-          text: 'Não',
+          text: 'Cancelar',
           role: 'cancel'
         },
         {
-          text: 'Sim',
+          text: 'Pular',
           handler: () => {
-            this.moveToNextSet();
+            // Incrementar o índice e resetar a repetição
+            this.currentSetIndex++;
+            this.currentRepetition = 1;
+            this.stopMainTimer();
+
+            if (this.currentSetIndex < this.workout.sets.length) {
+              this.resetMainTimer();
+              this.showToast(`Exercício pulado. Próximo: ${this.workout.sets[this.currentSetIndex].exerciseName}`);
+            } else {
+              this.showToast('Treino completo!');
+            }
           }
         }
       ]
     );
   }
 
-  // Métodos de finalização
+  // Calcular ritmo (pace)
+  calculatePace(timeInSeconds: number, distanceInMeters: number): string {
+    if (distanceInMeters === 0) return '-';
+
+    // Calcular o ritmo por 100m
+    const pacePerHundredMeters = (timeInSeconds * 100) / distanceInMeters;
+
+    // Converter para minutos e segundos
+    const minutes = Math.floor(pacePerHundredMeters / 60);
+    const seconds = Math.floor(pacePerHundredMeters % 60);
+
+    return `${minutes}:${seconds.toString().padStart(2, '0')}/100m`;
+  }
+
   showFinishConfirm() {
     this.presentAlert(
       'Finalizar Treino',
-      'Tem certeza que deseja finalizar o treino agora?',
+      'Tem certeza que deseja finalizar o treino agora? Progresso não completado será perdido.',
       [
         {
-          text: 'Não',
+          text: 'Cancelar',
           role: 'cancel'
         },
         {
-          text: 'Sim',
+          text: 'Finalizar',
           handler: () => {
             this.finishWorkout();
           }
@@ -320,35 +475,55 @@ export class PoolWorkoutPage implements OnInit, OnDestroy {
   }
 
   finishWorkout() {
-    // Parar todos os temporizadores
+    // Parar todos os timers
     this.clearTimers();
 
-    // No caso real, aqui enviaria os dados do treino para o backend
-    // e redirecaria para a página de resumo com o ID do treino
+    // Aqui seria feito o salvamento do treino
+    this.showToast('Treino finalizado com sucesso!');
 
-    // Simular um ID de treino finalizado
-    const workoutId = Date.now().toString();
-
-    this.router.navigate(['/pupil/pool-workout-summary', workoutId]);
+    // Voltar para o dashboard
+    setTimeout(() => {
+      this.router.navigate(['/pupil/dashboard']);
+    }, 1000);
   }
 
-  // Métodos utilitários
   getCompletionPercentage(): number {
-    if (this.workout.sets.length === 0) return 0;
-    return Math.floor((this.completedSets / this.workout.sets.length) * 100);
+    const totalSets = this.workout.sets.reduce((total, set) => total + set.repetitions, 0);
+    const completedReps = this.laps.length;
+    return Math.floor((completedReps / totalSets) * 100);
   }
 
   formatTime(seconds: number): string {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  }
+
+  // Tocar sons
+  playSound(type: 'beep' | 'start' | 'end') {
+    switch (type) {
+      case 'beep':
+        this.beepSound.currentTime = 0;
+        this.beepSound.play();
+        break;
+      case 'start':
+        this.startSound.currentTime = 0;
+        this.startSound.play();
+        break;
+      case 'end':
+        this.endSound.currentTime = 0;
+        this.endSound.play();
+        break;
+    }
   }
 
   async showToast(message: string) {
     const toast = await this.toastController.create({
-      message,
+      message: message,
       duration: 2000,
-      position: 'middle'
+      position: 'top',
+      color: 'dark',
+      cssClass: 'custom-toast'
     });
     toast.present();
   }
@@ -357,7 +532,8 @@ export class PoolWorkoutPage implements OnInit, OnDestroy {
     const alert = await this.alertController.create({
       header,
       message,
-      buttons
+      buttons,
+      cssClass: 'custom-alert'
     });
     await alert.present();
   }

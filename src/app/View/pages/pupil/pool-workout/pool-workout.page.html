@@ -1,4 +1,4 @@
-<ion-header>
+<ion-header class="ion-no-border">
   <ion-toolbar>
     <ion-buttons slot="start">
       <ion-back-button defaultHref="/pupil/dashboard"></ion-back-button>
@@ -7,158 +7,161 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
-  <div class="workout-container">
+<ion-content class="ion-padding">
+  <!-- Elemento de áudio para reprodução de sons -->
+  <audio #audioBeep></audio>
+
+  <!-- Tela de contagem regressiva -->
+  <div class="countdown-overlay" *ngIf="isCountdownActive">
+    <div class="countdown-container">
+      <div class="countdown-number">{{countdownTimer}}</div>
+      <div class="countdown-text">Prepare-se...</div>
+    </div>
+  </div>
+
+  <!-- Tela de toque para volta -->
+  <div class="touch-to-lap-overlay" *ngIf="isTouchToLapActive && isMainTimerRunning">
+    <div class="lap-timer">{{formatTime(lapTimer)}}</div>
+    <div class="current-exercise">
+      <h2>{{workout.sets[currentSetIndex].exerciseName}}</h2>
+      <p>Repetição {{currentRepetition}}/{{workout.sets[currentSetIndex].repetitions}}</p>
+      <p>{{workout.sets[currentSetIndex].distance}}m</p>
+    </div>
+    <div class="tap-instruction">
+      <ion-icon name="hand-right-outline"></ion-icon>
+      <p>Toque na tela ao completar a volta</p>
+    </div>
+  </div>
+
+  <!-- Tela de descanso -->
+  <div class="rest-overlay" *ngIf="isRestTimerActive">
+    <div class="rest-container">
+      <h2>Descanso</h2>
+      <div class="rest-timer">{{formatTime(restTimer)}}</div>
+      <div class="rest-progress-container">
+        <div class="rest-progress" [style.width.%]="(restTimer / initialRestTime) * 100"></div>
+      </div>
+      <div class="next-exercise">
+        <p>Próximo: {{workout.sets[currentSetIndex].exerciseName}}</p>
+        <p>Repetição {{currentRepetition}}/{{workout.sets[currentSetIndex].repetitions}}</p>
+      </div>
+      <div class="rest-controls">
+        <ion-button color="primary" (click)="skipRest()">
+          <ion-icon name="play-skip-forward-outline" slot="start"></ion-icon>
+          Pular
+        </ion-button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Conteúdo principal (visível quando não estiver em modo de toque ou contagem) -->
+  <div class="main-content" *ngIf="!isTouchToLapActive || !isMainTimerRunning">
     <!-- Cabeçalho do treino -->
-    <ion-card class="header-card">
-      <ion-card-header>
-        <ion-card-title>{{ workout.name }}</ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        <div class="personal-info">
-          <ion-icon name="person-outline"></ion-icon>
-          <span>Personal: {{ workout.personalName }}</span>
-        </div>
-      </ion-card-content>
-    </ion-card>
+    <div class="workout-header">
+      <h1>{{workout.name}}</h1>
+      <p>Personal: {{workout.personalName}}</p>
+    </div>
 
-    <!-- Temporizador principal -->
-    <ion-card class="timer-card">
-      <ion-card-header>
-        <ion-card-title>Tempo de Treino</ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        <div class="timer-display">{{ formatTime(mainTimer) }}</div>
+    <!-- Informações do treino atual -->
+    <div class="workout-info-card" *ngIf="currentSetIndex < workout.sets.length && !isCountdownActive">
+      <div class="exercise-header">
+        <h2>Exercício Atual</h2>
+      </div>
+      <div class="exercise-details">
+        <div class="exercise-name">
+          <ion-icon name="water-outline"></ion-icon>
+          <h3>{{workout.sets[currentSetIndex].exerciseName}}</h3>
+        </div>
+        <div class="exercise-stats">
+          <div class="stat">
+            <ion-icon name="repeat-outline"></ion-icon>
+            <span>{{currentRepetition}}/{{workout.sets[currentSetIndex].repetitions}}</span>
+            <small>Repetições</small>
+          </div>
+          <div class="stat">
+            <ion-icon name="resize-outline"></ion-icon>
+            <span>{{workout.sets[currentSetIndex].distance}}m</span>
+            <small>Distância</small>
+          </div>
+          <div class="stat" *ngIf="workout.sets[currentSetIndex].restTime > 0">
+            <ion-icon name="timer-outline"></ion-icon>
+            <span>{{workout.sets[currentSetIndex].restTime}}s</span>
+            <small>Descanso</small>
+          </div>
+        </div>
+        <div class="exercise-notes" *ngIf="workout.sets[currentSetIndex].notes">
+          <ion-icon name="information-circle-outline"></ion-icon>
+          <p>{{workout.sets[currentSetIndex].notes}}</p>
+        </div>
+      </div>
+
+      <!-- Timer principal visível quando não está em modo de toque -->
+      <div class="main-timer-display">
+        <div class="time-value">{{formatTime(mainTimer)}}</div>
         <div class="timer-controls">
-          <ion-button color="light" (click)="resetMainTimer()">
-            <ion-icon name="refresh-outline"></ion-icon>
-          </ion-button>
-          <ion-button [color]="isMainTimerRunning ? 'danger' : 'primary'" (click)="toggleMainTimer()">
-            <ion-icon [name]="isMainTimerRunning ? 'pause-outline' : 'play-outline'"></ion-icon>
+          <ion-button expand="full" (click)="toggleMainTimer()">
+            <ion-icon [name]="isMainTimerRunning ? 'pause-outline' : 'play-outline'" slot="start"></ion-icon>
+            {{isMainTimerRunning ? 'Pausar' : 'Iniciar'}}
           </ion-button>
         </div>
-      </ion-card-content>
-    </ion-card>
+      </div>
+    </div>
 
-    <!-- Progresso do treino -->
-    <ion-card class="progress-card">
-      <ion-card-header>
-        <ion-card-title>Progresso</ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        <div class="completion">
-          <span>Completado</span>
-          <span>{{ getCompletionPercentage() }}%</span>
+    <!-- Progresso geral do treino -->
+    <div class="progress-card">
+      <h2>Progresso</h2>
+      <div class="progress-bar-container">
+        <div class="progress-bar" [style.width.%]="getCompletionPercentage()"></div>
+        <div class="progress-text">{{getCompletionPercentage()}}%</div>
+      </div>
+      <div class="progress-stats">
+        <div class="stat">
+          <div class="value">{{laps.length}}</div>
+          <div class="label">Voltas Completadas</div>
         </div>
-        <ion-progress-bar [value]="getCompletionPercentage() / 100"></ion-progress-bar>
-        <div class="stats">
-          <div class="stat">
-            <div class="number">{{ completedSets }}/{{ workout.sets.length }}</div>
-            <div class="label">Séries</div>
-          </div>
-          <div class="stat">
-            <div class="number">{{ completedDistance }}m</div>
-            <div class="label">Distância</div>
-          </div>
-          <div class="stat">
-            <div class="number">{{ workout.totalDistance - completedDistance }}m</div>
-            <div class="label">Restante</div>
-          </div>
+        <div class="stat">
+          <div class="value">{{completedDistance}}m</div>
+          <div class="label">Distância</div>
         </div>
-      </ion-card-content>
-    </ion-card>
-
-    <!-- Série atual -->
-    <ion-card class="set-card" *ngIf="currentSetIndex < workout.sets.length && !isRestTimerActive">
-      <ion-card-header>
-        <ion-card-title>Exercício Atual</ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        <div class="exercise-info">
-          <h2>{{ workout.sets[currentSetIndex].exerciseName }}</h2>
-
-          <div class="exercise-detail">
-            <div class="label">Repetição</div>
-            <div class="value">{{ currentRepetition }}/{{ workout.sets[currentSetIndex].repetitions }}</div>
-          </div>
-
-          <div class="exercise-detail">
-            <div class="label">Distância</div>
-            <div class="value">{{ workout.sets[currentSetIndex].distance }}m</div>
-          </div>
-
-          <div class="exercise-detail" *ngIf="workout.sets[currentSetIndex].notes">
-            <div class="label">Observações</div>
-            <div class="value">{{ workout.sets[currentSetIndex].notes }}</div>
-          </div>
+        <div class="stat">
+          <div class="value">{{formatTime(mainTimer)}}</div>
+          <div class="label">Tempo Total</div>
         </div>
-
-        <ion-button expand="block" color="primary" class="lap-button" (click)="recordLap()">
-          <ion-icon name="stopwatch-outline" slot="start"></ion-icon>
-          Registrar Volta
-        </ion-button>
-
-        <ion-button expand="block" color="medium" class="lap-button" (click)="skipCurrentSet()">
-          <ion-icon name="play-skip-forward-outline" slot="start"></ion-icon>
-          Pular Série
-        </ion-button>
-      </ion-card-content>
-    </ion-card>
-
-    <!-- Temporizador de descanso -->
-    <ion-card class="rest-card" *ngIf="isRestTimerActive">
-      <ion-card-header>
-        <ion-card-title>Descanso</ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        <div class="rest-timer">{{ formatTime(restTimer) }}</div>
-        <ion-progress-bar [value]="restTimer / initialRestTime" class="rest-progress"></ion-progress-bar>
-        <div class="rest-message">
-          Próxima: {{ workout.sets[currentSetIndex].exerciseName }} - Repetição {{ currentRepetition }}
-        </div>
-        <ion-button expand="block" color="primary" class="skip-button" (click)="skipRest()">
-          <ion-icon name="play-skip-forward-outline" slot="start"></ion-icon>
-          Pular Descanso
-        </ion-button>
-      </ion-card-content>
-    </ion-card>
+      </div>
+    </div>
 
     <!-- Treino completo -->
-    <ion-card class="complete-card" *ngIf="currentSetIndex >= workout.sets.length">
-      <ion-card-header>
-        <ion-card-title>Treino Concluído!</ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        <div class="complete-message">
-          Você completou todas as séries do treino. Parabéns!
-        </div>
-        <ion-button expand="block" color="success" class="complete-button" (click)="finishWorkout()">
-          <ion-icon name="checkmark-circle-outline" slot="start"></ion-icon>
-          Finalizar Treino
-        </ion-button>
-      </ion-card-content>
-    </ion-card>
+    <div class="workout-complete" *ngIf="currentSetIndex >= workout.sets.length">
+      <ion-icon name="checkmark-circle-outline" class="complete-icon"></ion-icon>
+      <h2>Treino Concluído!</h2>
+      <p>Parabéns por completar o treino!</p>
+      <ion-button expand="block" (click)="finishWorkout()">
+        <ion-icon name="checkmark-outline" slot="start"></ion-icon>
+        Finalizar
+      </ion-button>
+    </div>
 
     <!-- Histórico de voltas -->
-    <ion-card class="laps-card" *ngIf="laps.length > 0">
-      <ion-card-header>
-        <ion-card-title>Voltas Registradas</ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        <div class="laps-list">
-          <div class="lap-item" *ngFor="let lap of laps.slice().reverse()">
-            <div class="lap-info">
-              <div class="exercise">{{ lap.exerciseName }}</div>
-              <div class="details">Série {{ lap.setIndex + 1 }}, Repetição {{ lap.repetition }}, {{ lap.distance }}m</div>
-            </div>
-            <div class="lap-time">{{ formatTime(lap.time) }}</div>
+    <div class="laps-history" *ngIf="laps.length > 0">
+      <h2>Voltas Completadas</h2>
+      <div class="laps-list">
+        <div class="lap-item" *ngFor="let lap of laps.slice().reverse()">
+          <div class="lap-exercise">
+            <ion-icon name="water-outline"></ion-icon>
+            <span>{{lap.exerciseName}}</span>
+          </div>
+          <div class="lap-details">
+            <div class="lap-rep">Rep {{lap.repetition}}</div>
+            <div class="lap-distance">{{lap.distance}}m</div>
+            <div class="lap-time">{{formatTime(lap.time)}}</div>
+            <div class="lap-pace" *ngIf="lap.pace">{{lap.pace}}</div>
           </div>
         </div>
-      </ion-card-content>
-    </ion-card>
+      </div>
+    </div>
 
     <!-- Botão de finalização -->
-    <ion-button expand="block" color="danger" (click)="showFinishConfirm()" *ngIf="currentSetIndex < workout.sets.length">
+    <ion-button expand="block" class="finish-button" (click)="showFinishConfirm()" *ngIf="currentSetIndex < workout.sets.length">
       <ion-icon name="flag-outline" slot="start"></ion-icon>
       Finalizar Treino
     </ion-button>

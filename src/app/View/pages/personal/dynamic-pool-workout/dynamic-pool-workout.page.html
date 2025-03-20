@@ -67,6 +67,16 @@
         <div class="set-timer" *ngIf="isMainTimerRunning && currentSetIndex === i">
           <div class="timer-value">{{formatTime(currentTimerValue)}}</div>
         </div>
+
+        <!-- Lista de voltas concluídas (se houver) -->
+        <div class="laps-list" *ngIf="set.laps && set.laps.length > 0">
+          <h3>Voltas concluídas</h3>
+          <div class="lap-item" *ngFor="let lap of set.laps; let lapIndex = index">
+            <div class="lap-number">{{lapIndex + 1}}</div>
+            <div class="lap-time">{{formatTime(lap.time)}}</div>
+            <div class="lap-pace" *ngIf="lap.pace">{{lap.pace}}</div>
+          </div>
+        </div>
       </div>
     </swiper-slide>
 
@@ -75,6 +85,8 @@
       <div class="slide-container summary">
         <ion-icon name="checkmark-circle-outline" class="summary-icon"></ion-icon>
         <h1>Treino Completo!</h1>
+
+        <!-- Estatísticas gerais -->
         <div class="summary-stats">
           <div class="stat-item">
             <div class="stat-value">{{calculateTotalDistance()}}m</div>
@@ -89,9 +101,40 @@
             <div class="stat-label">Tempo Total</div>
           </div>
         </div>
-        <ion-button expand="block" (click)="finishWorkout()">
-          Finalizar Treino
-        </ion-button>
+
+        <!-- Detalhes por exercício -->
+        <div class="workout-details">
+          <h2>Detalhes do Treino</h2>
+
+          <div class="exercise-details" *ngFor="let exercise of workoutSummary.exercises">
+            <h3>{{exercise.name}}</h3>
+            <div class="exercise-sets">
+              <div class="set-row header">
+                <div class="set-cell">Rep.</div>
+                <div class="set-cell">Tempo</div>
+                <div class="set-cell">Ritmo</div>
+              </div>
+              <div class="set-row" *ngFor="let set of exercise.sets">
+                <div class="set-cell">{{set.repetition}}</div>
+                <div class="set-cell">{{formatTime(set.time)}}</div>
+                <div class="set-cell">{{set.pace}}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Botões de ação -->
+        <div class="summary-actions">
+          <ion-button expand="block" (click)="shareWorkoutSummary()" color="secondary">
+            <ion-icon name="share-social-outline" slot="start"></ion-icon>
+            Compartilhar Relatório
+          </ion-button>
+
+          <ion-button expand="block" (click)="finishWorkout()" color="primary">
+            <ion-icon name="checkmark-outline" slot="start"></ion-icon>
+            Finalizar Treino
+          </ion-button>
+        </div>
       </div>
     </swiper-slide>
   </swiper-container>
