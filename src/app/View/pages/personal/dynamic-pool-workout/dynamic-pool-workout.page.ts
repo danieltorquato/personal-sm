@@ -15,6 +15,7 @@ interface WorkoutSet {
   completedRepetitions?: number;
   laps: Lap[];
   partialDistances?: number[]; // Distâncias parciais configuradas pelo professor
+  equipment?: string[]; // Equipamentos necessários para o exercício
 }
 
 interface Lap {
@@ -223,6 +224,20 @@ export class DynamicPoolWorkoutPage implements OnInit, AfterViewInit, OnDestroy 
   // Adiciona variável para controlar o registro de voltas parciais
   currentLapDistance: number = 0; // Distância acumulada das voltas parciais
 
+  // Equipamentos de natação
+  equipmentOptions = [
+    { value: 'prancha', label: 'Prancha' },
+    { value: 'pullbuoy', label: 'Pullbuoy' },
+    { value: 'nadadeiras', label: 'Nadadeiras' },
+    { value: 'palmar', label: 'Palmar' },
+    { value: 'snorkel', label: 'Snorkel' },
+    { value: 'tubo', label: 'Tubo Flutuador' },
+    { value: 'elastico', label: 'Elástico' },
+    { value: 'caneleira', label: 'Caneleira' },
+    { value: 'paraquedas', label: 'Paraquedas de Resistência' },
+    { value: 'oculos', label: 'Óculos de Natação' }
+  ];
+
   constructor(
     private router: Router,
     private alertController: AlertController,
@@ -234,9 +249,23 @@ export class DynamicPoolWorkoutPage implements OnInit, AfterViewInit, OnDestroy 
   ngOnInit() {
     register();
     this.preloadSounds();
+    this.initWorkout();
 
-    // Criar um novo treino fictício ao invés de carregar o treino salvo
-    this.createFictitiousWorkout();
+    // Criar exemplo de equipamentos para os exercícios
+    for (let i = 0; i < this.workout.sets.length; i++) {
+      // Verificar se o exercício já tem equipamento definido
+      if (!this.workout.sets[i].equipment) {
+        // Adicionar equipamentos de exemplo
+        this.workout.sets[i].equipment = [];
+
+        // Adicionar exemplo para alguns exercícios
+        if (i % 2 === 0) {
+          this.workout.sets[i].equipment.push('prancha');
+        } else if (i % 3 === 0) {
+          this.workout.sets[i].equipment.push('pullbuoy');
+        }
+      }
+    }
   }
 
   ngAfterViewInit() {
@@ -518,27 +547,30 @@ export class DynamicPoolWorkoutPage implements OnInit, AfterViewInit, OnDestroy 
     this.workoutSummary.totalTime = this.totalWorkoutTime;
   }
 
-  // --- TIMER DE DESCANSO ---
-  startRestTimer(resetTimer: boolean = true) {
-    this.isRestTimerActive = true;
-
-    // Pausar o timer principal durante o descanso
-    this.pauseMainTimer();
-
-    if (resetTimer) {
-    this.restTimerValue = this.currentSet.restTime;
+  // --- CONTROLE DO TIMER DE DESCANSO ---
+  startRestTimer() {
+    // Carregar a próxima série para mostrar como próximo exercício
+    let nextSetInfo = null;
+    if (this.currentSetIndex < this.workout.sets.length - 1) {
+      nextSetInfo = { ...this.workout.sets[this.currentSetIndex + 1] };
     }
 
-    // Reproduzir som de início de descanso
+    // Configurar o timer de descanso
+    this.isRestTimerActive = true;
+    this.isRestTimerPaused = false;
+    this.restTimerValue = this.currentSet.restTime;
+
+    // Tocar som de início de descanso
     this.playSound('rest-start');
 
+    // Iniciar a contagem regressiva
     this.restTimerInterval = setInterval(() => {
-        this.restTimerValue--;
+      this.restTimerValue--;
 
       // Tocar beep nos últimos 3 segundos
-        if (this.restTimerValue <= 3 && this.restTimerValue > 0) {
-          this.playSound('countdown');
-        }
+      if (this.restTimerValue <= 3 && this.restTimerValue > 0) {
+        this.playSound('countdown');
+      }
 
       if (this.restTimerValue <= 0) {
         this.endRestTimer();
@@ -546,32 +578,34 @@ export class DynamicPoolWorkoutPage implements OnInit, AfterViewInit, OnDestroy 
     }, 1000);
   }
 
-  toggleRestTimer() {
-    if (this.isRestTimerActive) {
-    if (this.isRestTimerPaused) {
-      // Retomar o timer
-      this.isRestTimerPaused = false;
-      this.restTimerInterval = setInterval(() => {
-          this.restTimerValue--;
-
-          // Tocar beep nos últimos 3 segundos
-          if (this.restTimerValue <= 3 && this.restTimerValue > 0) {
-            this.playSound('countdown');
-          }
-
-          if (this.restTimerValue <= 0) {
-          this.endRestTimer();
-        }
-      }, 1000);
-    } else {
+  pauseRestTimer() {
+    if (this.isRestTimerActive && !this.isRestTimerPaused) {
       // Pausar o timer
       this.isRestTimerPaused = true;
       clearInterval(this.restTimerInterval);
-      }
     }
   }
 
-  skipRest() {
+  resumeRestTimer() {
+    if (this.isRestTimerActive && this.isRestTimerPaused) {
+      // Retomar o timer
+      this.isRestTimerPaused = false;
+      this.restTimerInterval = setInterval(() => {
+        this.restTimerValue--;
+
+        // Tocar beep nos últimos 3 segundos
+        if (this.restTimerValue <= 3 && this.restTimerValue > 0) {
+          this.playSound('countdown');
+        }
+
+        if (this.restTimerValue <= 0) {
+          this.endRestTimer();
+        }
+      }, 1000);
+    }
+  }
+
+  skipRestTimer() {
     this.endRestTimer();
   }
 
@@ -821,7 +855,7 @@ export class DynamicPoolWorkoutPage implements OnInit, AfterViewInit, OnDestroy 
           this.restTimerValue = state.restTimerValue;
 
           if (!this.isRestTimerPaused) {
-            this.startRestTimer(false); // Não resetar o timer
+            this.startRestTimer();
           }
         }
 
@@ -1085,7 +1119,8 @@ export class DynamicPoolWorkoutPage implements OnInit, AfterViewInit, OnDestroy 
           notes: 'Foco na técnica de respiração bilateral e braçada longa',
           completedRepetitions: 1,
           laps: [] as Lap[],
-          partialDistances: [25, 50, 75]
+          partialDistances: [25, 50, 75],
+          equipment: ['toledo', 'prancha']
         },
         {
           exercise: 'batida-pernas',
@@ -1095,7 +1130,8 @@ export class DynamicPoolWorkoutPage implements OnInit, AfterViewInit, OnDestroy 
           notes: 'Manter pernas esticadas, usar prancha grande',
           completedRepetitions: 1,
           laps: [] as Lap[],
-          partialDistances: [25]
+          partialDistances: [25],
+          equipment: ['prancha']
         },
         {
           exercise: 'borboleta',
@@ -1105,7 +1141,8 @@ export class DynamicPoolWorkoutPage implements OnInit, AfterViewInit, OnDestroy 
           notes: 'Foco na ondulação do corpo e na sincronização dos braços',
           completedRepetitions: 1,
           laps: [] as Lap[],
-          partialDistances: [25]
+          partialDistances: [25],
+          equipment: ['toledo']
         },
         {
           exercise: 'pullbuoy',
@@ -1115,7 +1152,8 @@ export class DynamicPoolWorkoutPage implements OnInit, AfterViewInit, OnDestroy 
           notes: 'Concentre-se na pegada e puxada subaquática',
           completedRepetitions: 1,
           laps: [] as Lap[],
-          partialDistances: [25, 50]
+          partialDistances: [25, 50],
+          equipment: ['toledo']
         },
         {
           exercise: 'medley',
@@ -1125,12 +1163,31 @@ export class DynamicPoolWorkoutPage implements OnInit, AfterViewInit, OnDestroy 
           notes: 'Sequência: borboleta, costas, peito, livre - 25m cada',
           completedRepetitions: 1,
           laps: [] as Lap[],
-          partialDistances: [25, 50, 75]
+          partialDistances: [25, 50, 75],
+          equipment: ['toledo']
         }
       ]
     };
 
     // Inicializar o treino com os novos dados
     this.initWorkout();
+  }
+
+  // Função para obter os rótulos dos equipamentos a partir dos valores
+  getEquipmentLabels(equipmentValues: string[]): string {
+    if (!equipmentValues || equipmentValues.length === 0) {
+      return 'Nenhum';
+    }
+
+    return equipmentValues.map(value => {
+      const equipment = this.equipmentOptions.find(e => e.value === value);
+      return equipment ? equipment.label : value;
+    }).join(', ');
+  }
+
+  // Função para obter um único equipamento (para mensagem durante descanso)
+  getEquipmentLabel(equipmentValue: string): string {
+    const equipment = this.equipmentOptions.find(e => e.value === equipmentValue);
+    return equipment ? equipment.label : equipmentValue;
   }
 }

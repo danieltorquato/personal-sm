@@ -29,14 +29,25 @@
       </div>
       <div class="next-exercise">
         <p>Próximo: {{getExerciseDisplayName(workout.sets[currentSetIndex].exercise)}}</p>
-        <p>Repetição {{currentRepetition}}/{{workout.sets[currentSetIndex].repetitions}}</p>
+
+        <!-- Instrução de equipamento -->
+        <div class="equipment-instruction" *ngIf="currentSet.equipment && currentSet.equipment.length > 0">
+          <p *ngFor="let equip of currentSet.equipment">
+            Coloque ou use seu/sua <strong>{{ getEquipmentLabel(equip) }}</strong>
+          </p>
+        </div>
       </div>
+
       <div class="rest-timer-controls">
-        <ion-button color="primary" (click)="toggleRestTimer()">
-          <ion-icon [name]="isRestTimerPaused ? 'play-outline' : 'pause-outline'" slot="start"></ion-icon>
-          {{isRestTimerPaused ? 'Retomar' : 'Pausar'}}
+        <ion-button (click)="pauseRestTimer()" *ngIf="!isRestTimerPaused">
+          <ion-icon name="pause-outline" slot="start"></ion-icon>
+          Pausar
         </ion-button>
-        <ion-button color="primary" (click)="skipRest()">
+        <ion-button (click)="resumeRestTimer()" *ngIf="isRestTimerPaused">
+          <ion-icon name="play-outline" slot="start"></ion-icon>
+          Continuar
+        </ion-button>
+        <ion-button (click)="skipRestTimer()" color="secondary">
           <ion-icon name="play-skip-forward-outline" slot="start"></ion-icon>
           Pular
         </ion-button>
