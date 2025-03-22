@@ -24,7 +24,7 @@ import {
   IonList,
   IonItem,
   IonLabel,
-  IonAvatar
+  IonAvatar,
 } from "@ionic/angular/standalone";
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { Router } from '@angular/router';
@@ -45,7 +45,11 @@ import {
   addOutline,
   cameraOutline,
   calendarOutline,
-  arrowForward
+  arrowForward,
+  trendingUp,
+  chatbubbles,
+  book,
+  add
 } from 'ionicons/icons';
 import { addIcons } from 'ionicons';
 
@@ -87,7 +91,7 @@ import { addIcons } from 'ionicons';
 export class HomePupilPage implements OnInit {
 
   constructor(private router: Router) {
-    addIcons({notificationsOutline, barbell, trendingUpOutline, chatbubblesOutline, bookOutline, fitnessOutline, repeatOutline, checkmarkCircleOutline, arrowForward, chatboxEllipsesOutline, addOutline, cameraOutline, calendarOutline, playOutline, arrowForwardOutline, barbellOutline});
+    addIcons({notificationsOutline,barbell,trendingUp,chatbubbles,book,fitnessOutline,repeatOutline,checkmarkCircleOutline,arrowForward,chatboxEllipsesOutline,add,chatbubblesOutline,cameraOutline,calendarOutline,trendingUpOutline,bookOutline,addOutline,playOutline,arrowForwardOutline,barbellOutline});
   }
 
   ngOnInit() {

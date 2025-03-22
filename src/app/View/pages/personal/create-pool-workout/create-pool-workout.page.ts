@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, NgZone, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule, AlertController, ToastController, ItemReorderEventDetail } from '@ionic/angular';
@@ -19,6 +19,9 @@ interface WorkoutSet {
   restTime: number;
   notes?: string;
   partialDistances?: number[]; // Distâncias parciais pré-definidas pelo professor
+  variation?: string; // Variação do exercício
+  equipment?: string[]; // Equipamentos necessários (array de strings)
+  intensity?: string; // Intensidade do exercício (A1, A2, A3)
 }
 
 interface WorkoutTemplate {
@@ -118,7 +121,9 @@ export class CreatePoolWorkoutPage implements OnInit {
     distance: 50,
     repetitions: 2,
     restTime: 30,
-    partialDistances: [25] // Por padrão, metade da distância
+    partialDistances: [25], // Por padrão, metade da distância
+    intensity: 'A1', // Intensidade padrão
+    equipment: [] // Array vazio de equipamentos
   };
 
   // Modal de seleção de alunos
@@ -136,37 +141,88 @@ export class CreatePoolWorkoutPage implements OnInit {
   // Reordenação
   isReorderActive: boolean = false;
 
+  // Opções de intensidade
+  intensityOptions = [
+    { value: 'A1', label: 'A1 - Baixa' },
+    { value: 'A2', label: 'A2 - Média' },
+    { value: 'A3', label: 'A3 - Alta' }
+  ];
+
+  // Equipamentos de natação
+  equipmentOptions = [
+    { value: 'prancha', label: 'Prancha' },
+    { value: 'pullbuoy', label: 'Pullbuoy' },
+    { value: 'nadadeiras', label: 'Nadadeiras' },
+    { value: 'palmar', label: 'Palmar' },
+    { value: 'snorkel', label: 'Snorkel' },
+    { value: 'tubo', label: 'Tubo Flutuador' },
+    { value: 'elastico', label: 'Elástico' },
+    { value: 'caneleira', label: 'Caneleira' },
+    { value: 'paraquedas', label: 'Paraquedas de Resistência' },
+    { value: 'oculos', label: 'Óculos de Natação' }
+  ];
+
   constructor(
     private router: Router,
-    private alertController: AlertController
-  ) {}
+    private alertController: AlertController,
+    private toastController: ToastController,
+    private zone: NgZone,
+    private changeDetector: ChangeDetectorRef
+  ) {
+    // Garantir que os modais comecem fechados
+    this.showSetModal = false;
+    this.showStudentSelector = false;
+  }
 
   ngOnInit() {
     this.filteredStudents = [...this.allStudents];
+    // Forçar detecção de mudanças para garantir estado inicial correto
+    this.changeDetector.detectChanges();
   }
 
   // --- Métodos para gerenciar séries ---
   addNewSet() {
+    // Configurar valores iniciais
     this.editingSetIndex = -1;
     this.currentSet = {
-      exercise: 'nado-livre',
+      exercise: '',
       distance: 50,
       repetitions: 2,
       restTime: 30,
-      partialDistances: [25] // Por padrão, metade da distância
+      partialDistances: [25], // Por padrão, metade da distância
+      intensity: 'A1',
+      equipment: []
     };
-    this.showSetModal = true;
+
+    // Garantir que o modal abra com a detecção de mudanças
+    this.zone.run(() => {
+      this.showSetModal = true;
+      this.changeDetector.detectChanges();
+      console.log('Modal de série aberto:', this.showSetModal);
+    });
   }
 
   editSet(index: number) {
+    // Configurar valores para edição
     this.editingSetIndex = index;
     this.currentSet = {...this.workoutTemplate.sets[index]};
-    this.showSetModal = true;
+
+    // Garantir que o modal abra com a detecção de mudanças
+    this.zone.run(() => {
+      this.showSetModal = true;
+      this.changeDetector.detectChanges();
+      console.log('Modal de edição de série aberto:', this.showSetModal);
+    });
   }
 
   saveSet() {
     // Validar dados básicos
-    if (this.currentSet.distance <= 0 || this.currentSet.repetitions <= 0) {
+    if (!this.currentSet.exercise || this.currentSet.distance <= 0 || this.currentSet.repetitions <= 0) {
+      this.presentAlert(
+        'Dados Incompletos',
+        'Por favor, selecione um exercício e defina valores válidos para distância e repetições.',
+        [{ text: 'OK' }]
+      );
       return;
     }
 
@@ -187,12 +243,22 @@ export class CreatePoolWorkoutPage implements OnInit {
       this.workoutTemplate.sets[this.editingSetIndex] = { ...this.currentSet };
     }
 
-    // Fechar o modal
-    this.showSetModal = false;
+    // Fechar o modal usando NgZone e forçar detecção de mudanças
+    this.zone.run(() => {
+      this.showSetModal = false;
+      this.changeDetector.detectChanges();
+
+      // Dar feedback de confirmação
+      const acao = this.editingSetIndex === -1 ? 'adicionada' : 'atualizada';
+      this.presentToast(`Série ${acao} com sucesso!`);
+    });
   }
 
   cancelSetEdit() {
-    this.showSetModal = false;
+    this.zone.run(() => {
+      this.showSetModal = false;
+      this.changeDetector.detectChanges();
+    });
   }
 
   removeSet(index: number) {
@@ -214,82 +280,84 @@ export class CreatePoolWorkoutPage implements OnInit {
     );
   }
 
-  // --- Métodos para seleção de exercícios ---
-  selectExercise(exerciseValue: string) {
-    this.currentSet.exercise = exerciseValue;
-  }
-
-  getExerciseDisplayName(exerciseValue: string): string {
-    const exercise = this.exerciseLibrary.find(e => e.value === exerciseValue);
-    return exercise ? exercise.name : exerciseValue;
-  }
-
-  getExerciseImage(exerciseValue: string): string {
-    const exercise = this.exerciseLibrary.find(e => e.value === exerciseValue);
-    return exercise ? exercise.image : 'assets/exercises/default.jpg';
-  }
-
-  getExerciseStyleClass(exerciseValue: string): string {
-    const exercise = this.exerciseLibrary.find(e => e.value === exerciseValue);
-    return exercise ? exercise.value : '';
-  }
-
-  // --- Métodos para estatísticas do treino ---
-  calculateTotalDistance(): number {
-    return this.workoutTemplate.sets.reduce((total, set) => {
-      return total + (set.distance * set.repetitions);
-    }, 0);
-  }
-
-  calculateTotalSets(): number {
-    return this.workoutTemplate.sets.reduce((total, set) => {
-      return total + set.repetitions;
-    }, 0);
-  }
-
-  // --- Métodos para reordenação ---
-  toggleReorder() {
-    this.isReorderActive = !this.isReorderActive;
-  }
-
-  reorderSets(event: any) {
-    const itemToMove = this.workoutTemplate.sets.splice(event.detail.from, 1)[0];
-    this.workoutTemplate.sets.splice(event.detail.to, 0, itemToMove);
-    event.detail.complete();
-  }
-
   // --- Métodos para seleção de alunos ---
   openStudentSelection() {
+    // Resetar filtro e garantir que todos os alunos estejam visíveis
+    this.filteredStudents = [...this.allStudents];
+
     // Atualizar o estado de seleção baseado nos alunos já selecionados
     this.filteredStudents.forEach(student => {
       student.selected = this.workoutTemplate.students.includes(student.id);
     });
+
     this.showStudentSelector = true;
+    this.changeDetector.detectChanges();
   }
 
   closeStudentSelection() {
     this.showStudentSelector = false;
+    this.changeDetector.detectChanges();
   }
 
   confirmStudentSelection() {
-    // Atualizar IDs dos alunos selecionados
-    this.workoutTemplate.students = this.filteredStudents
-      .filter(student => student.selected)
-      .map(student => student.id);
+    console.log('confirmStudentSelection chamado, modal visível:', this.showStudentSelector);
 
-    // Atualizar a lista de alunos selecionados
-    this.selectedStudents = this.filteredStudents
-      .filter(student => student.selected)
-      .map(student => ({...student}));
+    // Usar NgZone para garantir que as mudanças são detectadas pelo Angular
+    this.zone.run(() => {
+      // Atualizar IDs dos alunos selecionados
+      this.workoutTemplate.students = this.filteredStudents
+        .filter(student => student.selected)
+        .map(student => student.id);
 
-    this.showStudentSelector = false;
+      // Atualizar a lista de alunos selecionados
+      this.selectedStudents = this.filteredStudents
+        .filter(student => student.selected)
+        .map(student => ({...student}));
+
+      console.log('Alunos selecionados:', this.selectedStudents.length);
+
+      // Fechar o modal e forçar detecção de mudanças
+      this.showStudentSelector = false;
+      this.changeDetector.detectChanges();
+
+      console.log('Modal fechado:', !this.showStudentSelector);
+
+      // Adicionar feedback visual de sucesso usando toast
+      const count = this.selectedStudents.length;
+      this.presentToast(
+        `${count} ${count === 1 ? 'aluno selecionado' : 'alunos selecionados'} com sucesso.`
+      );
+
+      // Verificar se todos os alunos selecionados foram corretamente adicionados
+      this.debugSelectedStudents();
+    });
+  }
+
+  // Método para depuração
+  debugSelectedStudents() {
+    console.log('Estado atual:');
+    console.log('- IDs de alunos no template:', this.workoutTemplate.students);
+    console.log('- Alunos selecionados:', this.selectedStudents.map(s => s.name));
+    console.log('- Modal visível:', this.showStudentSelector);
   }
 
   filterStudents(event: any) {
     const query = event.detail.value.toLowerCase();
-    this.filteredStudents = this.allStudents.filter(student => {
-      return student.name.toLowerCase().includes(query) ||
-             student.category.toLowerCase().includes(query);
+
+    // Se o campo de busca estiver vazio, mostrar todos os alunos
+    if (!query.trim()) {
+      this.filteredStudents = [...this.allStudents];
+    } else {
+      // Filtrar mantendo estado de seleção
+      this.filteredStudents = this.allStudents.filter(student => {
+        return student.name.toLowerCase().includes(query) ||
+               student.category.toLowerCase().includes(query);
+      });
+    }
+
+    // Garantir que o estado de seleção seja preservado
+    this.filteredStudents.forEach(student => {
+      student.selected = this.workoutTemplate.students.includes(student.id);
     });
   }
 
@@ -356,31 +424,7 @@ export class CreatePoolWorkoutPage implements OnInit {
     await alert.present();
   }
 
-  // Métodos para gerenciar distâncias parciais
-  addCustomPartialDistance(distanceStr: string) {
-    if (!distanceStr || isNaN(Number(distanceStr))) {
-      return; // Validação simples
-    }
-
-    const distance = Number(distanceStr);
-    if (distance <= 0 || distance >= this.currentSet.distance) {
-      // Distância inválida (deve ser positiva e menor que a distância total)
-      return;
-    }
-
-    // Inicializar o array se não existir
-    if (!this.currentSet.partialDistances) {
-      this.currentSet.partialDistances = [];
-    }
-
-    // Adicionar a distância se não estiver já adicionada
-    if (!this.hasPartialDistance(distance)) {
-      this.currentSet.partialDistances.push(distance);
-      this.currentSet.partialDistances.sort((a, b) => a - b);
-    }
-  }
-
-  // Verificar se uma distância está nas distâncias parciais
+  // --- Métodos para gerenciar distâncias parciais ---
   hasPartialDistance(distance: number): boolean {
     if (!this.currentSet.partialDistances) {
       return false;
@@ -388,18 +432,20 @@ export class CreatePoolWorkoutPage implements OnInit {
     return this.currentSet.partialDistances.includes(distance);
   }
 
-  // Alternar a inclusão de uma distância nas parciais
   togglePartialDistance(distance: number, event: any): void {
     if (!this.currentSet.partialDistances) {
       this.currentSet.partialDistances = [];
     }
 
     if (event.detail.checked) {
+      // Adicionar distância se não existir
       if (!this.hasPartialDistance(distance)) {
         this.currentSet.partialDistances.push(distance);
+        // Ordenar após adicionar
         this.currentSet.partialDistances.sort((a, b) => a - b);
       }
     } else {
+      // Remover distância
       const index = this.currentSet.partialDistances.indexOf(distance);
       if (index !== -1) {
         this.currentSet.partialDistances.splice(index, 1);
@@ -407,17 +453,17 @@ export class CreatePoolWorkoutPage implements OnInit {
     }
   }
 
-  // Verificar se todas as distâncias múltiplas estão configuradas
   hasPartialDistancesMultiple(interval: number): boolean {
-    if (!this.currentSet.partialDistances) {
+    if (!this.currentSet.partialDistances || this.currentSet.partialDistances.length === 0) {
       return false;
     }
 
     const expectedDistances = this.getMultipleDistances(interval);
-    return expectedDistances.every(d => this.hasPartialDistance(d));
+    return expectedDistances.every(dist =>
+      this.currentSet.partialDistances!.includes(dist)
+    );
   }
 
-  // Configurar múltiplas distâncias parciais
   setPartialDistancesMultiple(interval: number, event: any): void {
     if (!this.currentSet.partialDistances) {
       this.currentSet.partialDistances = [];
@@ -426,46 +472,155 @@ export class CreatePoolWorkoutPage implements OnInit {
     const distances = this.getMultipleDistances(interval);
 
     if (event.detail.checked) {
-      // Adicionar todas as distâncias
-      distances.forEach(d => {
-        if (!this.hasPartialDistance(d)) {
-          this.currentSet.partialDistances!.push(d);
+      // Adicionar todas as distâncias múltiplas
+      distances.forEach(dist => {
+        if (!this.hasPartialDistance(dist)) {
+          this.currentSet.partialDistances!.push(dist);
         }
       });
     } else {
-      // Remover todas as distâncias
-      distances.forEach(d => {
-        const index = this.currentSet.partialDistances!.indexOf(d);
-        if (index !== -1) {
-          this.currentSet.partialDistances!.splice(index, 1);
-        }
-      });
+      // Remover todas as distâncias múltiplas
+      this.currentSet.partialDistances = this.currentSet.partialDistances.filter(
+        dist => !distances.includes(dist)
+      );
     }
 
-    // Ordenar as distâncias
-    if (this.currentSet.partialDistances.length > 0) {
+    // Ordenar após modificar
+    if (this.currentSet.partialDistances) {
       this.currentSet.partialDistances.sort((a, b) => a - b);
     }
   }
 
-  // Obter distâncias em intervalos regulares
   getMultipleDistances(interval: number): number[] {
-    const result: number[] = [];
+    const distances: number[] = [];
     for (let i = interval; i < this.currentSet.distance; i += interval) {
-      result.push(i);
+      distances.push(i);
     }
-    return result;
+    return distances;
   }
 
-  // Obter as distâncias parciais configuradas
   getCurrentPartialDistances(): number[] {
-    return this.currentSet.partialDistances || [];
+    return this.currentSet.partialDistances ?
+      [...this.currentSet.partialDistances].sort((a, b) => a - b) :
+      [];
   }
 
-  // Remover uma distância parcial
   removePartialDistance(index: number): void {
-    if (this.currentSet.partialDistances && this.currentSet.partialDistances.length > index) {
+    if (this.currentSet.partialDistances && index >= 0 && index < this.currentSet.partialDistances.length) {
       this.currentSet.partialDistances.splice(index, 1);
     }
+  }
+
+  addCustomPartialDistance(distanceStr: string): void {
+    if (!distanceStr) return;
+
+    const distance = parseInt(distanceStr, 10);
+    if (isNaN(distance) || distance <= 0 || distance >= this.currentSet.distance) {
+      // Mostrar erro
+      this.presentAlert(
+        'Distância Inválida',
+        'A distância parcial deve ser maior que zero e menor que a distância total do exercício.',
+        [{ text: 'OK' }]
+      );
+      return;
+    }
+
+    if (!this.currentSet.partialDistances) {
+      this.currentSet.partialDistances = [];
+    }
+
+    if (!this.hasPartialDistance(distance)) {
+      this.currentSet.partialDistances.push(distance);
+      this.currentSet.partialDistances.sort((a, b) => a - b);
+    }
+  }
+
+  async presentToast(message: string) {
+    const toast = await this.toastController.create({
+      message: message,
+      duration: 2000,
+      position: 'bottom',
+      color: 'success',
+      cssClass: 'toast-success'
+    });
+    await toast.present();
+  }
+
+  // Função para forçar reinício do modal em caso de problemas
+  resetStudentSelectionModal() {
+    this.zone.run(() => {
+      // Fechar modal
+      this.showStudentSelector = false;
+      this.changeDetector.detectChanges();
+
+      // Aguardar um pouco e reabrir se necessário
+      setTimeout(() => {
+        this.presentToast(
+          "Modal de seleção reiniciado. Tente selecionar os alunos novamente."
+        );
+      }, 500);
+    });
+  }
+
+  // Toggle a seleção do aluno quando clicar no item inteiro
+  toggleStudentSelection(student: Student) {
+    student.selected = !student.selected;
+    this.changeDetector.detectChanges();
+  }
+
+  // Função para obter os rótulos dos equipamentos a partir dos valores
+  getEquipmentLabels(equipmentValues: string[]): string {
+    if (!equipmentValues || equipmentValues.length === 0) {
+      return 'Nenhum';
+    }
+
+    return equipmentValues.map(value => {
+      const equipment = this.equipmentOptions.find(e => e.value === value);
+      return equipment ? equipment.label : value;
+    }).join(', ');
+  }
+
+  getExerciseDisplayName(exerciseValue: string): string {
+    const exercise = this.exerciseLibrary.find(e => e.value === exerciseValue);
+    return exercise ? exercise.name : exerciseValue;
+  }
+
+  getExerciseImage(exerciseValue: string): string {
+    const exercise = this.exerciseLibrary.find(e => e.value === exerciseValue);
+    return exercise ? exercise.image : 'assets/exercises/default.jpg';
+  }
+
+  getExerciseStyleClass(exerciseValue: string): string {
+    const exercise = this.exerciseLibrary.find(e => e.value === exerciseValue);
+    return exercise ? exercise.value : '';
+  }
+
+  // --- Métodos para estatísticas do treino ---
+  calculateTotalDistance(): number {
+    return this.workoutTemplate.sets.reduce((total, set) => {
+      return total + (set.distance * set.repetitions);
+    }, 0);
+  }
+
+  calculateTotalSets(): number {
+    return this.workoutTemplate.sets.reduce((total, set) => {
+      return total + set.repetitions;
+    }, 0);
+  }
+
+  getIntensityLabel(intensityValue: string): string {
+    const intensity = this.intensityOptions.find(i => i.value === intensityValue);
+    return intensity ? intensity.label : intensityValue;
+  }
+
+  // --- Métodos para reordenação ---
+  toggleReorder() {
+    this.isReorderActive = !this.isReorderActive;
+  }
+
+  reorderSets(event: any) {
+    const itemToMove = this.workoutTemplate.sets.splice(event.detail.from, 1)[0];
+    this.workoutTemplate.sets.splice(event.detail.to, 0, itemToMove);
+    event.detail.complete();
   }
 }

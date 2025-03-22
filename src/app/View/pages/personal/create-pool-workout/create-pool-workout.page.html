@@ -1,12 +1,17 @@
-<ion-header>
-  <ion-toolbar color="transparent">
+<ion-header class="ion-no-border">
+  <ion-toolbar color="dark">
     <ion-buttons slot="start">
       <ion-back-button defaultHref="/personal/dashboard"></ion-back-button>
     </ion-buttons>
+    <ion-title>
+      <div class="header-title">
+        <span>Criar Treino</span>
+      </div>
+    </ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
+<ion-content [scrollY]="true" class="ion-padding-bottom">
   <!-- Cabeçalho com gradiente -->
   <div class="header-container">
     <h1>Criar Treino de Natação</h1>
@@ -102,7 +107,14 @@
               <ion-item [class]="getExerciseStyleClass(set.exercise)" class="set-item">
                 <ion-label>
                   <h2>{{ getExerciseDisplayName(set.exercise) }}</h2>
-                  <p>{{ set.distance }}m x {{ set.repetitions }} repetições • Descanso: {{ formatTime(set.restTime) }}</p>
+                  <p>
+                    {{ set.distance }}m x {{ set.repetitions }} repetições • Descanso: {{ formatTime(set.restTime) }}
+                    <span *ngIf="set.intensity" class="intensity-tag intensity-{{set.intensity.toLowerCase()}}">
+                      {{ getIntensityLabel(set.intensity) }}
+                    </span>
+                  </p>
+                  <p *ngIf="set.variation" class="variation-text">Variação: {{ set.variation }}</p>
+                  <p *ngIf="set.equipment && set.equipment.length > 0" class="equipment-text">Equipamentos: {{ getEquipmentLabels(set.equipment) }}</p>
                 </ion-label>
                 <ion-note slot="end">Total: {{ set.distance * set.repetitions }}m</ion-note>
                 <ion-reorder slot="end" *ngIf="isReorderActive"></ion-reorder>
@@ -163,7 +175,7 @@
     </div>
 
     <!-- Botão de salvar -->
-    <ion-button class="save-button" (click)="saveWorkoutTemplate()" [disabled]="!isWorkoutValid()">
+    <ion-button class="save-button" expand="block" (click)="saveWorkoutTemplate()" [disabled]="!isWorkoutValid()">
       <ion-icon name="save-outline" slot="start"></ion-icon>
       Salvar Treino
     </ion-button>
@@ -171,122 +183,140 @@
 </ion-content>
 
 <!-- Modal para adicionar/editar série -->
-<div class="modal-overlay" [hidden]="!showSetModal">
-  <div class="modal-container">
-    <h2>{{ editingSetIndex === -1 ? 'Adicionar Série' : 'Editar Série' }}</h2>
+<div class="modal-overlay" *ngIf="showSetModal">
+  <div class="modal-container dark-modal">
+    <div class="modal-header">
+      <h2>{{ editingSetIndex === -1 ? 'Adicionar Série' : 'Editar Série' }}</h2>
+      <ion-button fill="clear" (click)="cancelSetEdit()">
+        <ion-icon name="close-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </div>
 
-    <div class="exercise-selector">
+    <div class="set-form-content">
       <h3>Selecione o Exercício</h3>
-      <div class="exercise-grid">
-        <div *ngFor="let exercise of exerciseLibrary"
-             class="exercise-card {{ exercise.value }} {{ currentSet.exercise === exercise.value ? 'selected' : '' }}"
-             (click)="selectExercise(exercise.value)">
-          <div class="exercise-image" [style.background-image]="'url(' + exercise.image + ')'"></div>
-          <div class="exercise-info">
-            <h3>{{ exercise.name }}</h3>
+      <div class="exercise-selection">
+        <ion-item>
+          <ion-label position="stacked">Exercício</ion-label>
+          <ion-select [(ngModel)]="currentSet.exercise" placeholder="Selecione um exercício" interface="popover">
+            <ion-select-option *ngFor="let exercise of exerciseLibrary" [value]="exercise.value">
+              {{ exercise.name }}
+            </ion-select-option>
+          </ion-select>
+        </ion-item>
+      </div>
+
+      <div class="set-details">
+        <ion-item>
+          <ion-label position="stacked">Distância (metros)</ion-label>
+          <ion-input type="number" [(ngModel)]="currentSet.distance" min="25" step="25"></ion-input>
+        </ion-item>
+
+        <ion-item>
+          <ion-label position="stacked">Repetições</ion-label>
+          <ion-input type="number" [(ngModel)]="currentSet.repetitions" min="1"></ion-input>
+        </ion-item>
+
+        <ion-item>
+          <ion-label position="stacked">Tempo de Descanso (segundos)</ion-label>
+          <ion-input type="number" [(ngModel)]="currentSet.restTime" min="0"></ion-input>
+        </ion-item>
+
+        <!-- Intensidade -->
+        <ion-item>
+          <ion-label>Intensidade</ion-label>
+          <ion-segment [(ngModel)]="currentSet.intensity" class="intensity-segment">
+            <ion-segment-button value="A1" class="intensity-a1">
+              <ion-label>A1</ion-label>
+            </ion-segment-button>
+            <ion-segment-button value="A2" class="intensity-a2">
+              <ion-label>A2</ion-label>
+            </ion-segment-button>
+            <ion-segment-button value="A3" class="intensity-a3">
+              <ion-label>A3</ion-label>
+            </ion-segment-button>
+          </ion-segment>
+        </ion-item>
+
+        <!-- Campo para equipamentos -->
+        <ion-item>
+          <ion-label position="stacked">Equipamentos</ion-label>
+          <ion-select [(ngModel)]="currentSet.equipment" multiple="true" placeholder="Selecione os equipamentos" class="equipment-select">
+            <ion-select-option *ngFor="let equip of equipmentOptions" [value]="equip.value">{{ equip.label }}</ion-select-option>
+          </ion-select>
+        </ion-item>
+
+        <!-- Seção para configurar distâncias parciais -->
+        <div class="partial-distances-section">
+          <ion-item class="section-header">
+            <ion-label>Marcação de Tempos Parciais</ion-label>
+          </ion-item>
+
+          <ion-item *ngIf="currentSet.distance >= 50">
+            <ion-label>Marcar metade da distância ({{currentSet.distance / 2}}m)</ion-label>
+            <ion-checkbox slot="end" [checked]="hasPartialDistance(currentSet.distance / 2)" (ionChange)="togglePartialDistance(currentSet.distance / 2, $event)"></ion-checkbox>
+          </ion-item>
+
+          <div class="partial-chips" *ngIf="currentSet.partialDistances && currentSet.partialDistances.length > 0">
+            <p>Distâncias parciais:</p>
+            <ion-chip *ngFor="let distance of getCurrentPartialDistances(); let i = index" outline>
+              <ion-label>{{distance}}m</ion-label>
+              <ion-icon name="close-circle" (click)="removePartialDistance(i)"></ion-icon>
+            </ion-chip>
           </div>
         </div>
       </div>
-    </div>
 
-    <div class="set-details">
-      <ion-item class="form-item">
-        <ion-label position="floating">Distância (metros)</ion-label>
-        <ion-input type="number" [(ngModel)]="currentSet.distance" min="25" step="25"></ion-input>
-      </ion-item>
-
-      <ion-item class="form-item">
-        <ion-label position="floating">Repetições</ion-label>
-        <ion-input type="number" [(ngModel)]="currentSet.repetitions" min="1"></ion-input>
-      </ion-item>
-
-      <ion-item class="form-item">
-        <ion-label position="floating">Tempo de Descanso (segundos)</ion-label>
-        <ion-input type="number" [(ngModel)]="currentSet.restTime" min="0"></ion-input>
-      </ion-item>
-
-      <!-- Nova seção para configurar distâncias parciais -->
-      <div class="partial-distances-section">
-        <ion-item class="form-item section-header">
-          <ion-label>Marcação de Tempos Parciais</ion-label>
-          <ion-note slot="end">Defina pontos para marcação durante a volta</ion-note>
-        </ion-item>
-
-        <ion-item class="form-item" *ngIf="currentSet.distance >= 50">
-          <ion-label>Marcar metade da distância ({{currentSet.distance / 2}}m)</ion-label>
-          <ion-checkbox slot="end" [checked]="hasPartialDistance(currentSet.distance / 2)" (ionChange)="togglePartialDistance(currentSet.distance / 2, $event)"></ion-checkbox>
-        </ion-item>
-
-        <ion-item class="form-item" *ngIf="currentSet.distance >= 75">
-          <ion-label>Marcar a cada 25m</ion-label>
-          <ion-checkbox slot="end" [checked]="hasPartialDistancesMultiple(25)" (ionChange)="setPartialDistancesMultiple(25, $event)"></ion-checkbox>
-        </ion-item>
-
-        <ion-item class="form-item" *ngIf="currentSet.distance >= 100">
-          <ion-label>Marcar a cada 50m</ion-label>
-          <ion-checkbox slot="end" [checked]="hasPartialDistancesMultiple(50)" (ionChange)="setPartialDistancesMultiple(50, $event)"></ion-checkbox>
-        </ion-item>
-
-        <div class="partial-chips" *ngIf="currentSet.partialDistances && currentSet.partialDistances.length > 0">
-          <p>Distâncias parciais configuradas:</p>
-          <ion-chip *ngFor="let distance of getCurrentPartialDistances(); let i = index" color="primary" outline>
-            <ion-label>{{distance}}m</ion-label>
-            <ion-icon name="close-circle" (click)="removePartialDistance(i)"></ion-icon>
-          </ion-chip>
-        </div>
-
-        <ion-item class="form-item">
-          <ion-label position="floating">Adicionar distância parcial personalizada (m)</ion-label>
-          <ion-input #customDistance type="number" min="1" [max]="currentSet.distance - 1" step="5"></ion-input>
-          <ion-button slot="end" fill="clear" (click)="addCustomPartialDistance(customDistance.value?.toString() || ''); customDistance.value = ''">
-            <ion-icon name="add-circle" slot="icon-only"></ion-icon>
-          </ion-button>
-        </ion-item>
+      <div class="button-group">
+        <ion-button fill="outline" (click)="cancelSetEdit()">Cancelar</ion-button>
+        <ion-button (click)="saveSet()">Salvar</ion-button>
       </div>
-
-      <ion-item class="form-item">
-        <ion-label position="floating">Observações (opcional)</ion-label>
-        <ion-textarea [(ngModel)]="currentSet.notes" rows="2"></ion-textarea>
-      </ion-item>
-    </div>
-
-    <div class="button-group">
-      <ion-button fill="outline" (click)="cancelSetEdit()">Cancelar</ion-button>
-      <ion-button (click)="saveSet()">Salvar</ion-button>
     </div>
   </div>
 </div>
 
 <!-- Modal de seleção de alunos -->
-<div class="modal-overlay" [hidden]="!showStudentSelector">
-  <div class="modal-container">
-    <h2>Selecionar Alunos</h2>
-
-    <ion-searchbar (ionInput)="filterStudents($event)" placeholder="Buscar alunos"></ion-searchbar>
-
-    <ion-list lines="full">
-      <ion-item *ngFor="let student of filteredStudents">
-        <ion-avatar slot="start">
-          <img [src]="student.avatar" alt="{{student.name}}">
-        </ion-avatar>
-        <ion-label>
-          <h3>{{student.name}}</h3>
-          <p>{{student.category}}</p>
-        </ion-label>
-        <ion-checkbox slot="end" [(ngModel)]="student.selected"></ion-checkbox>
-      </ion-item>
-    </ion-list>
-
-    <div class="empty-state" *ngIf="filteredStudents.length === 0">
-      <ion-icon name="search-outline"></ion-icon>
-      <p>Nenhum aluno encontrado</p>
+<div class="modal-overlay" *ngIf="showStudentSelector">
+  <div class="modal-container dark-modal">
+    <div class="modal-header">
+      <h2>Selecionar Alunos</h2>
+      <div class="header-buttons">
+        <ion-button fill="clear" size="small" (click)="resetStudentSelectionModal()" title="Reiniciar seleção">
+          <ion-icon name="refresh-outline" slot="icon-only"></ion-icon>
+        </ion-button>
+        <ion-button fill="clear" (click)="closeStudentSelection()">
+          <ion-icon name="close-outline" slot="icon-only"></ion-icon>
+        </ion-button>
+      </div>
     </div>
 
-    <div class="button-group">
-      <ion-button fill="outline" (click)="closeStudentSelection()">Cancelar</ion-button>
-      <ion-button (click)="confirmStudentSelection()">
-        Confirmar ({{ getSelectedStudentsCount() }})
-      </ion-button>
+    <div class="set-form-content">
+      <ion-searchbar (ionInput)="filterStudents($event)" placeholder="Buscar alunos" color="dark"></ion-searchbar>
+
+      <ion-list lines="full" class="student-list">
+        <ion-item *ngFor="let student of filteredStudents" button (click)="toggleStudentSelection(student)" class="student-item" [class.selected]="student.selected">
+          <ion-avatar slot="start">
+            <img [src]="student.avatar" alt="{{student.name}}">
+          </ion-avatar>
+          <ion-label>
+            <h3>{{student.name}}</h3>
+            <p>{{student.category}}</p>
+          </ion-label>
+          <ion-checkbox slot="end" [(ngModel)]="student.selected" (click)="$event.stopPropagation()"></ion-checkbox>
+        </ion-item>
+      </ion-list>
+
+      <div class="empty-state" *ngIf="filteredStudents.length === 0">
+        <ion-icon name="search-outline"></ion-icon>
+        <p>Nenhum aluno encontrado</p>
+      </div>
+
+      <div class="button-group">
+        <ion-button fill="outline" (click)="closeStudentSelection()">Cancelar</ion-button>
+        <ion-button [disabled]="getSelectedStudentsCount() === 0" (click)="confirmStudentSelection()">
+          <ion-icon *ngIf="getSelectedStudentsCount() > 0" name="checkmark-circle-outline" slot="start"></ion-icon>
+          {{ getSelectedStudentsCount() === 0 ? 'Selecione Alunos' : 'Confirmar (' + getSelectedStudentsCount() + ')' }}
+        </ion-button>
+      </div>
     </div>
   </div>
 </div>
