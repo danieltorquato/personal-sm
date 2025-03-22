@@ -206,7 +206,6 @@ export class DynamicPoolWorkoutPage implements OnInit, AfterViewInit, OnDestroy 
   isRestTimerPaused: boolean = false;
   currentTimerValue: number = 0;
   restTimerValue: number = 0;
-  timerDeciseconds: number = 0; // Para décimos de segundo (0.1s)
   timerCentiseconds: number = 0; // Para centésimos de segundo (0.01s)
 
   // Timers de intervalo
@@ -343,7 +342,6 @@ export class DynamicPoolWorkoutPage implements OnInit, AfterViewInit, OnDestroy 
       if (!this.isCountdownActive) {
         // Sempre iniciar do zero
         this.currentTimerValue = 0;
-        this.timerDeciseconds = 0;
         this.timerCentiseconds = 0;
 
         // Iniciar contagem regressiva
@@ -359,7 +357,6 @@ export class DynamicPoolWorkoutPage implements OnInit, AfterViewInit, OnDestroy 
     if (!this.isCountdownActive) {
       // Sempre iniciar do zero
       this.currentTimerValue = 0;
-      this.timerDeciseconds = 0;
       this.timerCentiseconds = 0;
 
       this.startCountdown(() => {
@@ -369,20 +366,25 @@ export class DynamicPoolWorkoutPage implements OnInit, AfterViewInit, OnDestroy 
   }
 
   startMainTimerAfterCountdown() {
+    // Iniciar o cronômetro principal após o countdown
+    if (this.isCountdownActive) return; // Se estiver em contagem regressiva, não iniciar
+
+    // Zerar cronômetro antes de iniciar
+    this.currentTimerValue = 0;
+    this.timerCentiseconds = 0;
+
     this.isMainTimerRunning = true;
-    clearInterval(this.mainTimerInterval);
     this.mainTimerInterval = setInterval(() => {
-      this.timerCentiseconds += 1;
+      // Incrementar os centésimos
+      this.timerCentiseconds++;
+
+      // A cada 100 centésimos, incrementar 1 segundo
       if (this.timerCentiseconds >= 100) {
+        this.currentTimerValue++;
         this.timerCentiseconds = 0;
-        this.timerDeciseconds += 1;
-        if (this.timerDeciseconds >= 10) {
-          this.timerDeciseconds = 0;
-      this.currentTimerValue++;
-      this.totalWorkoutTime++;
-        }
+        this.totalWorkoutTime++; // Incrementar o tempo total do treino
       }
-    }, 10); // Intervalo de 10ms para centésimos de segundo
+    }, 10); // Intervalo de 10ms para incrementar centésimos
   }
 
   pauseMainTimer() {
@@ -397,7 +399,7 @@ export class DynamicPoolWorkoutPage implements OnInit, AfterViewInit, OnDestroy 
     const remainingDistance = this.currentSet.distance - this.currentLapDistance;
 
     // Salvar o tempo desta repetição com precisão de centésimos
-    const lapTimeMs = this.currentTimerValue * 1000 + this.timerDeciseconds * 100 + this.timerCentiseconds * 10;
+    const lapTimeMs = this.currentTimerValue * 1000 + this.timerCentiseconds * 10;
     const lapTime = lapTimeMs / 1000; // Converter para segundos com casas decimais
     const pace = this.calculatePace(lapTime, this.currentSet.distance);
 
@@ -440,6 +442,10 @@ export class DynamicPoolWorkoutPage implements OnInit, AfterViewInit, OnDestroy 
 
     // Parar o cronômetro
     this.pauseMainTimer();
+
+    // Zerar completamente o cronômetro
+    this.currentTimerValue = 0;
+    this.timerCentiseconds = 0;
 
     // Resetar a distância acumulada para a próxima repetição
     this.currentLapDistance = 0;
@@ -693,48 +699,36 @@ export class DynamicPoolWorkoutPage implements OnInit, AfterViewInit, OnDestroy 
     }, 0);
   }
 
-  formatTime(seconds: number, withMilliseconds: boolean = false): string {
-    if (!withMilliseconds) {
-      // Versão simples em minutos e segundos
-      const min = Math.floor(seconds / 60);
-      const sec = seconds % 60;
-
-      // Mostrar minutos apenas se necessário
-      if (min > 0) {
-        return `${min}:${sec.toString().padStart(2, '0')}`;
-      } else {
-        return sec.toString();
-      }
-    } else {
-      // Versão com centésimos para o timer ativo
+  formatTime(timeInSeconds: number): string {
+    // Para o timer ativo, vamos separar minutos, segundos e centésimos
+    if (Number.isInteger(timeInSeconds)) {
+      // É o timer principal ativo
       const min = Math.floor(this.currentTimerValue / 60);
       const sec = this.currentTimerValue % 60;
-      // Combinar décimos e centésimos em um valor de 2 dígitos (0-99)
-      const centiseconds = this.timerDeciseconds * 10 + this.timerCentiseconds;
 
-      // Formato M:SS:CC
-      if (min > 0) {
-        return `${min}:${sec.toString().padStart(2, '0')}:${centiseconds.toString().padStart(2, '0')}`;
-      } else {
-        // Sem minutos, mostrar apenas SS:CC
-        return `${sec.toString().padStart(2, '0')}:${centiseconds.toString().padStart(2, '0')}`;
-      }
+      // Formatar com os centésimos em movimento
+      return `${min}:${sec.toString().padStart(2, '0')}.${this.timerCentiseconds.toString().padStart(2, '0')}`;
+    } else {
+      // É um tempo salvo ou o tempo total (com precisão de décimos)
+      const timeMs = timeInSeconds * 1000;
+
+      const minutes = Math.floor(timeMs / 60000);
+      const seconds = Math.floor((timeMs % 60000) / 1000);
+      const centiseconds = Math.floor((timeMs % 1000) / 10);
+
+      return `${minutes}:${seconds.toString().padStart(2, '0')}.${centiseconds.toString().padStart(2, '0')}`;
     }
   }
 
-  // Formatar tempos de volta no mesmo padrão do cronômetro
   formatLapTime(timeInSeconds: number): string {
-    // Extrair minutos, segundos e centésimos
-    const min = Math.floor(timeInSeconds / 60);
-    const sec = Math.floor(timeInSeconds % 60);
-    const centiseconds = Math.floor((timeInSeconds * 100) % 100);
+    // Similar ao formatTime, mas específico para voltas
+    const timeMs = timeInSeconds * 1000;
 
-    // Formato M:SS:CC ou SS:CC
-    if (min > 0) {
-      return `${min}:${sec.toString().padStart(2, '0')}:${centiseconds.toString().padStart(2, '0')}`;
-    } else {
-      return `${sec.toString().padStart(2, '0')}:${centiseconds.toString().padStart(2, '0')}`;
-    }
+    const minutes = Math.floor(timeMs / 60000);
+    const seconds = Math.floor((timeMs % 60000) / 1000);
+    const centiseconds = Math.floor((timeMs % 1000) / 10);
+
+    return `${minutes}:${seconds.toString().padStart(2, '0')}.${centiseconds.toString().padStart(2, '0')}`;
   }
 
   createArray(size: number): any[] {
@@ -790,12 +784,7 @@ export class DynamicPoolWorkoutPage implements OnInit, AfterViewInit, OnDestroy 
       currentSet: this.currentSet,
       totalWorkoutTime: this.totalWorkoutTime,
       currentTimerValue: this.currentTimerValue,
-      timerDeciseconds: this.timerDeciseconds,
       timerCentiseconds: this.timerCentiseconds,
-      isMainTimerRunning: this.isMainTimerRunning,
-      isRestTimerActive: this.isRestTimerActive,
-      isRestTimerPaused: this.isRestTimerPaused,
-      restTimerValue: this.restTimerValue,
       workoutSummary: this.workoutSummary,
       isCountdownActive: this.isCountdownActive,
       countdownTimer: this.countdownTimer,
@@ -815,7 +804,6 @@ export class DynamicPoolWorkoutPage implements OnInit, AfterViewInit, OnDestroy 
         this.currentSet = state.currentSet;
         this.totalWorkoutTime = state.totalWorkoutTime;
         this.currentTimerValue = state.currentTimerValue;
-        this.timerDeciseconds = state.timerDeciseconds || 0;
         this.timerCentiseconds = state.timerCentiseconds || 0;
         this.workoutSummary = state.workoutSummary;
         this.isCountdownActive = state.isCountdownActive || false;
@@ -894,7 +882,7 @@ export class DynamicPoolWorkoutPage implements OnInit, AfterViewInit, OnDestroy 
     }
 
     // Registra o tempo parcial com precisão de centésimos
-    const lapTimeMs = this.currentTimerValue * 1000 + this.timerDeciseconds * 100 + this.timerCentiseconds * 10;
+    const lapTimeMs = this.currentTimerValue * 1000 + this.timerCentiseconds * 10;
     const lapTime = lapTimeMs / 1000; // Converter para segundos com casas decimais
     const pace = this.calculatePace(lapTime, partialDistance);
 
@@ -939,6 +927,10 @@ export class DynamicPoolWorkoutPage implements OnInit, AfterViewInit, OnDestroy 
 
       // Parar o cronômetro após completar
       this.pauseMainTimer();
+
+      // Zerar completamente o cronômetro
+      this.currentTimerValue = 0;
+      this.timerCentiseconds = 0;
 
       // Resetar para a próxima repetição
       this.currentLapDistance = 0;

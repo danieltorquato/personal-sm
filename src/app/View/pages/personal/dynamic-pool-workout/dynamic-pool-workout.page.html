@@ -93,8 +93,8 @@
           </div>
 
           <!-- Timer principal com centésimos -->
-          <div class="main-timer-display" *ngIf="currentSetIndex === i">
-            <div class="time-value digital-timer">{{formatTime(currentTimerValue, true)}}</div>
+          <div class="main-timer-display">
+            <div class="time-value digital-timer">{{formatTime(currentTimerValue)}}</div>
             <div class="timer-controls">
               <ion-button expand="full" (click)="toggleMainTimer()">
                 <ion-icon [name]="isMainTimerRunning ? 'pause-outline' : 'play-outline'" slot="start"></ion-icon>
