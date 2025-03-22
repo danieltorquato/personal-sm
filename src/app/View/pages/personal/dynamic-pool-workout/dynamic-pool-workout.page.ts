@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, ElementRef, CUSTOM_ELEMENTS_SCHEMA, AfterViewInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, CUSTOM_ELEMENTS_SCHEMA, AfterViewInit, OnDestroy } from '@angular/core';
 import { IonicSlides, AlertController, ToastController, ActionSheetController } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { AudioService } from '../../../components/audio-service/audio.service';
@@ -14,11 +14,14 @@ interface WorkoutSet {
   notes?: string;
   completedRepetitions?: number;
   laps: Lap[];
+  partialDistances?: number[]; // Distâncias parciais configuradas pelo professor
 }
 
 interface Lap {
   time: number;
   pace?: string;
+  distance?: number;  // Distância percorrida para esta volta (pode ser parcial)
+  isPartial?: boolean; // Indica se é uma marcação parcial
 }
 
 interface ExerciseInfo {
@@ -54,7 +57,7 @@ interface WorkoutSummary {
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
-export class DynamicPoolWorkoutPage implements OnInit, AfterViewInit {
+export class DynamicPoolWorkoutPage implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('slides') slides!: ElementRef;
   @ViewChild('audioPlayer') audioPlayer!: ElementRef;
 
@@ -62,7 +65,9 @@ export class DynamicPoolWorkoutPage implements OnInit, AfterViewInit {
   slideOpts = {
     initialSlide: 0,
     speed: 400,
-    allowTouchMove: false
+    allowTouchMove: false,
+    preventInteractionOnTransition: true,
+    autoHeight: true
   };
 
   // Biblioteca de exercícios
@@ -125,7 +130,8 @@ export class DynamicPoolWorkoutPage implements OnInit, AfterViewInit {
         restTime: 30,
         notes: 'Concentre-se na respiração bilateral',
         completedRepetitions: 1,
-        laps: [] as Lap[]
+        laps: [] as Lap[],
+        partialDistances: [25] // Adicionando distância parcial
       },
       {
         exercise: 'nado-costas',
@@ -134,7 +140,8 @@ export class DynamicPoolWorkoutPage implements OnInit, AfterViewInit {
         restTime: 45,
         notes: 'Mantenha o corpo alinhado na superfície',
         completedRepetitions: 1,
-        laps: [] as Lap[]
+        laps: [] as Lap[],
+        partialDistances: [25] // Adicionando distância parcial
       },
       {
         exercise: 'batida-pernas',
@@ -143,7 +150,8 @@ export class DynamicPoolWorkoutPage implements OnInit, AfterViewInit {
         restTime: 20,
         notes: 'Use a prancha e mantenha as pernas estendidas',
         completedRepetitions: 1,
-        laps: [] as Lap[]
+        laps: [] as Lap[],
+        partialDistances: [] // Sem distâncias parciais
       },
       {
         exercise: 'nado-peito',
@@ -151,7 +159,8 @@ export class DynamicPoolWorkoutPage implements OnInit, AfterViewInit {
         repetitions: 2,
         restTime: 40,
         completedRepetitions: 1,
-        laps: [] as Lap[]
+        laps: [] as Lap[],
+        partialDistances: [25] // Adicionando distância parcial
       },
       {
         exercise: 'pullbuoy',
@@ -160,7 +169,8 @@ export class DynamicPoolWorkoutPage implements OnInit, AfterViewInit {
         restTime: 30,
         notes: 'Foco na técnica de braçada e rotação de ombros',
         completedRepetitions: 1,
-        laps: [] as Lap[]
+        laps: [] as Lap[],
+        partialDistances: [25] // Adicionando distância parcial
       }
     ]
   };
@@ -174,7 +184,8 @@ export class DynamicPoolWorkoutPage implements OnInit, AfterViewInit {
     repetitions: 0,
     restTime: 0,
     completedRepetitions: 1,
-    laps: [] as Lap[]
+    laps: [] as Lap[],
+    partialDistances: [] // Adicionando campo faltante
   };
   totalWorkoutTime: number = 0;
   currentExercise: string = '';
@@ -195,10 +206,23 @@ export class DynamicPoolWorkoutPage implements OnInit, AfterViewInit {
   isRestTimerPaused: boolean = false;
   currentTimerValue: number = 0;
   restTimerValue: number = 0;
+  timerDeciseconds: number = 0; // Para décimos de segundo (0.1s)
+  timerCentiseconds: number = 0; // Para centésimos de segundo (0.01s)
 
   // Timers de intervalo
   mainTimerInterval: any;
   restTimerInterval: any;
+
+  // Estado adicional para armazenamento
+  private readonly WORKOUT_STATE_KEY = 'dynamic_pool_workout_state';
+
+  // Adicionando propriedades para contagem regressiva
+  isCountdownActive: boolean = false;
+  countdownTimer: number = 0;
+  countdownInterval: any;
+
+  // Adiciona variável para controlar o registro de voltas parciais
+  currentLapDistance: number = 0; // Distância acumulada das voltas parciais
 
   constructor(
     private router: Router,
@@ -209,16 +233,22 @@ export class DynamicPoolWorkoutPage implements OnInit, AfterViewInit {
   ) {}
 
   ngOnInit() {
-    // Registrar o componente Swiper
     register();
-    this.initWorkout();
     this.preloadSounds();
+
+    // Criar um novo treino fictício ao invés de carregar o treino salvo
+    this.createFictitiousWorkout();
   }
 
   ngAfterViewInit() {
     // Configurar o Swiper após a view ser inicializada
     const swiperEl = this.slides.nativeElement;
     swiperEl.swiper.allowTouchMove = false;
+
+    // Habilitar rolagem vertical dentro dos slides
+    swiperEl.swiper.params.touchMoveStopPropagation = false;
+    swiperEl.swiper.params.simulateTouch = false;
+    swiperEl.swiper.updateSize();
 
     // Adicionar eventos de listener do Swiper
     swiperEl.addEventListener('slidechange', () => {
@@ -270,57 +300,105 @@ export class DynamicPoolWorkoutPage implements OnInit, AfterViewInit {
   }
 
   // Navegação entre exercícios
-  async nextSet() {
+  async nextSet(): Promise<void> {
     if (this.currentSetIndex < this.workout.sets.length - 1) {
       this.pauseMainTimer();
       this.currentSetIndex++;
       this.currentSet = { ...this.workout.sets[this.currentSetIndex] };
       this.currentRepetition = this.currentSet.completedRepetitions || 1;
+      this.currentLapDistance = 0; // Resetar as distâncias parciais
+
+      // Zerar o timer ao mudar de exercício
+      this.currentTimerValue = 0;
 
       const swiperEl = this.slides.nativeElement;
       swiperEl.swiper.slideTo(this.currentSetIndex, 400);
     }
+    return;
   }
 
-  async previousSet() {
+  async previousSet(): Promise<void> {
     if (this.currentSetIndex > 0) {
       this.pauseMainTimer();
       this.currentSetIndex--;
       this.currentSet = { ...this.workout.sets[this.currentSetIndex] };
       this.currentRepetition = this.currentSet.completedRepetitions || 1;
+      this.currentLapDistance = 0; // Resetar as distâncias parciais
+
+      // Zerar o timer ao mudar de exercício
+      this.currentTimerValue = 0;
 
       const swiperEl = this.slides.nativeElement;
       swiperEl.swiper.slideTo(this.currentSetIndex, 400);
     }
+    return;
   }
 
   // --- TIMER PRINCIPAL ---
   toggleMainTimer() {
     if (this.isMainTimerRunning) {
+      // Ao pausar, apenas pausa - removendo a exibição das opções
       this.pauseMainTimer();
     } else {
-      this.startMainTimer();
+      if (!this.isCountdownActive) {
+        // Sempre iniciar do zero
+        this.currentTimerValue = 0;
+        this.timerDeciseconds = 0;
+        this.timerCentiseconds = 0;
+
+        // Iniciar contagem regressiva
+        this.startCountdown(() => {
+          // Começar o timer após a contagem
+          this.startMainTimerAfterCountdown();
+        });
+      }
     }
   }
 
   startMainTimer() {
+    if (!this.isCountdownActive) {
+      // Sempre iniciar do zero
+      this.currentTimerValue = 0;
+      this.timerDeciseconds = 0;
+      this.timerCentiseconds = 0;
+
+      this.startCountdown(() => {
+        this.startMainTimerAfterCountdown();
+      });
+    }
+  }
+
+  startMainTimerAfterCountdown() {
     this.isMainTimerRunning = true;
     clearInterval(this.mainTimerInterval);
     this.mainTimerInterval = setInterval(() => {
+      this.timerCentiseconds += 1;
+      if (this.timerCentiseconds >= 100) {
+        this.timerCentiseconds = 0;
+        this.timerDeciseconds += 1;
+        if (this.timerDeciseconds >= 10) {
+          this.timerDeciseconds = 0;
       this.currentTimerValue++;
       this.totalWorkoutTime++;
-    }, 1000);
+        }
+      }
+    }, 10); // Intervalo de 10ms para centésimos de segundo
   }
 
   pauseMainTimer() {
     this.isMainTimerRunning = false;
     clearInterval(this.mainTimerInterval);
+    // Não precisamos mais do método showTimerOptions já que agora zeramos o cronômetro
   }
 
   // --- CONTROLE DE REPETIÇÕES ---
   completeRepetition() {
-    // Salvar o tempo desta repetição
-    const lapTime = this.currentTimerValue;
+    // Calcula a distância restante (se houver parciais)
+    const remainingDistance = this.currentSet.distance - this.currentLapDistance;
+
+    // Salvar o tempo desta repetição com precisão de centésimos
+    const lapTimeMs = this.currentTimerValue * 1000 + this.timerDeciseconds * 100 + this.timerCentiseconds * 10;
+    const lapTime = lapTimeMs / 1000; // Converter para segundos com casas decimais
     const pace = this.calculatePace(lapTime, this.currentSet.distance);
 
     // Verificar se o array laps existe, se não, criar
@@ -328,14 +406,43 @@ export class DynamicPoolWorkoutPage implements OnInit, AfterViewInit {
       this.workout.sets[this.currentSetIndex].laps = [];
     }
 
-    // Adicionar a nova volta ao array de voltas
+    // Se houver distância restante e parciais registradas, registramos essa última parte
+    if (remainingDistance > 0 && this.currentLapDistance > 0) {
+      this.workout.sets[this.currentSetIndex].laps.push({
+        time: lapTime,
+        pace: this.calculatePace(lapTime, remainingDistance),
+        distance: remainingDistance,
+        isPartial: true
+      });
+    }
+
+    // Calcular a soma dos tempos se houver parciais
+    let totalTime = lapTime;
+    let lapsToConsider = [];
+
+    if (this.currentLapDistance > 0) {
+      // Filtra todas as parciais desta repetição
+      lapsToConsider = this.workout.sets[this.currentSetIndex].laps.filter(lap => lap.isPartial);
+      // Soma os tempos de todas as parciais
+      totalTime = lapsToConsider.reduce((sum, lap) => sum + lap.time, 0);
+    }
+
+    // Adicionar a volta completa (com o tempo total)
     this.workout.sets[this.currentSetIndex].laps.push({
-      time: lapTime,
-      pace: pace
+      time: totalTime,
+      pace: this.calculatePace(totalTime, this.currentSet.distance),
+      distance: this.currentSet.distance,
+      isPartial: false
     });
 
     // Atualizar o relatório do treino
-    this.updateWorkoutSummary(this.currentSetIndex, this.currentRepetition, lapTime, pace);
+    this.updateWorkoutSummary(this.currentSetIndex, this.currentRepetition, totalTime, this.calculatePace(totalTime, this.currentSet.distance));
+
+    // Parar o cronômetro
+    this.pauseMainTimer();
+
+    // Resetar a distância acumulada para a próxima repetição
+    this.currentLapDistance = 0;
 
     if (this.currentRepetition < this.currentSet.repetitions) {
       this.currentRepetition++;
@@ -345,12 +452,8 @@ export class DynamicPoolWorkoutPage implements OnInit, AfterViewInit {
       if (this.workout.sets[this.currentSetIndex]) {
         this.workout.sets[this.currentSetIndex].completedRepetitions = this.currentRepetition;
       }
-
-      // Resetar o timer para a próxima repetição
-      this.currentTimerValue = 0;
     } else {
       // Completou todas as repetições desta série
-      this.pauseMainTimer();
       this.presentToast('Série completa!');
 
       // Iniciar o descanso se houver tempo de descanso configurado
@@ -359,14 +462,11 @@ export class DynamicPoolWorkoutPage implements OnInit, AfterViewInit {
       } else if (this.currentSetIndex < this.workout.sets.length - 1) {
         // Se não tiver descanso e tiver próxima série, avançar
         this.nextSet();
-      } else {
-        // Se for a última série, ir para o resumo
-        this.goToSummary();
       }
     }
   }
 
-  // Calcular o ritmo (pace) em minutos por 100m
+  // Calcular o ritmo (pace) em minutos por 100m com precisão de centésimos
   calculatePace(timeInSeconds: number, distanceInMeters: number): string {
     // Evitar divisão por zero
     if (distanceInMeters === 0) return '-';
@@ -377,8 +477,9 @@ export class DynamicPoolWorkoutPage implements OnInit, AfterViewInit {
     // Converter para minutos e segundos
     const minutes = Math.floor(pacePerHundredMeters / 60);
     const seconds = Math.floor(pacePerHundredMeters % 60);
+    const deciseconds = Math.floor((pacePerHundredMeters * 10) % 10);
 
-    return `${minutes}:${seconds.toString().padStart(2, '0')}/100m`;
+    return `${minutes}:${seconds.toString().padStart(2, '0')}.${deciseconds}/100m`;
   }
 
   // Atualizar o resumo do treino
@@ -412,41 +513,47 @@ export class DynamicPoolWorkoutPage implements OnInit, AfterViewInit {
   }
 
   // --- TIMER DE DESCANSO ---
-  startRestTimer() {
+  startRestTimer(resetTimer: boolean = true) {
     this.isRestTimerActive = true;
-    this.isRestTimerPaused = false;
-    this.restTimerValue = this.currentSet.restTime;
 
-    // Tocar som de início de descanso
+    // Pausar o timer principal durante o descanso
+    this.pauseMainTimer();
+
+    if (resetTimer) {
+    this.restTimerValue = this.currentSet.restTime;
+    }
+
+    // Reproduzir som de início de descanso
     this.playSound('rest-start');
 
-    clearInterval(this.restTimerInterval);
     this.restTimerInterval = setInterval(() => {
-      if (this.restTimerValue > 0) {
         this.restTimerValue--;
 
-        // Tocar sons de alerta nos últimos 3 segundos
+      // Tocar beep nos últimos 3 segundos
         if (this.restTimerValue <= 3 && this.restTimerValue > 0) {
           this.playSound('countdown');
         }
-      } else {
-        // Fim do descanso
+
+      if (this.restTimerValue <= 0) {
         this.endRestTimer();
       }
     }, 1000);
   }
 
   toggleRestTimer() {
+    if (this.isRestTimerActive) {
     if (this.isRestTimerPaused) {
       // Retomar o timer
       this.isRestTimerPaused = false;
       this.restTimerInterval = setInterval(() => {
-        if (this.restTimerValue > 0) {
           this.restTimerValue--;
+
+          // Tocar beep nos últimos 3 segundos
           if (this.restTimerValue <= 3 && this.restTimerValue > 0) {
             this.playSound('countdown');
           }
-        } else {
+
+          if (this.restTimerValue <= 0) {
           this.endRestTimer();
         }
       }, 1000);
@@ -454,6 +561,7 @@ export class DynamicPoolWorkoutPage implements OnInit, AfterViewInit {
       // Pausar o timer
       this.isRestTimerPaused = true;
       clearInterval(this.restTimerInterval);
+      }
     }
   }
 
@@ -469,6 +577,9 @@ export class DynamicPoolWorkoutPage implements OnInit, AfterViewInit {
     // Tocar som de fim de descanso
     this.playSound('rest-end');
 
+    // Zerar o timer atual
+    this.currentTimerValue = 0;
+
     if (this.currentSetIndex < this.workout.sets.length - 1) {
       // Ir para próxima série
       this.nextSet();
@@ -479,13 +590,14 @@ export class DynamicPoolWorkoutPage implements OnInit, AfterViewInit {
   }
 
   // --- FINALIZAÇÃO DO TREINO ---
-  async goToSummary() {
+  async goToSummary(): Promise<void> {
     // Finalizar o resumo do treino
     this.finalizeSummary();
 
     const totalSlides = this.workout.sets.length + 1; // +1 para o slide de resumo
     const swiperEl = this.slides.nativeElement;
     swiperEl.swiper.slideTo(totalSlides - 1, 400);
+    return;
   }
 
   // Finalizar o resumo após o treino
@@ -497,7 +609,7 @@ export class DynamicPoolWorkoutPage implements OnInit, AfterViewInit {
   }
 
   // Compartilhar o relatório do treino
-  async shareWorkoutSummary() {
+  async shareWorkoutSummary(): Promise<void> {
     // Criar texto para compartilhamento
     const shareText = this.generateShareText();
 
@@ -509,12 +621,13 @@ export class DynamicPoolWorkoutPage implements OnInit, AfterViewInit {
         });
       } else {
         // Fallback para copiar para a área de transferência
-        this.copyToClipboard(shareText);
+        await this.copyToClipboard(shareText);
       }
     } catch (error) {
       console.error('Erro ao compartilhar:', error);
       this.presentToast('Não foi possível compartilhar o relatório.');
     }
+    return;
   }
 
   // Gerar texto para compartilhamento
@@ -546,7 +659,7 @@ export class DynamicPoolWorkoutPage implements OnInit, AfterViewInit {
   }
 
   // Copiar para a área de transferência (fallback para navegadores sem API de compartilhamento)
-  async copyToClipboard(text: string) {
+  async copyToClipboard(text: string): Promise<void> {
     try {
       await navigator.clipboard.writeText(text);
       this.presentToast('Relatório copiado para a área de transferência!');
@@ -554,6 +667,7 @@ export class DynamicPoolWorkoutPage implements OnInit, AfterViewInit {
       console.error('Erro ao copiar para área de transferência:', error);
       this.presentToast('Não foi possível copiar o relatório.');
     }
+    return;
   }
 
   finishWorkout() {
@@ -579,12 +693,48 @@ export class DynamicPoolWorkoutPage implements OnInit, AfterViewInit {
     }, 0);
   }
 
-  formatTime(seconds: number): string {
-    if (seconds < 60) return `${seconds}s`;
+  formatTime(seconds: number, withMilliseconds: boolean = false): string {
+    if (!withMilliseconds) {
+      // Versão simples em minutos e segundos
+      const min = Math.floor(seconds / 60);
+      const sec = seconds % 60;
 
-    const min = Math.floor(seconds / 60);
-    const sec = seconds % 60;
-    return `${min}:${sec.toString().padStart(2, '0')}`;
+      // Mostrar minutos apenas se necessário
+      if (min > 0) {
+        return `${min}:${sec.toString().padStart(2, '0')}`;
+      } else {
+        return sec.toString();
+      }
+    } else {
+      // Versão com centésimos para o timer ativo
+      const min = Math.floor(this.currentTimerValue / 60);
+      const sec = this.currentTimerValue % 60;
+      // Combinar décimos e centésimos em um valor de 2 dígitos (0-99)
+      const centiseconds = this.timerDeciseconds * 10 + this.timerCentiseconds;
+
+      // Formato M:SS:CC
+      if (min > 0) {
+        return `${min}:${sec.toString().padStart(2, '0')}:${centiseconds.toString().padStart(2, '0')}`;
+      } else {
+        // Sem minutos, mostrar apenas SS:CC
+        return `${sec.toString().padStart(2, '0')}:${centiseconds.toString().padStart(2, '0')}`;
+      }
+    }
+  }
+
+  // Formatar tempos de volta no mesmo padrão do cronômetro
+  formatLapTime(timeInSeconds: number): string {
+    // Extrair minutos, segundos e centésimos
+    const min = Math.floor(timeInSeconds / 60);
+    const sec = Math.floor(timeInSeconds % 60);
+    const centiseconds = Math.floor((timeInSeconds * 100) % 100);
+
+    // Formato M:SS:CC ou SS:CC
+    if (min > 0) {
+      return `${min}:${sec.toString().padStart(2, '0')}:${centiseconds.toString().padStart(2, '0')}`;
+    } else {
+      return `${sec.toString().padStart(2, '0')}:${centiseconds.toString().padStart(2, '0')}`;
+    }
   }
 
   createArray(size: number): any[] {
@@ -602,12 +752,393 @@ export class DynamicPoolWorkoutPage implements OnInit, AfterViewInit {
     }
   }
 
-  async presentToast(message: string) {
+  async presentToast(message: string): Promise<void> {
     const toast = await this.toastController.create({
       message,
       duration: 2000,
       position: 'top',
     });
-    toast.present();
+    await toast.present();
+    return;
+  }
+
+  ngOnDestroy() {
+    // Salvar o estado do treino antes de destruir o componente
+    this.saveWorkoutState();
+    // Limpar os timers
+    this.clearTimers();
+  }
+
+  clearTimers() {
+    if (this.mainTimerInterval) {
+      clearInterval(this.mainTimerInterval);
+    }
+    if (this.restTimerInterval) {
+      clearInterval(this.restTimerInterval);
+    }
+    if (this.countdownInterval) {
+      clearInterval(this.countdownInterval);
+    }
+  }
+
+  // Métodos para gerenciar cache do estado do treino
+  private saveWorkoutState() {
+    const state = {
+      workout: this.workout,
+      currentSetIndex: this.currentSetIndex,
+      currentRepetition: this.currentRepetition,
+      currentSet: this.currentSet,
+      totalWorkoutTime: this.totalWorkoutTime,
+      currentTimerValue: this.currentTimerValue,
+      timerDeciseconds: this.timerDeciseconds,
+      timerCentiseconds: this.timerCentiseconds,
+      isMainTimerRunning: this.isMainTimerRunning,
+      isRestTimerActive: this.isRestTimerActive,
+      isRestTimerPaused: this.isRestTimerPaused,
+      restTimerValue: this.restTimerValue,
+      workoutSummary: this.workoutSummary,
+      isCountdownActive: this.isCountdownActive,
+      countdownTimer: this.countdownTimer,
+      currentLapDistance: this.currentLapDistance
+    };
+    localStorage.setItem(this.WORKOUT_STATE_KEY, JSON.stringify(state));
+  }
+
+  private loadWorkoutState() {
+    const savedState = localStorage.getItem(this.WORKOUT_STATE_KEY);
+    if (savedState) {
+      try {
+        const state = JSON.parse(savedState);
+        this.workout = state.workout;
+        this.currentSetIndex = state.currentSetIndex;
+        this.currentRepetition = state.currentRepetition;
+        this.currentSet = state.currentSet;
+        this.totalWorkoutTime = state.totalWorkoutTime;
+        this.currentTimerValue = state.currentTimerValue;
+        this.timerDeciseconds = state.timerDeciseconds || 0;
+        this.timerCentiseconds = state.timerCentiseconds || 0;
+        this.workoutSummary = state.workoutSummary;
+        this.isCountdownActive = state.isCountdownActive || false;
+        this.countdownTimer = state.countdownTimer || 0;
+        this.currentLapDistance = state.currentLapDistance || 0;
+
+        // Restaurar os timers
+        if (state.isMainTimerRunning) {
+          this.startMainTimerAfterCountdown();
+        }
+
+        if (state.isRestTimerActive) {
+          this.isRestTimerActive = true;
+          this.isRestTimerPaused = state.isRestTimerPaused;
+          this.restTimerValue = state.restTimerValue;
+
+          if (!this.isRestTimerPaused) {
+            this.startRestTimer(false); // Não resetar o timer
+          }
+        }
+
+        // Restaurar a contagem regressiva, se estiver ativa
+        if (state.isCountdownActive && state.countdownTimer > 0) {
+          this.startCountdown(() => {
+            this.startMainTimerAfterCountdown();
+          });
+        }
+
+        // Notificar o usuário
+        this.presentToast('Treino recuperado da última sessão');
+      } catch (error) {
+        console.error('Erro ao carregar o estado salvo:', error);
+        // Se houver erro, inicializar normalmente
+        this.initWorkout();
+      }
+    }
+  }
+
+  // Método para contagem regressiva
+  startCountdown(callback: () => void) {
+    this.isCountdownActive = true;
+    this.countdownTimer = 3;
+
+    // Tocar som inicial
+    this.audioService.playCountdownBeep();
+
+    clearInterval(this.countdownInterval);
+    this.countdownInterval = setInterval(() => {
+      this.countdownTimer--;
+
+      if (this.countdownTimer > 0) {
+        // Tocar beep durante a contagem
+        this.audioService.playCountdownBeep();
+      } else {
+        // Contagem finalizada
+        clearInterval(this.countdownInterval);
+        this.isCountdownActive = false;
+
+        // Tocar som mais forte no final
+        this.audioService.playStartBeep();
+
+        // Executar o callback após a contagem
+        callback();
+      }
+    }, 1000);
+  }
+
+  // Marca uma volta parcial com distâncias pré-definidas pelo professor
+  markPartialLap(partialDistance: number = 0) {
+    if (!this.isMainTimerRunning) return;
+
+    // Verificar se a distância parcial é válida
+    if (partialDistance <= 0 || this.currentLapDistance + partialDistance > this.currentSet.distance) {
+      this.presentToast('Distância parcial inválida');
+      return;
+    }
+
+    // Registra o tempo parcial com precisão de centésimos
+    const lapTimeMs = this.currentTimerValue * 1000 + this.timerDeciseconds * 100 + this.timerCentiseconds * 10;
+    const lapTime = lapTimeMs / 1000; // Converter para segundos com casas decimais
+    const pace = this.calculatePace(lapTime, partialDistance);
+
+    // Verificar se o array laps existe, se não, criar
+    if (!this.workout.sets[this.currentSetIndex].laps) {
+      this.workout.sets[this.currentSetIndex].laps = [];
+    }
+
+    // Adiciona a volta parcial
+    this.workout.sets[this.currentSetIndex].laps.push({
+      time: lapTime,
+      pace: pace,
+      distance: partialDistance,
+      isPartial: true
+    });
+
+    // Atualiza a distância acumulada
+    this.currentLapDistance += partialDistance;
+
+    // Notifica o usuário
+    this.presentToast(`Tempo parcial (${partialDistance}m) registrado!`);
+
+    // Verificar se completou a distância total com esta marcação parcial
+    if (this.currentLapDistance === this.currentSet.distance) {
+      // Se completou, registrar também a volta completa com o tempo total
+
+      // Calcular a soma dos tempos de todas as parciais desta repetição
+      const partialLaps = this.workout.sets[this.currentSetIndex].laps.filter(lap => lap.isPartial);
+      const totalTime = partialLaps.reduce((sum, lap) => sum + lap.time, 0);
+      const totalPace = this.calculatePace(totalTime, this.currentSet.distance);
+
+      // Registrar a volta completa (soma de todas as parciais)
+      this.workout.sets[this.currentSetIndex].laps.push({
+        time: totalTime,
+        pace: totalPace,
+        distance: this.currentSet.distance,
+        isPartial: false
+      });
+
+      // Atualizar o relatório do treino
+      this.updateWorkoutSummary(this.currentSetIndex, this.currentRepetition, totalTime, totalPace);
+
+      // Parar o cronômetro após completar
+      this.pauseMainTimer();
+
+      // Resetar para a próxima repetição
+      this.currentLapDistance = 0;
+
+      if (this.currentRepetition < this.currentSet.repetitions) {
+        this.currentRepetition++;
+        this.presentToast(`Repetição ${this.currentRepetition - 1} concluída!`);
+
+        // Atualizar o progresso no objeto do treino
+        if (this.workout.sets[this.currentSetIndex]) {
+          this.workout.sets[this.currentSetIndex].completedRepetitions = this.currentRepetition;
+        }
+      } else {
+        // Completou todas as repetições desta série
+        this.presentToast('Série completa!');
+
+        // Iniciar o descanso se houver tempo de descanso configurado
+        if (this.currentSet.restTime > 0) {
+          this.startRestTimer();
+        } else if (this.currentSetIndex < this.workout.sets.length - 1) {
+          // Se não tiver descanso e tiver próxima série, avançar
+          this.nextSet();
+        }
+      }
+    }
+  }
+
+  // Adicionar método para mostrar opções de distâncias parciais
+  async showPartialDistanceOptions(): Promise<void> {
+    if (!this.isMainTimerRunning) {
+      this.presentToast('Inicie o timer primeiro');
+      return;
+    }
+
+    // Calcula a distância restante
+    const remainingDistance = this.currentSet.distance - this.currentLapDistance;
+    if (remainingDistance <= 0) {
+      this.presentToast('Distância completa já registrada');
+      return;
+    }
+
+    // Prepara as opções de distâncias parciais (25m, 50m, personalizado...)
+    const buttons = [];
+
+    // Opções padrão de distâncias parciais
+    const standardDistances = [25, 50];
+    for (const distance of standardDistances) {
+      if (distance < remainingDistance) {
+        buttons.push({
+          text: `${distance}m`,
+          handler: () => {
+            this.markPartialLap(distance);
+            return true;
+          }
+        });
+      }
+    }
+
+    // Metade da distância restante (arredondada para múltiplo de 25)
+    const halfDistance = Math.floor((remainingDistance / 2) / 25) * 25;
+    if (halfDistance > 0 && !standardDistances.includes(halfDistance)) {
+      buttons.push({
+        text: `${halfDistance}m (metade)`,
+        handler: () => {
+          this.markPartialLap(halfDistance);
+          return true;
+        }
+      });
+    }
+
+    // Opção personalizada
+    buttons.push({
+      text: 'Personalizado...',
+      handler: () => {
+        this.showCustomDistancePrompt(remainingDistance);
+        return true;
+      }
+    });
+
+    // Botão de cancelar
+    buttons.push({
+      text: 'Cancelar',
+      role: 'cancel'
+    });
+
+    const actionSheet = await this.actionSheetController.create({
+      header: 'Registrar Distância Parcial',
+      subHeader: `Distância total: ${this.currentSet.distance}m | Restante: ${remainingDistance}m`,
+      buttons: buttons
+    });
+
+    await actionSheet.present();
+    return;
+  }
+
+  // Método para inserir distância personalizada
+  async showCustomDistancePrompt(maxDistance: number): Promise<void> {
+    const alert = await this.alertController.create({
+      header: 'Distância Personalizada',
+      message: `Informe a distância parcial (máx: ${maxDistance}m)`,
+      inputs: [
+        {
+          name: 'distance',
+          type: 'number',
+          placeholder: 'Distância em metros',
+          min: 1,
+          max: maxDistance
+        }
+      ],
+      buttons: [
+        {
+          text: 'Cancelar',
+          role: 'cancel'
+        },
+        {
+          text: 'Registrar',
+          handler: (data) => {
+            const distance = parseInt(data.distance);
+            if (distance > 0 && distance <= maxDistance) {
+              this.markPartialLap(distance);
+              return true;
+            } else {
+              this.presentToast('Distância inválida');
+              return false;
+            }
+          }
+        }
+      ]
+    });
+
+    await alert.present();
+    return;
+  }
+
+  // Método para criar um novo treino fictício para demonstração
+  createFictitiousWorkout() {
+    // Limpar qualquer estado anterior
+    localStorage.removeItem(this.WORKOUT_STATE_KEY);
+
+    // Definir um novo treino de exemplo
+    this.workout = {
+      id: new Date().getTime().toString(),
+      name: 'Treino Avançado de Velocidade',
+      date: new Date(),
+      studentId: 'Matheus Santos',
+      sets: [
+        {
+          exercise: 'nado-livre',
+          distance: 100,
+          repetitions: 4,
+          restTime: 40,
+          notes: 'Foco na técnica de respiração bilateral e braçada longa',
+          completedRepetitions: 1,
+          laps: [] as Lap[],
+          partialDistances: [25, 50, 75]
+        },
+        {
+          exercise: 'batida-pernas',
+          distance: 50,
+          repetitions: 6,
+          restTime: 30,
+          notes: 'Manter pernas esticadas, usar prancha grande',
+          completedRepetitions: 1,
+          laps: [] as Lap[],
+          partialDistances: [25]
+        },
+        {
+          exercise: 'borboleta',
+          distance: 50,
+          repetitions: 2,
+          restTime: 60,
+          notes: 'Foco na ondulação do corpo e na sincronização dos braços',
+          completedRepetitions: 1,
+          laps: [] as Lap[],
+          partialDistances: [25]
+        },
+        {
+          exercise: 'pullbuoy',
+          distance: 75,
+          repetitions: 4,
+          restTime: 45,
+          notes: 'Concentre-se na pegada e puxada subaquática',
+          completedRepetitions: 1,
+          laps: [] as Lap[],
+          partialDistances: [25, 50]
+        },
+        {
+          exercise: 'medley',
+          distance: 100,
+          repetitions: 2,
+          restTime: 60,
+          notes: 'Sequência: borboleta, costas, peito, livre - 25m cada',
+          completedRepetitions: 1,
+          laps: [] as Lap[],
+          partialDistances: [25, 50, 75]
+        }
+      ]
+    };
+
+    // Inicializar o treino com os novos dados
+    this.initWorkout();
   }
 }

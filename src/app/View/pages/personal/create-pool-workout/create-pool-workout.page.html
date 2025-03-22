@@ -205,6 +205,45 @@
         <ion-input type="number" [(ngModel)]="currentSet.restTime" min="0"></ion-input>
       </ion-item>
 
+      <!-- Nova seção para configurar distâncias parciais -->
+      <div class="partial-distances-section">
+        <ion-item class="form-item section-header">
+          <ion-label>Marcação de Tempos Parciais</ion-label>
+          <ion-note slot="end">Defina pontos para marcação durante a volta</ion-note>
+        </ion-item>
+
+        <ion-item class="form-item" *ngIf="currentSet.distance >= 50">
+          <ion-label>Marcar metade da distância ({{currentSet.distance / 2}}m)</ion-label>
+          <ion-checkbox slot="end" [checked]="hasPartialDistance(currentSet.distance / 2)" (ionChange)="togglePartialDistance(currentSet.distance / 2, $event)"></ion-checkbox>
+        </ion-item>
+
+        <ion-item class="form-item" *ngIf="currentSet.distance >= 75">
+          <ion-label>Marcar a cada 25m</ion-label>
+          <ion-checkbox slot="end" [checked]="hasPartialDistancesMultiple(25)" (ionChange)="setPartialDistancesMultiple(25, $event)"></ion-checkbox>
+        </ion-item>
+
+        <ion-item class="form-item" *ngIf="currentSet.distance >= 100">
+          <ion-label>Marcar a cada 50m</ion-label>
+          <ion-checkbox slot="end" [checked]="hasPartialDistancesMultiple(50)" (ionChange)="setPartialDistancesMultiple(50, $event)"></ion-checkbox>
+        </ion-item>
+
+        <div class="partial-chips" *ngIf="currentSet.partialDistances && currentSet.partialDistances.length > 0">
+          <p>Distâncias parciais configuradas:</p>
+          <ion-chip *ngFor="let distance of getCurrentPartialDistances(); let i = index" color="primary" outline>
+            <ion-label>{{distance}}m</ion-label>
+            <ion-icon name="close-circle" (click)="removePartialDistance(i)"></ion-icon>
+          </ion-chip>
+        </div>
+
+        <ion-item class="form-item">
+          <ion-label position="floating">Adicionar distância parcial personalizada (m)</ion-label>
+          <ion-input #customDistance type="number" min="1" [max]="currentSet.distance - 1" step="5"></ion-input>
+          <ion-button slot="end" fill="clear" (click)="addCustomPartialDistance(customDistance.value?.toString() || ''); customDistance.value = ''">
+            <ion-icon name="add-circle" slot="icon-only"></ion-icon>
+          </ion-button>
+        </ion-item>
+      </div>
+
       <ion-item class="form-item">
         <ion-label position="floating">Observações (opcional)</ion-label>
         <ion-textarea [(ngModel)]="currentSet.notes" rows="2"></ion-textarea>

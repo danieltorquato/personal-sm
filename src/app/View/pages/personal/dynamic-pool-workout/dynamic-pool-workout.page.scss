@@ -1,1071 +1,782 @@
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;700&display=swap');
 
+/* Variáveis */
 :host {
   --ion-font-family: 'Montserrat', sans-serif;
-  font-family: var(--ion-font-family);
-  --primary-color: #d4af37; // Dourado
-  --secondary-color: #c5a028; // Dourado mais escuro
-  --text-color: #ffffff; // Texto branco
-  --background-color: #121212; // Preto
-  --background-color-light: #1e1e1e; // Preto mais claro
-  --success-color: #2dd36f;
-  --warning-color: #ffc409;
-  --danger-color: #eb445a;
-
-  // Cores específicas para exercícios
-  --nado-livre-color: var(--primary-color);
-  --nado-costas-color: #d9c87c;
-  --nado-peito-color: #bea53b;
-  --borboleta-color: #e6c347;
-  --batida-pernas-color: #c9b35c;
-  --pullbuoy-color: #b39729;
-  --medley-color: #aa8e27;
+  --primary-color: #d4af37; /* Dourado */
+  --primary-color-light: #e5c659;
+  --primary-color-dark: #b39329;
+  --background-color: #121212; /* Preto */
+  --background-color-light: #1e1e1e;
+  --background-color-lighter: #2a2a2a;
+  --text-color: #ffffff;
+  --text-color-muted: rgba(255, 255, 255, 0.7);
+  --success-color: #4caf50;
+  --warning-color: #ff9800;
+  --danger-color: #f44336;
+  --border-radius: 12px;
+  --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
-// Background
-.background-gradient {
-  position: absolute;
+/* Estilo global */
+ion-content {
+  --background: var(--background-color);
+  --color: var(--text-color);
+  font-family: var(--ion-font-family);
+  --overflow: auto;
+}
+
+ion-header, ion-toolbar {
+  --background: var(--background-color);
+  --color: var(--text-color);
+  --border-color: transparent;
+}
+
+ion-button {
+  --background: var(--primary-color);
+  --background-activated: var(--primary-color-dark);
+  --color: var(--background-color);
+  --border-radius: 8px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+/* Overlay de contagem regressiva */
+.countdown-overlay {
+  position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(135deg, #0099cc 0%, #006699 100%);
-  opacity: 0.3;
-  z-index: -1;
-}
-
-// Header
-.transparent-toolbar {
-  --background: rgba(15, 32, 63, 0.8);
-  --border-style: none;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-}
-
-ion-title {
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  color: white;
-}
-
-.timer-button {
-  ion-icon {
-    font-size: 24px;
-  }
-}
-
-// Cards
-ion-card {
-  margin: 16px 0;
-  border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  background-color: rgba(255, 255, 255, 0.9);
-  overflow: hidden;
-}
-
-ion-card-header {
-  background-color: rgba(var(--ion-color-primary-rgb), 0.1);
-  padding: 12px 16px;
-}
-
-ion-card-title {
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: var(--ion-color-primary);
-}
-
-// Student card
-.student-card {
-  ion-card-content {
-    padding: 12px;
-  }
-
-  .student-info {
-    display: flex;
-    align-items: center;
-
-    ion-avatar {
-      width: 60px;
-      height: 60px;
-      margin-right: 16px;
-      border: 2px solid var(--ion-color-light-shade);
-    }
-
-    .student-details {
-      flex: 1;
-
-      h2 {
-        margin: 0 0 4px;
-        font-size: 1.2rem;
-        font-weight: 600;
-      }
-
-      p {
-        margin: 0 0 8px;
-        color: var(--ion-color-medium);
-        font-size: 0.9rem;
-      }
-
-      ion-badge {
-        font-size: 0.8rem;
-        padding: 4px 8px;
-      }
-    }
-  }
-}
-
-// Timer card
-.timer-card {
-  .main-timer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-
-    .timer-display {
-      text-align: center;
-      flex: 1;
-
-      h1 {
-        font-size: 2.5rem;
-        margin: 0;
-        font-weight: 700;
-        color: var(--ion-color-dark);
-      }
-
-      p {
-        margin: 4px 0 0;
-        color: var(--ion-color-medium);
-        font-size: 0.9rem;
-      }
-    }
-  }
-}
-
-// Rest timer card
-.rest-timer-card {
-  background-color: rgba(var(--ion-color-light-rgb), 0.8);
-  transition: background-color 0.3s ease;
-
-  &.active {
-    background-color: rgba(var(--ion-color-warning-rgb), 0.2);
-  }
-
-  .rest-timer {
-    display: flex;
-    align-items: center;
-
-    .timer-display {
-      flex: 1;
-      text-align: center;
-
-      h1 {
-        font-size: 2rem;
-        margin: 0;
-        font-weight: 600;
-        color: var(--ion-color-dark);
-      }
-
-      p {
-        margin: 4px 0 0;
-        color: var(--ion-color-medium);
-        font-size: 0.9rem;
-      }
-    }
-
-    .timer-controls {
-      display: flex;
-      gap: 8px;
-    }
-  }
-}
-
-// Current set card
-.set-details {
-  ion-item {
-    --background: transparent;
-    --padding-start: 0;
-    --inner-padding-end: 0;
-
-    ion-label {
-      h2 {
-        font-size: 1rem;
-        font-weight: 600;
-        color: var(--ion-color-dark);
-        margin-bottom: 8px;
-      }
-    }
-  }
-
-  .repetition-control, .rest-time-control {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-
-    .repetition-count, .rest-time {
-      min-width: 30px;
-      text-align: center;
-      font-size: 1.1rem;
-      font-weight: 500;
-    }
-  }
-}
-
-.lap-timing-section {
-  margin-top: 16px;
-
-  h3 {
-    font-size: 1rem;
-    font-weight: 600;
-    color: var(--ion-color-dark);
-    margin: 0 0 12px;
-  }
-
-  .lap-controls {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-bottom: 16px;
-  }
-
-  .lap-times {
-    max-height: 200px;
-    overflow-y: auto;
-
-    .pace-info {
-      font-size: 0.85rem;
-      color: var(--ion-color-primary);
-    }
-  }
-}
-
-// Session history card
-.session-history-card {
-  margin-bottom: 100px;
-
-  ion-list {
-    background: transparent;
-    padding: 0;
-
-    ion-item {
-      --background: rgba(255, 255, 255, 0.05);
-      --border-color: rgba(255, 255, 255, 0.05);
-      border-radius: 8px;
-      margin-bottom: 8px;
-
-      h2 {
-        font-size: 16px;
-        color: rgba(255, 255, 255, 0.9);
-        margin-bottom: 4px;
-      }
-
-      p {
-        color: rgba(255, 255, 255, 0.7);
-        margin: 0;
-      }
-    }
-  }
-
-  .empty-list-message {
-    text-align: center;
-    padding: 24px 0;
-    color: rgba(255, 255, 255, 0.5);
-  }
-}
-
-// Rest notice modal
-.rest-notice-modal {
-  height: 100%;
+  background-color: var(--background-color);
+  z-index: 1000;
   display: flex;
-  flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 24px;
-  background-color: var(--ion-background-color);
-
-  .countdown-display {
-    text-align: center;
-    margin-bottom: 32px;
-    transition: all 0.3s ease;
-
-    h1 {
-      font-size: 5rem;
-      font-weight: 700;
-      margin: 0;
-      color: var(--ion-color-primary);
-    }
-
-    p {
-      font-size: 1.2rem;
-      color: var(--ion-color-medium);
-      margin: 8px 0 0;
-    }
-
-    &.warning {
-      h1 {
-        color: var(--ion-color-danger);
-        animation: pulse 1s infinite;
-      }
-    }
-  }
-
-  .prepare-message {
-    margin-bottom: 32px;
-    text-align: center;
-
-    h2 {
-      font-size: 1.5rem;
-      font-weight: 700;
-      color: var(--ion-color-danger);
-      animation: pulse 1s infinite;
-      margin: 0;
-    }
-  }
 }
 
-// Modal de seleção de aluno
-ion-modal {
-  --border-radius: 16px;
-  --box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-
-  ion-searchbar {
-    --box-shadow: none;
-    --background: rgba(var(--ion-color-light-rgb), 0.7);
-    --border-radius: 8px;
-    padding: 0 16px;
-    margin: 16px 0;
-  }
-
-  ion-list {
-    background: transparent;
-
-    ion-item {
-      --border-radius: 8px;
-      --padding-start: 8px;
-      margin-bottom: 8px;
-
-      &:hover {
-        --background: rgba(var(--ion-color-primary-rgb), 0.1);
-      }
-
-      ion-avatar {
-        width: 48px;
-        height: 48px;
-      }
-
-      h2 {
-        font-weight: 600;
-        font-size: 1rem;
-      }
-
-      p {
-        font-size: 0.85rem;
-        color: var(--ion-color-medium);
-      }
-    }
-  }
-}
-
-// Animações
-@keyframes pulse {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.05);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-
-// Responsividade para telas menores
-@media (max-width: 576px) {
-  .timer-card .main-timer .timer-display h1 {
-    font-size: 36px;
-  }
-
-  .rest-timer-card .rest-timer .timer-display h1 {
-    font-size: 28px;
-  }
-
-  .rest-notice-modal .countdown-display h1 {
-    font-size: 64px;
-  }
-
-  .rest-notice-modal .prepare-message h2 {
-    font-size: 22px;
-  }
-
-  .lap-controls {
-    flex-direction: column;
-  }
-}
-
-/* Container para seleção de aluno */
-.select-student-container {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  min-height: 50vh;
-  padding: 20px;
-
-  ion-card {
-    max-width: 500px;
-    width: 100%;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-
-    ion-card-header {
-      background-color: var(--ion-color-primary);
-
-      ion-card-title {
-        color: white;
-        font-size: 1.5rem;
-        font-weight: 600;
-      }
-    }
-
-    ion-card-content {
-      padding: 20px;
-
-      p {
-        margin-bottom: 20px;
-        font-size: 1rem;
-        line-height: 1.5;
-        color: var(--ion-color-medium);
-      }
-    }
-  }
-}
-
-/* Estilos gerais da página */
-ion-header, ion-toolbar {
-  --background: transparent;
-  --border-width: 0;
-}
-
-ion-content {
-  --background: var(--background-color);
-  --color: var(--text-color);
-
-  &.fullscreen-content {
-    --padding-start: 0;
-    --padding-end: 0;
-    --padding-top: 0;
-    --padding-bottom: 0;
-  }
-}
-
-/* Estilos para os slides */
-.exercise-slides {
-  height: 100%;
-  width: 100%;
-
-  .exercise-slide {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    width: 100%;
-  }
-
-  .slide-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    height: 100%;
-    width: 100%;
-    padding: 1rem;
-    padding-bottom: 120px; // Espaço para os controles fixos
-    position: relative;
-    background-color: var(--background-color-light);
-    border-radius: 15px;
-    margin: 15px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-
-    // Cores de fundo por tipo de exercício
-    &.nado-livre {
-      border-left: 5px solid var(--nado-livre-color);
-    }
-
-    &.nado-costas {
-      border-left: 5px solid var(--nado-costas-color);
-    }
-
-    &.nado-peito {
-      border-left: 5px solid var(--nado-peito-color);
-    }
-
-    &.borboleta {
-      border-left: 5px solid var(--borboleta-color);
-    }
-
-    &.batida-pernas {
-      border-left: 5px solid var(--batida-pernas-color);
-    }
-
-    &.pullbuoy {
-      border-left: 5px solid var(--pullbuoy-color);
-    }
-
-    &.medley {
-      border-left: 5px solid var(--medley-color);
-    }
-  }
-}
-
-/* Elementos dentro de cada slide */
-.exercise-visual {
-  margin: 1rem 0;
-  width: 100%;
-  max-width: 400px;
-  height: 240px;
-  border-radius: 20px;
-  overflow: hidden;
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: center;
-    border: 4px solid var(--primary-color);
-  }
-}
-
-.exercise-info {
-  width: 100%;
-  max-width: 400px;
+.countdown-container {
   text-align: center;
-  margin: 1rem 0;
+}
+
+.countdown-number {
+  font-size: 10rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  font-family: 'Roboto Mono', monospace;
+  text-shadow: 0 0 20px rgba(212, 175, 55, 0.5);
+  animation: pulse 1s infinite;
+}
+
+.countdown-text {
+  font-size: 2rem;
+  margin-top: 1rem;
+  color: var(--text-color);
+  font-weight: 500;
+}
+
+/* Overlay de toque para voltas */
+.touch-to-lap-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.9);
+  z-index: 900;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20% 20px;
+}
+
+.lap-timer {
+  font-size: 5rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  font-family: 'Roboto Mono', monospace;
+  text-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
+}
+
+.current-exercise {
+  text-align: center;
+  margin: 2rem 0;
+
+  h2 {
+    font-size: 2.2rem;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: var(--text-color);
+  }
+
+  p {
+    font-size: 1.2rem;
+    margin: 0.3rem 0;
+    color: var(--text-color-muted);
+  }
+}
+
+.tap-instruction {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 2rem;
+
+  ion-icon {
+    font-size: 3rem;
+    color: var(--text-color-muted);
+    margin-bottom: 1rem;
+    animation: tap-pulse 1.5s infinite;
+  }
+
+  p {
+    font-size: 1.2rem;
+    color: var(--text-color-muted);
+  }
+}
+
+/* Overlay de descanso */
+.rest-timer-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.95);
+  z-index: 950;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.rest-timer-container {
+  width: 80%;
+  max-width: 400px;
+  background-color: var(--background-color-light);
+  border-radius: var(--border-radius);
+  padding: 2rem;
+  text-align: center;
+  box-shadow: var(--card-shadow);
+}
+
+.rest-timer-container h2 {
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
+  color: var(--text-color);
+  font-weight: 600;
+}
+
+.rest-timer-value {
+  font-size: 4rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  font-family: 'Roboto Mono', monospace;
+  margin-bottom: 1.5rem;
+}
+
+.rest-timer-progress {
+  height: 8px;
+  background-color: var(--background-color-lighter);
+  border-radius: 4px;
+  margin-bottom: 2rem;
+  overflow: hidden;
+}
+
+.rest-timer-progress .progress-bar {
+  height: 100%;
+  background-color: var(--primary-color);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.next-exercise {
+  margin-bottom: 2rem;
+
+  p {
+    margin: 0.3rem 0;
+    color: var(--text-color-muted);
+    font-size: 1.1rem;
+  }
+}
+
+.rest-timer-controls {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 20px;
+
+  ion-button {
+    flex: 1;
+    max-width: 150px;
+  }
+}
+
+/* Conteúdo principal */
+.main-content {
+  padding: 1rem 0;
+}
+
+.workout-header {
+  text-align: center;
+  margin-bottom: 1.5rem;
 
   h1 {
-    font-size: 2rem;
+    font-size: 1.8rem;
     font-weight: 700;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.3rem;
     color: var(--primary-color);
   }
 
-  .set-details {
-    display: flex;
-    justify-content: center;
-    gap: 1.5rem;
-    margin: 1rem 0;
+  p {
+    font-size: 1rem;
+    color: var(--text-color-muted);
+    margin: 0;
+  }
+}
 
-    .detail-item {
+/* Card de informações do exercício */
+.workout-info-card, .progress-card, .exercise-slide .slide-container {
+  background-color: var(--background-color-light);
+  border-radius: var(--border-radius);
+  margin-bottom: 1.5rem;
+  padding: 1.5rem;
+  box-shadow: var(--card-shadow);
+}
+
+.exercise-header {
+  margin-bottom: 1rem;
+
+  h2 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--text-color);
+    margin: 0;
+  }
+}
+
+.exercise-details {
+  margin-bottom: 1.5rem;
+}
+
+.exercise-name {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+
+  ion-icon {
+    font-size: 1.8rem;
+    color: var(--primary-color);
+    margin-right: 1rem;
+  }
+
+  h3 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0;
+    color: var(--text-color);
+  }
+}
+
+.exercise-stats {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+
+  ion-icon {
+    font-size: 1.5rem;
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+  }
+
+  span {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text-color);
+    margin-bottom: 0.2rem;
+  }
+
+  small {
+    font-size: 0.8rem;
+    color: var(--text-color-muted);
+  }
+}
+
+.exercise-notes {
+  display: flex;
+  align-items: flex-start;
+  background-color: var(--background-color-lighter);
+  padding: 0.8rem;
+  border-radius: 8px;
+  margin-top: 1rem;
+
+  ion-icon {
+    font-size: 1.2rem;
+    color: var(--primary-color);
+    margin-right: 0.5rem;
+    margin-top: 0.1rem;
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--text-color-muted);
+    line-height: 1.4;
+  }
+}
+
+/* Timer principal */
+.main-timer-display {
+  margin-top: 1.5rem;
+  text-align: center;
+}
+
+.time-value {
+  font-size: 3.5rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  font-family: 'Roboto Mono', monospace;
+  margin-bottom: 1rem;
+}
+
+.timer-controls {
+  margin-top: 1rem;
+}
+
+/* Progresso do treino */
+.progress-card {
+  h2 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--text-color);
+    margin: 0 0 1rem 0;
+  }
+}
+
+.progress-bar-container {
+  height: 8px;
+  background-color: var(--background-color-lighter);
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  background-color: var(--primary-color);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  position: absolute;
+  right: 0;
+  top: -1.5rem;
+  font-size: 0.8rem;
+  color: var(--primary-color);
+}
+
+.progress-stats {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 1.5rem;
+}
+
+.workout-complete {
+  text-align: center;
+  padding: 2rem 0;
+
+  .complete-icon {
+    font-size: 5rem;
+    color: var(--success-color);
+    margin-bottom: 1rem;
+  }
+
+  h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-color);
+    margin-bottom: 0.5rem;
+  }
+
+  p {
+    font-size: 1.1rem;
+    color: var(--text-color-muted);
+    margin-bottom: 2rem;
+  }
+}
+
+/* Histórico de voltas */
+.laps-history {
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
+  max-height: none;
+
+  h2 {
+    margin-bottom: 1rem;
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: var(--ion-text-color);
+  }
+
+  .laps-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    overflow-y: visible;
+    max-height: none;
+  }
+
+  .lap-item {
+    margin-bottom: 10px;
+    padding: 10px;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+
+    &.partial-lap {
+      border-left: 4px solid var(--ion-color-tertiary);
+      background-color: rgba(var(--ion-color-tertiary-rgb), 0.1);
+
+      .lap-distance::before {
+        content: '🏊';
+        margin-right: 5px;
+      }
+    }
+
+    &.full-lap {
+      border-left: 4px solid var(--ion-color-success);
+      background-color: rgba(var(--ion-color-success-rgb), 0.1);
+
+      .lap-distance::before {
+        content: '🏁';
+        margin-right: 5px;
+      }
+    }
+
+    .lap-exercise {
       display: flex;
-      flex-direction: column;
       align-items: center;
+      margin-bottom: 0.5rem;
 
       ion-icon {
-        font-size: 1.8rem;
-        margin-bottom: 0.3rem;
-        color: var(--primary-color);
+        margin-right: 0.5rem;
+        font-size: 1.2rem;
+        color: var(--ion-color-primary);
       }
 
       span {
-        font-size: 1.2rem;
-        font-weight: 600;
+        font-size: 0.9rem;
+        font-weight: 500;
       }
     }
-  }
 
-  .exercise-notes {
-    background-color: rgba(255, 255, 255, 0.7);
-    padding: 1rem;
-    border-radius: 12px;
-    margin: 1rem 0;
-    text-align: left;
-
-    ion-icon {
-      margin-right: 0.5rem;
-      color: var(--primary-color);
-    }
-  }
-}
-
-.set-progress {
-  width: 100%;
-  max-width: 400px;
-  margin: 1rem 0;
-
-  .repetition-tracker {
-    width: 100%;
-
-    .repetition-label {
-      font-size: 1.2rem;
-      text-align: center;
-      margin-bottom: 0.5rem;
-      font-weight: 600;
-    }
-
-    .repetition-bubbles {
-      display: flex;
-      justify-content: center;
-      gap: 0.5rem;
-      flex-wrap: wrap;
-
-      .repetition-bubble {
-        width: 16px;
-        height: 16px;
-        border-radius: 50%;
-        background-color: rgba(0, 0, 0, 0.1);
-
-        &.completed {
-          background-color: var(--success-color);
-        }
-
-        &.current {
-          background-color: var(--primary-color);
-          animation: pulse 1.5s infinite;
-        }
-      }
-    }
-  }
-}
-
-.set-timer {
-  margin: 1rem 0;
-
-  .timer-value {
-    font-size: 3rem;
-    font-weight: 700;
-    text-align: center;
-    color: var(--primary-color);
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  }
-}
-
-/* Slide de Resumo */
-.summary-slide {
-  .slide-container.summary {
-    justify-content: center;
-    background: linear-gradient(135deg, rgba(56, 128, 255, 0.05), rgba(61, 194, 255, 0.05));
-
-    .summary-icon {
-      font-size: 5rem;
-      color: var(--success-color);
-      margin-bottom: 1rem;
-    }
-
-    h1 {
-      font-size: 2.5rem;
-      font-weight: 700;
-      margin-bottom: 2rem;
-    }
-
-    .summary-stats {
+    .lap-details {
       display: flex;
       justify-content: space-between;
-      gap: 1rem;
-      margin-bottom: 2.5rem;
-      width: 100%;
-      max-width: 400px;
+      padding: 0.5rem 0;
 
-      .stat-item {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding: 1rem;
-        background-color: rgba(255, 255, 255, 0.8);
-        border-radius: 12px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+      div {
+        font-size: 0.9rem;
+        font-weight: 600;
 
-        .stat-value {
-          font-size: 1.8rem;
-          font-weight: 700;
-          color: var(--primary-color);
+        &.lap-time {
+          font-size: 1.1rem;
+          color: var(--ion-color-dark);
         }
 
-        .stat-label {
-          font-size: 0.9rem;
-          color: #666;
-          text-align: center;
+        &.lap-pace {
+          color: var(--ion-color-medium);
+          font-size: 0.85rem;
         }
       }
-    }
-
-    ion-button {
-      width: 100%;
-      max-width: 300px;
-      height: 50px;
-      --border-radius: 25px;
-      font-weight: 600;
-      font-size: 1.1rem;
     }
   }
 }
 
-/* Timer de Descanso (Overlay) */
-.rest-timer-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
+/* Botão de finalização */
+.finish-button {
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+}
+
+/* Animações */
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
+@keyframes tap-pulse {
+  0% { transform: scale(1); opacity: 0.7; }
+  50% { transform: scale(1.1); opacity: 1; }
+  100% { transform: scale(1); opacity: 0.7; }
+}
+
+/* Para o slide container */
+.exercise-slides {
   width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.85);
-  z-index: 100;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  .rest-timer-container {
-    width: 80%;
-    max-width: 360px;
-    background-color: white;
-    border-radius: 20px;
-    padding: 2rem;
-    text-align: center;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-
-    h2 {
-      font-size: 1.5rem;
-      font-weight: 600;
-      margin-bottom: 1rem;
-    }
-
-    .rest-timer-value {
-      font-size: 4rem;
-      font-weight: 700;
-      color: var(--primary-color);
-      margin-bottom: 1rem;
-    }
-
-    .rest-timer-progress {
-      height: 8px;
-      width: 100%;
-      background-color: #f0f0f0;
-      border-radius: 4px;
-      overflow: hidden;
-      margin-bottom: 1.5rem;
-
-      .progress-bar {
-        height: 100%;
-        background: linear-gradient(to right, var(--warning-color), var(--primary-color));
-        transition: width 1s linear;
-      }
-    }
-
-    .rest-timer-controls {
-      display: flex;
-      justify-content: space-around;
-
-      ion-button {
-        --color: var(--primary-color);
-        --padding-start: 0.5rem;
-        --padding-end: 0.5rem;
-
-        ion-icon {
-          margin-right: 0.5rem;
-        }
-      }
-    }
-  }
+  height: auto;
+  min-height: calc(100% - 60px);
+  overflow: visible;
 }
 
-/* Controles fixos no fundo */
+.slide-container {
+  display: flex;
+  flex-direction: column;
+  height: auto;
+  padding: 1.5rem;
+  padding-bottom: 100px; /* Espaço para os controles fixos */
+  overflow-y: visible;
+}
+
+/* Estilos para o summary slide */
+.summary-slide .slide-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.summary-icon {
+  font-size: 4rem;
+  color: var(--success-color);
+  margin-bottom: 1rem;
+}
+
+.summary-stats {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  margin: 2rem 0;
+}
+
+.stat-item {
+  text-align: center;
+  flex: 1;
+}
+
+.stat-value {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  margin-bottom: 0.3rem;
+}
+
+.stat-label {
+  font-size: 0.9rem;
+  color: var(--text-color-muted);
+}
+
+.workout-details {
+  width: 100%;
+  margin: 1.5rem 0;
+}
+
+.workout-details h2 {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--text-color);
+  margin-bottom: 1.5rem;
+}
+
+.exercise-details h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--primary-color);
+  margin: 1.5rem 0 0.8rem 0;
+}
+
+.set-row {
+  display: flex;
+  border-bottom: 1px solid var(--background-color-lighter);
+  padding: 0.5rem 0;
+}
+
+.set-row.header {
+  font-weight: 600;
+  color: var(--text-color);
+  border-bottom: 2px solid var(--background-color-lighter);
+}
+
+.set-cell {
+  flex: 1;
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--text-color-muted);
+}
+
+.summary-actions {
+  width: 100%;
+  margin-top: 2rem;
+}
+
+.summary-actions ion-button {
+  margin-bottom: 1rem;
+}
+
+/* Controles do workout */
 .workout-controls {
   position: fixed;
   bottom: 0;
   left: 0;
-  width: 100%;
-  background-color: white;
+  right: 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem;
-  box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.1);
-  z-index: 50;
+  background-color: var(--background-color-light);
+  padding: 0.8rem 1rem;
+  border-top: 1px solid var(--background-color-lighter);
+  z-index: 800;
+}
 
-  &.with-rest-timer {
-    opacity: 0.2;
-    pointer-events: none;
-  }
+.control-button {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  background-color: var(--background-color-lighter);
+  color: var(--text-color);
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.main-controls {
+  display: flex;
+  gap: 1rem;
+}
+
+.main-control-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.8rem 1.5rem;
+  border-radius: 8px;
+  background-color: var(--primary-color);
+  color: var(--background-color);
+  cursor: pointer;
+}
+
+.control-icon {
+  font-size: 1.5rem;
+  margin-bottom: 0.3rem;
+}
+
+/* Progresso do workout */
+.workout-progress {
+  display: none;
+}
+
+/* Ajuste para quando o resto-timer estiver ativo */
+.with-rest-timer {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* Ajuste para os controles compactos */
+.workout-controls.compact {
+  padding: 8px;
 
   .control-button {
-    display: flex;
-    align-items: center;
-    padding: 0.5rem 1rem;
-    border-radius: 20px;
-    background-color: #f0f0f0;
-    cursor: pointer;
-    transition: all 0.2s ease;
+    font-size: 14px;
+    padding: 8px 12px;
+    height: auto;
 
     ion-icon {
-      font-size: 1.5rem;
-      margin: 0 0.3rem;
-    }
-
-    span {
-      font-weight: 600;
-    }
-
-    &:active {
-      transform: scale(0.95);
-    }
-
-    &.previous {
-      color: var(--primary-color);
-    }
-
-    &.next {
-      color: var(--primary-color);
+      font-size: 18px;
     }
   }
 
   .main-controls {
     display: flex;
-    gap: 1rem;
+    flex-direction: row;
+    justify-content: center;
+    gap: 10px;
 
     .main-control-button {
+      padding: 8px 15px;
+      border-radius: 25px;
       display: flex;
-      flex-direction: column;
       align-items: center;
-      padding: 0.8rem 1.5rem;
-      border-radius: 12px;
-      background-color: var(--primary-color);
+      justify-content: center;
+      background-color: var(--ion-color-primary);
       color: white;
-      cursor: pointer;
-      transition: all 0.2s ease;
+      font-weight: 500;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+      .control-icon {
+        margin-right: 5px;
+        font-size: 18px;
+      }
 
       &:active {
         transform: scale(0.95);
       }
-
-      .control-icon {
-        font-size: 1.8rem;
-        margin-bottom: 0.3rem;
-      }
-
-      span {
-        font-weight: 600;
-        font-size: 0.9rem;
-      }
     }
   }
 }
 
-/* Indicador de progresso */
-.workout-progress {
-  position: fixed;
-  top: 60px; // Abaixo do header
-  left: 0;
-  width: 100%;
-  padding: 0.5rem 1rem;
-  background-color: rgba(255, 255, 255, 0.9);
-  z-index: 40;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-
-  .progress-label {
-    font-size: 0.9rem;
-    text-align: center;
-    margin-bottom: 0.3rem;
-    font-weight: 500;
-    color: #666;
-  }
-
-  .progress-bar-container {
-    height: 4px;
-    width: 100%;
-    background-color: #f0f0f0;
-    border-radius: 2px;
-    overflow: hidden;
-
-    .progress-bar {
-      height: 100%;
-      background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
-      transition: width 0.5s ease;
-    }
-  }
+swiper-container::part(container) {
+  overflow: visible;
 }
 
-/* Lista de voltas */
-.laps-list {
-  margin-top: 20px;
-  padding: 15px;
-  background-color: rgba(30, 30, 30, 0.8);
-  border-radius: 10px;
-  border-left: 3px solid var(--primary-color);
-  width: 100%;
-  max-width: 400px;
-
-  h3 {
-    color: var(--primary-color);
-    font-size: 18px;
-    margin-bottom: 10px;
-    text-align: center;
-    font-weight: 600;
-  }
-
-  .lap-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 8px 0;
-    border-bottom: 1px solid rgba(212, 175, 55, 0.2);
-
-    &:last-child {
-      border-bottom: none;
-    }
-
-    .lap-number {
-      width: 20%;
-      color: var(--text-color);
-      font-weight: 500;
-      text-align: center;
-    }
-
-    .lap-time {
-      width: 40%;
-      color: var(--primary-color);
-      font-weight: 600;
-      text-align: center;
-    }
-
-    .lap-pace {
-      width: 40%;
-      color: var(--text-color);
-      font-size: 14px;
-      text-align: right;
-    }
-  }
-}
-
-/* Detalhes do relatório de treino */
-.workout-details {
-  width: 100%;
-  margin: 25px 0;
-  padding: 15px;
-  background-color: rgba(30, 30, 30, 0.8);
-  border-radius: 15px;
-  max-height: 300px;
+swiper-slide {
   overflow-y: auto;
+  height: auto;
+}
 
-  h2 {
-    color: var(--primary-color);
-    font-size: 20px;
+/* Estilo para cronômetro digital */
+.digital-timer {
+  font-family: 'Roboto Mono', monospace;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: #E6C200; /* Dourado mais escuro */
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.4), 0 0 10px rgba(255, 215, 0, 0.4);
+  display: inline-block;
+}
+
+.main-timer-display {
+  .time-value {
+    font-size: 3.5rem;
+    font-weight: 700;
     text-align: center;
-    margin-bottom: 15px;
-    font-weight: 600;
-  }
+    margin: 1rem 0;
 
-  .exercise-details {
-    margin-bottom: 20px;
+    &.digital-timer {
+      background: linear-gradient(to bottom, #222, #333);
+      border-radius: 10px;
+      padding: 0.8rem 1.2rem;
+      box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.3), 0 4px 8px rgba(0, 0, 0, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      position: relative;
+      overflow: hidden;
+      color: #FFD700; /* Dourado brilhante */
 
-    &:last-child {
-      margin-bottom: 0;
-    }
-
-    h3 {
-      color: var(--primary-color);
-      font-size: 18px;
-      margin-bottom: 10px;
-      padding-bottom: 5px;
-      border-bottom: 1px solid var(--primary-color);
-    }
-
-    .exercise-sets {
-      .set-row {
-        display: flex;
-        padding: 8px 0;
-
-        &.header {
-          font-weight: 600;
-          color: var(--primary-color);
-          margin-bottom: 5px;
-        }
-
-        .set-cell {
-          flex: 1;
-          padding: 0 5px;
-          text-align: center;
-          color: var(--text-color);
-        }
+      &::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(to right, transparent, rgba(255, 215, 0, 0.7), transparent);
       }
     }
   }
 }
 
-/* Botões de ação no resumo */
-.summary-actions {
-  width: 100%;
-  max-width: 400px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-top: 20px;
-
-  ion-button {
-    height: 50px;
-    --border-radius: 25px;
-    font-weight: 600;
-    font-size: 16px;
-
-    ion-icon {
-      font-size: 20px;
-    }
-
-    &[color="secondary"] {
-      --background: #aa8e27;
-      --background-activated: #8a7520;
-    }
-  }
-}
-
-/* Revisão do slide de resumo */
-.summary-slide {
-  .slide-container.summary {
-    padding: 20px;
-    overflow-y: auto;
-    justify-content: flex-start;
-    background-color: var(--background-color-light);
-
-    .summary-icon {
-      font-size: 70px;
-      color: var(--primary-color);
-      margin: 20px 0;
-    }
-
-    h1 {
-      font-size: 28px;
-      color: var(--primary-color);
-      margin-bottom: 20px;
-    }
-
-    .summary-stats {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 20px;
-      width: 100%;
-      max-width: 400px;
-
-      .stat-item {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        background-color: rgba(30, 30, 30, 0.8);
-        padding: 15px 10px;
-        border-radius: 10px;
-        margin: 0 5px;
-
-        .stat-value {
-          font-size: 22px;
-          font-weight: 700;
-          color: var(--primary-color);
-          margin-bottom: 5px;
-        }
-
-        .stat-label {
-          font-size: 14px;
-          color: var(--text-color);
-          text-align: center;
-        }
-      }
-    }
-  }
+/* Modificação para o timer em laps-history também ficar dourado */
+.lap-time.digital-timer {
+  font-size: 1.3rem;
+  color: #E6C200; /* Dourado mais escuro */
+  text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.3), 0 0 5px rgba(255, 215, 0, 0.3);
+  font-weight: 700;
 }

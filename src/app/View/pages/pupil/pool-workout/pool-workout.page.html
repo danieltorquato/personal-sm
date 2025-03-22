@@ -46,6 +46,10 @@
         <p>Repetição {{currentRepetition}}/{{workout.sets[currentSetIndex].repetitions}}</p>
       </div>
       <div class="rest-controls">
+        <ion-button color="primary" (click)="toggleRest()">
+          <ion-icon [name]="isRestPaused ? 'play-outline' : 'pause-outline'" slot="start"></ion-icon>
+          {{isRestPaused ? 'Retomar' : 'Pausar'}}
+        </ion-button>
         <ion-button color="primary" (click)="skipRest()">
           <ion-icon name="play-skip-forward-outline" slot="start"></ion-icon>
           Pular

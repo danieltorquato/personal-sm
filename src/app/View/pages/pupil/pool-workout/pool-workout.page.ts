@@ -143,6 +143,11 @@ export class PoolWorkoutPage implements OnInit, OnDestroy {
   startSound: HTMLAudioElement = new Audio('assets/sounds/start.mp3');
   endSound: HTMLAudioElement = new Audio('assets/sounds/end.mp3');
 
+  // Estados adicionais
+  isRestPaused: boolean = false;
+  workoutState: any = null;
+  private readonly WORKOUT_STATE_KEY = 'pool_workout_state';
+
   constructor(
     private router: Router,
     private alertController: AlertController,
@@ -180,10 +185,14 @@ export class PoolWorkoutPage implements OnInit, OnDestroy {
     this.beepSound.load();
     this.startSound.load();
     this.endSound.load();
+
+    // Tentar recuperar o estado do treino do cache
+    this.loadWorkoutState();
   }
 
   ngOnDestroy() {
-    // Limpar os intervalos ao sair da página
+    // Salvar estado do treino antes de destruir o componente
+    this.saveWorkoutState();
     this.clearTimers();
   }
 
@@ -224,6 +233,8 @@ export class PoolWorkoutPage implements OnInit, OnDestroy {
         clearInterval(this.countdownInterval);
         this.isCountdownActive = false;
         this.playSound('start');
+
+        // Iniciar o timer e ativar o toque para volta
         this.startMainTimer();
         this.activateTouchToLap();
       }
@@ -312,11 +323,17 @@ export class PoolWorkoutPage implements OnInit, OnDestroy {
   }
 
   skipRest() {
-    clearInterval(this.restTimerInterval);
-    this.isRestTimerActive = false;
+    if (this.isRestTimerActive) {
+      clearInterval(this.restTimerInterval);
+      this.isRestTimerActive = false;
+      this.isRestPaused = false;
 
-    // Iniciar contagem regressiva antes de continuar
-    this.startCountdown(3);
+      // Mover para a próxima repetição antes da contagem regressiva
+      this.moveToNextRepetition();
+
+      // Iniciar contagem regressiva
+      this.startCountdown(3);
+    }
   }
 
   completeRest() {
@@ -370,7 +387,16 @@ export class PoolWorkoutPage implements OnInit, OnDestroy {
 
       if (this.currentSetIndex < this.workout.sets.length - 1) {
         // Se não for o último exercício, iniciar descanso
-        this.startRestTimer();
+        this.currentSetIndex++;
+        this.currentRepetition = 1;
+
+        if (this.workout.sets[this.currentSetIndex].restTime > 0) {
+          this.startRestTimer();
+        } else {
+          // Se não tiver descanso, iniciar a próxima atividade diretamente
+          this.startMainTimer();
+          this.activateTouchToLap();
+        }
       } else {
         // Completou o último exercício
         this.currentSetIndex++;
@@ -378,13 +404,15 @@ export class PoolWorkoutPage implements OnInit, OnDestroy {
       }
     } else {
       // Ainda tem repetições do exercício atual
+      this.currentRepetition++;
+
       if (currentSet.restTime > 0) {
         // Iniciar descanso entre repetições
         this.startRestTimer();
       } else {
         // Sem descanso, continuar para a próxima repetição
-        this.currentRepetition++;
         this.startMainTimer();
+        this.activateTouchToLap();
       }
     }
   }
@@ -536,5 +564,80 @@ export class PoolWorkoutPage implements OnInit, OnDestroy {
       cssClass: 'custom-alert'
     });
     await alert.present();
+  }
+
+  // Métodos para gerenciar o estado do treino
+  private saveWorkoutState() {
+    if (this.isWorkoutStarted) {
+      const state = {
+        workout: this.workout,
+        mainTimer: this.mainTimer,
+        lapTimer: this.lapTimer,
+        currentSetIndex: this.currentSetIndex,
+        currentRepetition: this.currentRepetition,
+        completedSets: this.completedSets,
+        completedDistance: this.completedDistance,
+        laps: this.laps,
+        isMainTimerRunning: this.isMainTimerRunning,
+        isRestTimerActive: this.isRestTimerActive,
+        isRestPaused: this.isRestPaused,
+        isCountdownActive: this.isCountdownActive,
+        countdownTimer: this.countdownTimer,
+        restTimer: this.restTimer,
+        initialRestTime: this.initialRestTime
+      };
+      localStorage.setItem(this.WORKOUT_STATE_KEY, JSON.stringify(state));
+    }
+  }
+
+  private loadWorkoutState() {
+    const savedState = localStorage.getItem(this.WORKOUT_STATE_KEY);
+    if (savedState) {
+      const state = JSON.parse(savedState);
+      this.workout = state.workout;
+      this.mainTimer = state.mainTimer;
+      this.lapTimer = state.lapTimer;
+      this.currentSetIndex = state.currentSetIndex;
+      this.currentRepetition = state.currentRepetition;
+      this.completedSets = state.completedSets;
+      this.completedDistance = state.completedDistance;
+      this.laps = state.laps;
+      this.isWorkoutStarted = true;
+      this.isRestPaused = state.isRestPaused || false;
+      this.isCountdownActive = state.isCountdownActive || false;
+      this.countdownTimer = state.countdownTimer || 0;
+
+      if (state.isMainTimerRunning) {
+        this.startMainTimer();
+      }
+
+      if (state.isRestTimerActive) {
+        this.restTimer = state.restTimer;
+        this.initialRestTime = state.initialRestTime;
+        this.startRestTimer();
+      }
+
+      if (state.isCountdownActive) {
+        this.startCountdown(this.countdownTimer);
+      }
+    }
+  }
+
+  // Método para pausar/retomar o descanso
+  toggleRest() {
+    if (this.isRestTimerActive) {
+      if (this.isRestPaused) {
+        this.restTimerInterval = setInterval(() => {
+          this.restTimer--;
+          if (this.restTimer <= 0) {
+            this.completeRest();
+          }
+        }, 1000);
+        this.isRestPaused = false;
+      } else {
+        clearInterval(this.restTimerInterval);
+        this.isRestPaused = true;
+      }
+    }
   }
 }

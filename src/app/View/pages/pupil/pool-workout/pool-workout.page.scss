@@ -196,10 +196,14 @@ ion-button {
   }
 
   .rest-controls {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 20px;
+
     ion-button {
-      margin: 0;
-      --background: var(--primary-color);
-      --color: var(--background-color);
+      flex: 1;
+      max-width: 150px;
     }
   }
 }

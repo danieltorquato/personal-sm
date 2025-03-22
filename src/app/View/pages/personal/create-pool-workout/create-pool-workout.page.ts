@@ -18,6 +18,7 @@ interface WorkoutSet {
   repetitions: number;
   restTime: number;
   notes?: string;
+  partialDistances?: number[]; // Distâncias parciais pré-definidas pelo professor
 }
 
 interface WorkoutTemplate {
@@ -116,7 +117,8 @@ export class CreatePoolWorkoutPage implements OnInit {
     exercise: 'nado-livre',
     distance: 50,
     repetitions: 2,
-    restTime: 30
+    restTime: 30,
+    partialDistances: [25] // Por padrão, metade da distância
   };
 
   // Modal de seleção de alunos
@@ -150,7 +152,8 @@ export class CreatePoolWorkoutPage implements OnInit {
       exercise: 'nado-livre',
       distance: 50,
       repetitions: 2,
-      restTime: 30
+      restTime: 30,
+      partialDistances: [25] // Por padrão, metade da distância
     };
     this.showSetModal = true;
   }
@@ -162,13 +165,29 @@ export class CreatePoolWorkoutPage implements OnInit {
   }
 
   saveSet() {
-    if (this.editingSetIndex === -1) {
-      // Adicionando nova série
-      this.workoutTemplate.sets.push({...this.currentSet});
-    } else {
-      // Editando série existente
-      this.workoutTemplate.sets[this.editingSetIndex] = {...this.currentSet};
+    // Validar dados básicos
+    if (this.currentSet.distance <= 0 || this.currentSet.repetitions <= 0) {
+      return;
     }
+
+    // Se não foram definidas distâncias parciais e a distância for maior que 25m,
+    // criar automaticamente parciais (metade da distância)
+    if (!this.currentSet.partialDistances || this.currentSet.partialDistances.length === 0) {
+      if (this.currentSet.distance > 25) {
+        this.currentSet.partialDistances = [Math.floor(this.currentSet.distance / 2)];
+      } else {
+        this.currentSet.partialDistances = [];
+      }
+    }
+
+    // Adicionar ou atualizar a série
+    if (this.editingSetIndex === -1) {
+      this.workoutTemplate.sets.push({ ...this.currentSet });
+    } else {
+      this.workoutTemplate.sets[this.editingSetIndex] = { ...this.currentSet };
+    }
+
+    // Fechar o modal
     this.showSetModal = false;
   }
 
@@ -335,5 +354,118 @@ export class CreatePoolWorkoutPage implements OnInit {
       buttons
     });
     await alert.present();
+  }
+
+  // Métodos para gerenciar distâncias parciais
+  addCustomPartialDistance(distanceStr: string) {
+    if (!distanceStr || isNaN(Number(distanceStr))) {
+      return; // Validação simples
+    }
+
+    const distance = Number(distanceStr);
+    if (distance <= 0 || distance >= this.currentSet.distance) {
+      // Distância inválida (deve ser positiva e menor que a distância total)
+      return;
+    }
+
+    // Inicializar o array se não existir
+    if (!this.currentSet.partialDistances) {
+      this.currentSet.partialDistances = [];
+    }
+
+    // Adicionar a distância se não estiver já adicionada
+    if (!this.hasPartialDistance(distance)) {
+      this.currentSet.partialDistances.push(distance);
+      this.currentSet.partialDistances.sort((a, b) => a - b);
+    }
+  }
+
+  // Verificar se uma distância está nas distâncias parciais
+  hasPartialDistance(distance: number): boolean {
+    if (!this.currentSet.partialDistances) {
+      return false;
+    }
+    return this.currentSet.partialDistances.includes(distance);
+  }
+
+  // Alternar a inclusão de uma distância nas parciais
+  togglePartialDistance(distance: number, event: any): void {
+    if (!this.currentSet.partialDistances) {
+      this.currentSet.partialDistances = [];
+    }
+
+    if (event.detail.checked) {
+      if (!this.hasPartialDistance(distance)) {
+        this.currentSet.partialDistances.push(distance);
+        this.currentSet.partialDistances.sort((a, b) => a - b);
+      }
+    } else {
+      const index = this.currentSet.partialDistances.indexOf(distance);
+      if (index !== -1) {
+        this.currentSet.partialDistances.splice(index, 1);
+      }
+    }
+  }
+
+  // Verificar se todas as distâncias múltiplas estão configuradas
+  hasPartialDistancesMultiple(interval: number): boolean {
+    if (!this.currentSet.partialDistances) {
+      return false;
+    }
+
+    const expectedDistances = this.getMultipleDistances(interval);
+    return expectedDistances.every(d => this.hasPartialDistance(d));
+  }
+
+  // Configurar múltiplas distâncias parciais
+  setPartialDistancesMultiple(interval: number, event: any): void {
+    if (!this.currentSet.partialDistances) {
+      this.currentSet.partialDistances = [];
+    }
+
+    const distances = this.getMultipleDistances(interval);
+
+    if (event.detail.checked) {
+      // Adicionar todas as distâncias
+      distances.forEach(d => {
+        if (!this.hasPartialDistance(d)) {
+          this.currentSet.partialDistances!.push(d);
+        }
+      });
+    } else {
+      // Remover todas as distâncias
+      distances.forEach(d => {
+        const index = this.currentSet.partialDistances!.indexOf(d);
+        if (index !== -1) {
+          this.currentSet.partialDistances!.splice(index, 1);
+        }
+      });
+    }
+
+    // Ordenar as distâncias
+    if (this.currentSet.partialDistances.length > 0) {
+      this.currentSet.partialDistances.sort((a, b) => a - b);
+    }
+  }
+
+  // Obter distâncias em intervalos regulares
+  getMultipleDistances(interval: number): number[] {
+    const result: number[] = [];
+    for (let i = interval; i < this.currentSet.distance; i += interval) {
+      result.push(i);
+    }
+    return result;
+  }
+
+  // Obter as distâncias parciais configuradas
+  getCurrentPartialDistances(): number[] {
+    return this.currentSet.partialDistances || [];
+  }
+
+  // Remover uma distância parcial
+  removePartialDistance(index: number): void {
+    if (this.currentSet.partialDistances && this.currentSet.partialDistances.length > index) {
+      this.currentSet.partialDistances.splice(index, 1);
+    }
   }
 }

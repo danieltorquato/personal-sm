@@ -76,6 +76,7 @@ export const routes: Routes = [
         path: 'create-pool-workout',
         loadComponent: () => import('./View/pages/personal/create-pool-workout/create-pool-workout.page').then(m => m.CreatePoolWorkoutPage)
       },
+
     ]
   },
 
