@@ -25,20 +25,9 @@
 
         <div class="divider"></div>
 
-        <!-- Menu para Personal -->
-        <ion-list *ngIf="isPersonal()">
-          <ion-menu-toggle auto-hide="false" *ngFor="let page of personalPages">
-            <ion-item routerLink="{{page.url}}" routerDirection="root" lines="none" detail="false"
-                    routerLinkActive="selected">
-              <ion-icon slot="start" [name]="page.icon"></ion-icon>
-              <ion-label>{{page.title}}</ion-label>
-            </ion-item>
-          </ion-menu-toggle>
-        </ion-list>
-
-        <!-- Menu para Aluno -->
-        <ion-list *ngIf="!isPersonal()">
-          <ion-menu-toggle auto-hide="false" *ngFor="let page of pupilPages">
+        <!-- Menu -->
+        <ion-list>
+          <ion-menu-toggle auto-hide="false" *ngFor="let page of getNavItems()">
             <ion-item routerLink="{{page.url}}" routerDirection="root" lines="none" detail="false"
                     routerLinkActive="selected">
               <ion-icon slot="start" [name]="page.icon"></ion-icon>
