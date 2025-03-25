@@ -25,10 +25,15 @@ import {
   IonItem,
   IonLabel,
   IonAvatar,
+  IonMenu,
+  IonMenuButton,
+  IonMenuToggle
 } from "@ionic/angular/standalone";
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { Router } from '@angular/router';
 import { RouterLink } from '@angular/router';
+import { AuthService } from '../core/services/auth.service';
+import { AlertController } from '@ionic/angular';
 import {
   notificationsOutline,
   playOutline,
@@ -49,7 +54,12 @@ import {
   trendingUp,
   chatbubbles,
   book,
-  add
+  add,
+  logOutOutline,
+  settingsOutline,
+  personOutline,
+  helpCircleOutline,
+  speedometerOutline
 } from 'ionicons/icons';
 import { addIcons } from 'ionicons';
 
@@ -84,20 +94,92 @@ import { addIcons } from 'ionicons';
     IonLabel,
     IonAvatar,
     RouterLink,
+    IonMenu,
+    IonMenuButton,
+    IonMenuToggle,
     CommonModule,
     FormsModule
   ]
 })
 export class HomePupilPage implements OnInit {
+  userName: string = 'Aluno';
 
-  constructor(private router: Router) {
-    addIcons({notificationsOutline,barbell,trendingUp,chatbubbles,book,fitnessOutline,repeatOutline,checkmarkCircleOutline,arrowForward,chatboxEllipsesOutline,add,chatbubblesOutline,cameraOutline,calendarOutline,trendingUpOutline,bookOutline,addOutline,playOutline,arrowForwardOutline,barbellOutline});
+  constructor(
+    private router: Router,
+    private authService: AuthService,
+    private alertController: AlertController
+  ) {
+    addIcons({
+      notificationsOutline,
+      barbell,
+      trendingUp,
+      chatbubbles,
+      book,
+      fitnessOutline,
+      repeatOutline,
+      checkmarkCircleOutline,
+      arrowForward,
+      chatboxEllipsesOutline,
+      add,
+      chatbubblesOutline,
+      cameraOutline,
+      calendarOutline,
+      trendingUpOutline,
+      bookOutline,
+      addOutline,
+      playOutline,
+      arrowForwardOutline,
+      barbellOutline,
+      logOutOutline,
+      settingsOutline,
+      personOutline,
+      helpCircleOutline,
+      speedometerOutline
+    });
   }
 
   ngOnInit() {
+    // Recuperar informações do usuário logado
+    const currentUser = this.authService.getCurrentUser();
+    if (currentUser) {
+      this.userName = currentUser.name;
+    }
   }
 
   navigateTo(page: string) {
-    this.router.navigate([`/${page}`]);
+    try {
+      console.log(`Navegando para: ${page}`);
+      this.router.navigate([page]).then(() => {
+        console.log('Navegação bem-sucedida');
+      }).catch(error => {
+        console.error('Erro na navegação:', error);
+      });
+    } catch (error) {
+      console.error('Erro ao tentar navegar:', error);
+    }
+  }
+
+  async logout() {
+    const alert = await this.alertController.create({
+      header: 'Confirmar Logout',
+      message: 'Tem certeza que deseja sair?',
+      buttons: [
+        {
+          text: 'Cancelar',
+          role: 'cancel',
+          handler: () => {
+            console.log('Logout cancelado');
+          }
+        }, {
+          text: 'Sair',
+          handler: () => {
+            console.log('Realizando logout...');
+            this.authService.logout();
+          }
+        }
+      ]
+    });
+
+    await alert.present();
   }
 }

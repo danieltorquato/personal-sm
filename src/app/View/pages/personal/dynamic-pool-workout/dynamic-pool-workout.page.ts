@@ -118,7 +118,13 @@ export class DynamicPoolWorkoutPage implements OnInit, AfterViewInit, OnDestroy 
   ];
 
   // Dados do treino
-  workout = {
+  workout: {
+    id: string;
+    name: string;
+    date: Date;
+    studentId: string;
+    sets: WorkoutSet[];
+  } = {
     id: new Date().getTime().toString(),
     name: 'Treino de Natação',
     date: new Date(),
@@ -132,7 +138,8 @@ export class DynamicPoolWorkoutPage implements OnInit, AfterViewInit, OnDestroy 
         notes: 'Concentre-se na respiração bilateral',
         completedRepetitions: 1,
         laps: [] as Lap[],
-        partialDistances: [25] // Adicionando distância parcial
+        partialDistances: [25], // Adicionando distância parcial
+        equipment: []
       },
       {
         exercise: 'nado-costas',
@@ -142,7 +149,8 @@ export class DynamicPoolWorkoutPage implements OnInit, AfterViewInit, OnDestroy 
         notes: 'Mantenha o corpo alinhado na superfície',
         completedRepetitions: 1,
         laps: [] as Lap[],
-        partialDistances: [25] // Adicionando distância parcial
+        partialDistances: [25], // Adicionando distância parcial
+        equipment: []
       },
       {
         exercise: 'batida-pernas',
@@ -152,7 +160,8 @@ export class DynamicPoolWorkoutPage implements OnInit, AfterViewInit, OnDestroy 
         notes: 'Use a prancha e mantenha as pernas estendidas',
         completedRepetitions: 1,
         laps: [] as Lap[],
-        partialDistances: [] // Sem distâncias parciais
+        partialDistances: [], // Sem distâncias parciais
+        equipment: []
       },
       {
         exercise: 'nado-peito',
@@ -161,7 +170,8 @@ export class DynamicPoolWorkoutPage implements OnInit, AfterViewInit, OnDestroy 
         restTime: 40,
         completedRepetitions: 1,
         laps: [] as Lap[],
-        partialDistances: [25] // Adicionando distância parcial
+        partialDistances: [25], // Adicionando distância parcial
+        equipment: []
       },
       {
         exercise: 'pullbuoy',
@@ -171,7 +181,8 @@ export class DynamicPoolWorkoutPage implements OnInit, AfterViewInit, OnDestroy 
         notes: 'Foco na técnica de braçada e rotação de ombros',
         completedRepetitions: 1,
         laps: [] as Lap[],
-        partialDistances: [25] // Adicionando distância parcial
+        partialDistances: [25], // Adicionando distância parcial
+        equipment: []
       }
     ]
   };
@@ -186,7 +197,8 @@ export class DynamicPoolWorkoutPage implements OnInit, AfterViewInit, OnDestroy 
     restTime: 0,
     completedRepetitions: 1,
     laps: [] as Lap[],
-    partialDistances: [] // Adicionando campo faltante
+    partialDistances: [], // Adicionando campo faltante
+    equipment: [] // Adicionando equipamento faltante
   };
   totalWorkoutTime: number = 0;
   currentExercise: string = '';
@@ -254,15 +266,15 @@ export class DynamicPoolWorkoutPage implements OnInit, AfterViewInit, OnDestroy 
     // Criar exemplo de equipamentos para os exercícios
     for (let i = 0; i < this.workout.sets.length; i++) {
       // Verificar se o exercício já tem equipamento definido
-      if (!this.workout.sets[i].equipment) {
+      if (!('equipment' in this.workout.sets[i])) {
         // Adicionar equipamentos de exemplo
-        this.workout.sets[i].equipment = [];
+        (this.workout.sets[i] as WorkoutSet).equipment = [];
 
         // Adicionar exemplo para alguns exercícios
         if (i % 2 === 0) {
-          this.workout.sets[i].equipment.push('prancha');
+          (this.workout.sets[i] as WorkoutSet).equipment!.push('prancha');
         } else if (i % 3 === 0) {
-          this.workout.sets[i].equipment.push('pullbuoy');
+          (this.workout.sets[i] as WorkoutSet).equipment!.push('pullbuoy');
         }
       }
     }
@@ -487,6 +499,11 @@ export class DynamicPoolWorkoutPage implements OnInit, AfterViewInit, OnDestroy 
       if (this.workout.sets[this.currentSetIndex]) {
         this.workout.sets[this.currentSetIndex].completedRepetitions = this.currentRepetition;
       }
+
+      // Iniciar descanso entre repetições se houver tempo de descanso configurado
+      if (this.currentSet.restTime > 0) {
+        this.startRestTimer();
+      }
     } else {
       // Completou todas as repetições desta série
       this.presentToast('Série completa!');
@@ -560,8 +577,15 @@ export class DynamicPoolWorkoutPage implements OnInit, AfterViewInit, OnDestroy 
     this.isRestTimerPaused = false;
     this.restTimerValue = this.currentSet.restTime;
 
+    console.log('Iniciando timer de descanso:', this.restTimerValue, 'segundos');
+
     // Tocar som de início de descanso
     this.playSound('rest-start');
+
+    // Limpar qualquer intervalo anterior
+    if (this.restTimerInterval) {
+      clearInterval(this.restTimerInterval);
+    }
 
     // Iniciar a contagem regressiva
     this.restTimerInterval = setInterval(() => {
@@ -1118,7 +1142,7 @@ export class DynamicPoolWorkoutPage implements OnInit, AfterViewInit, OnDestroy 
           restTime: 40,
           notes: 'Foco na técnica de respiração bilateral e braçada longa',
           completedRepetitions: 1,
-          laps: [] as Lap[],
+          laps: [],
           partialDistances: [25, 50, 75],
           equipment: ['toledo', 'prancha']
         },
@@ -1129,7 +1153,7 @@ export class DynamicPoolWorkoutPage implements OnInit, AfterViewInit, OnDestroy 
           restTime: 30,
           notes: 'Manter pernas esticadas, usar prancha grande',
           completedRepetitions: 1,
-          laps: [] as Lap[],
+          laps: [],
           partialDistances: [25],
           equipment: ['prancha']
         },
@@ -1140,7 +1164,7 @@ export class DynamicPoolWorkoutPage implements OnInit, AfterViewInit, OnDestroy 
           restTime: 60,
           notes: 'Foco na ondulação do corpo e na sincronização dos braços',
           completedRepetitions: 1,
-          laps: [] as Lap[],
+          laps: [],
           partialDistances: [25],
           equipment: ['toledo']
         },
@@ -1151,7 +1175,7 @@ export class DynamicPoolWorkoutPage implements OnInit, AfterViewInit, OnDestroy 
           restTime: 45,
           notes: 'Concentre-se na pegada e puxada subaquática',
           completedRepetitions: 1,
-          laps: [] as Lap[],
+          laps: [],
           partialDistances: [25, 50],
           equipment: ['toledo']
         },
@@ -1162,7 +1186,7 @@ export class DynamicPoolWorkoutPage implements OnInit, AfterViewInit, OnDestroy 
           restTime: 60,
           notes: 'Sequência: borboleta, costas, peito, livre - 25m cada',
           completedRepetitions: 1,
-          laps: [] as Lap[],
+          laps: [],
           partialDistances: [25, 50, 75],
           equipment: ['toledo']
         }

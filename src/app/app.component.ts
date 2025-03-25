@@ -1,29 +1,46 @@
-import { Component } from '@angular/core';
-import { IonApp, IonRouterOutlet, IonMenu, IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonIcon, IonLabel, IonMenuToggle, IonButton, IonFooter, IonSplitPane } from '@ionic/angular/standalone';
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterOutlet } from '@angular/router';
+import { HttpClientModule } from '@angular/common/http';
+import {
+  IonApp, IonRouterOutlet, IonMenu, IonHeader, IonToolbar,
+  IonTitle, IonContent, IonList, IonItem, IonIcon, IonLabel,
+  IonMenuToggle, IonButton, IonFooter, IonSplitPane
+} from '@ionic/angular/standalone';
 import { RouterLink } from '@angular/router';
 import { addIcons } from 'ionicons';
 import {
-  barbell,
   person,
   home,
-  people,
-  analytics,
-  settings,
-  speedometer,
-  calendar,
   fitness,
-  time,
+  barbell,
+  people,
   logOut,
-  water,
+  speedometer,
+  settings,
+  calendar,
+  analytics,
+  medal,
+  add,
   create
 } from 'ionicons/icons';
 
+import { ApiService } from './services/api.service';
+import { AuthService } from './services/auth.service';
+import { WorkoutService } from './services/workout.service';
+import { UserService } from './services/user.service';
+import { WorkoutSessionService } from './services/workout-session.service';
+import { StopwatchService } from './services/stopwatch.service';
+import { UtilsService } from './services/utils.service';
+
 @Component({
   selector: 'app-root',
-  templateUrl: 'app.component.html',
-  styleUrls: ['app.component.scss'],
   standalone: true,
   imports: [
+    CommonModule,
+    RouterOutlet,
+    HttpClientModule,
+    RouterLink,
     IonApp,
     IonRouterOutlet,
     IonMenu,
@@ -38,56 +55,79 @@ import {
     IonMenuToggle,
     IonButton,
     IonFooter,
-    IonSplitPane,
-    RouterLink
+    IonSplitPane
   ],
+  providers: [
+    ApiService,
+    AuthService,
+    WorkoutService,
+    UserService,
+    WorkoutSessionService,
+    StopwatchService,
+    UtilsService
+  ],
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.scss']
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   personalPages = [
     { title: 'Painel', url: '/personal/dashboard', icon: 'speedometer' },
-    { title: 'Gerenciar Alunos', url: '/personal/manage-students', icon: 'people' },
-    { title: 'Criar Treino', url: '/personal/create-workout', icon: 'barbell' },
-    { title: 'Treino de Natação', url: '/personal/dynamic-pool-workout', icon: 'water' },
-    { title: 'Criar Treino de Natação', url: '/personal/create-pool-workout', icon: 'create' },
-    { title: 'Análise de Desempenho', url: '/personal/performance', icon: 'analytics' },
-    { title: 'Configurações', url: '/personal/settings', icon: 'settings' }
+    { title: 'Alunos', url: '/personal/alunos', icon: 'people' },
+    { title: 'Treinos', url: '/personal/treinos', icon: 'barbell' },
+    { title: 'Agenda', url: '/personal/agenda', icon: 'calendar' },
+    { title: 'Estatísticas', url: '/personal/estatisticas', icon: 'analytics' },
+    { title: 'Configurações', url: '/personal/configuracoes', icon: 'settings' }
   ];
 
-  pupilPages = [
-    { title: 'Painel', url: '/pupil/dashboard', icon: 'speedometer' },
-    { title: 'Meu Perfil', url: '/pupil/profile', icon: 'person' },
-    { title: 'Treino Atual', url: '/pupil/current-workout', icon: 'barbell' },
-    { title: 'Treino de Piscina', url: '/pupil/pool-workout', icon: 'water' },
-    { title: 'Histórico de Treinos', url: '/pupil/workout-history', icon: 'time' },
-    { title: 'Configurações', url: '/pupil/settings', icon: 'settings' }
+  studentPages = [
+    { title: 'Painel', url: '/aluno/dashboard', icon: 'speedometer' },
+    { title: 'Meus Treinos', url: '/aluno/treinos', icon: 'barbell' },
+    { title: 'Histórico', url: '/aluno/historico', icon: 'analytics' },
+    { title: 'Evolução', url: '/aluno/evolucao', icon: 'medal' },
+    { title: 'Perfil', url: '/aluno/perfil', icon: 'person' }
   ];
 
-  constructor() {
+  constructor(private authService: AuthService) {
     addIcons({
       barbell,
       person,
       home,
-      people,
-      analytics,
-      settings,
-      speedometer,
-      calendar,
       fitness,
-      time,
+      people,
       logOut,
-      water,
+      speedometer,
+      settings,
+      calendar,
+      analytics,
+      medal,
+      add,
       create
     });
   }
 
+  ngOnInit() {
+    // Verificar se o usuário está autenticado ao iniciar o aplicativo
+    this.authService.checkAuth();
+  }
+
   isPersonal(): boolean {
-    // Lógica para verificar se o usuário é personal trainer
-    // Por enquanto, vamos assumir baseado na URL
-    return window.location.href.includes('/personal/');
+    return this.authService.isTrainer();
+  }
+
+  isStudent(): boolean {
+    return this.authService.isStudent();
+  }
+
+  getNavItems() {
+    if (this.isPersonal()) {
+      return this.personalPages;
+    } else if (this.isStudent()) {
+      return this.studentPages;
+    }
+    return [];
   }
 
   logout() {
-    // Lógica para fazer logout e redirecionar para a página de login
-    window.location.href = '/auth/login';
+    this.authService.logout();
   }
 }

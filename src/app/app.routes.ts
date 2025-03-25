@@ -1,22 +1,27 @@
 import { Routes } from '@angular/router';
+import { AuthGuard } from './core/services/auth.guard';
 
 export const routes: Routes = [
   {
     path: '',
-    redirectTo: 'home',
+    redirectTo: 'login',
     pathMatch: 'full'
   },
   {
     path: 'home',
-    loadComponent: () => import('./home/home.page').then(m => m.HomePage)
+    loadComponent: () => import('./home/home.page').then(m => m.HomePage),
+    canActivate: [AuthGuard],
+    data: { userType: 'personal' }
   },
   {
     path: 'home-pupil',
-    loadComponent: () => import('./home-pupil/home-pupil.page').then(m => m.HomePupilPage)
+    loadComponent: () => import('./home-pupil/home-pupil.page').then(m => m.HomePupilPage),
+    canActivate: [AuthGuard],
+    data: { userType: 'aluno' }
   },
   // Auth Routes
   {
-    path: 'auth/login',
+    path: 'login',
     loadComponent: () => import('./View/pages/auth/login/login.page').then(m => m.LoginPage)
   },
   {
@@ -47,6 +52,8 @@ export const routes: Routes = [
   // Personal Trainer Routes
   {
     path: 'personal',
+    canActivate: [AuthGuard],
+    data: { userType: 'personal' },
     children: [
       {
         path: 'dashboard',
@@ -76,13 +83,14 @@ export const routes: Routes = [
         path: 'create-pool-workout',
         loadComponent: () => import('./View/pages/personal/create-pool-workout/create-pool-workout.page').then(m => m.CreatePoolWorkoutPage)
       },
-
     ]
   },
 
   // Pupil Routes
   {
     path: 'pupil',
+    canActivate: [AuthGuard],
+    data: { userType: 'aluno' },
     children: [
       {
         path: 'dashboard',
@@ -114,5 +122,8 @@ export const routes: Routes = [
       },
     ]
   },
-
+  {
+    path: '**',
+    redirectTo: 'login'
+  }
 ];

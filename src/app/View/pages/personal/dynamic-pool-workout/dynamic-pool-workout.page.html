@@ -28,7 +28,14 @@
         <div class="progress-bar" [style.width.%]="(restTimerValue / currentSet.restTime) * 100"></div>
       </div>
       <div class="next-exercise">
-        <p>Próximo: {{getExerciseDisplayName(workout.sets[currentSetIndex].exercise)}}</p>
+        <ng-container *ngIf="currentRepetition < currentSet.repetitions; else nextExerciseTemplate">
+          <p>Próxima repetição: {{currentRepetition}}/{{currentSet.repetitions}}</p>
+          <p>Mesmo exercício: {{getExerciseDisplayName(currentSet.exercise)}}</p>
+        </ng-container>
+        <ng-template #nextExerciseTemplate>
+          <p *ngIf="currentSetIndex < workout.sets.length - 1">Próximo: {{getExerciseDisplayName(workout.sets[currentSetIndex + 1].exercise)}}</p>
+          <p *ngIf="currentSetIndex >= workout.sets.length - 1">Fim do treino!</p>
+        </ng-template>
 
         <!-- Instrução de equipamento -->
         <div class="equipment-instruction" *ngIf="currentSet.equipment && currentSet.equipment.length > 0">

@@ -1,261 +1,299 @@
 <ion-menu contentId="main-content">
   <ion-header>
-    <ion-toolbar>
-      <ion-title>Menu Content</ion-title>
+    <ion-toolbar color="dark">
+      <ion-title>Menu</ion-title>
     </ion-toolbar>
   </ion-header>
-  <ion-content class="ion-padding">This is the menu content.</ion-content>
+  <ion-content>
+    <div class="menu-header">
+      <div class="user-avatar">
+        <img src="assets/avatar-personal.jpg" alt="Avatar" onerror="this.src='assets/default-avatar.png'">
+      </div>
+      <h2>{{ userName }}</h2>
+      <p>{{ userType }}</p>
+    </div>
+
+    <ion-list lines="none">
+      <ion-item button routerLink="/personal/dashboard">
+        <ion-icon name="speedometer-outline" slot="start"></ion-icon>
+        <ion-label>Dashboard</ion-label>
+      </ion-item>
+      <ion-item button routerLink="/personal/manage-students">
+        <ion-icon name="people" slot="start"></ion-icon>
+        <ion-label>Gerenciar Alunos</ion-label>
+      </ion-item>
+      <ion-item button routerLink="/personal/create-workout">
+        <ion-icon name="barbell" slot="start"></ion-icon>
+        <ion-label>Montar Treino</ion-label>
+      </ion-item>
+      <ion-item button routerLink="/personal/settings">
+        <ion-icon name="settings-outline" slot="start"></ion-icon>
+        <ion-label>Configurações</ion-label>
+      </ion-item>
+      <ion-item button routerLink="/personal/help">
+        <ion-icon name="help-circle-outline" slot="start"></ion-icon>
+        <ion-label>Ajuda</ion-label>
+      </ion-item>
+      <ion-item button (click)="logout()" color="light" class="logout-item">
+        <ion-icon name="log-out-outline" slot="start" color="danger"></ion-icon>
+        <ion-label color="danger">Sair</ion-label>
+      </ion-item>
+    </ion-list>
+  </ion-content>
 </ion-menu>
-<ion-header class="ion-no-border">
-  <ion-toolbar color="dark" class="transparent-toolbar">
-    <ion-buttons slot="start">
-      <ion-menu-button class="menu-button"></ion-menu-button>
-    </ion-buttons>
-    <ion-title class="animate__animated animate__fadeInDown">
-      <img src="./assets/logo.png" alt="Personal SM" height="80" class="logo-pulse">
-    </ion-title>
-    <ion-buttons slot="end">
-      <ion-button class="notification-button animate__animated animate__fadeInDown">
-      <ion-icon size="large" name="notifications-outline"></ion-icon>
-        <ion-badge class="badge-pulse" color="warning" style="--background: #9e7b3b;">3</ion-badge>
-      </ion-button>
-    </ion-buttons>
-  </ion-toolbar>
-</ion-header>
 
-<ion-content fullscreen="true" class="ion-padding">
-  <div class="background-gradient"></div>
+<div class="ion-page" id="main-content">
+  <ion-header class="ion-no-border">
+    <ion-toolbar color="dark" class="transparent-toolbar">
+      <ion-buttons slot="start">
+        <ion-menu-button class="menu-button"></ion-menu-button>
+      </ion-buttons>
+      <ion-title class="animate__animated animate__fadeInDown">
+        <img src="./assets/logo.png" alt="Personal SM" height="80" class="logo-pulse">
+      </ion-title>
+      <ion-buttons slot="end">
+        <ion-button class="notification-button animate__animated animate__fadeInDown" (click)="navigateTo('personal/notifications')">
+        <ion-icon size="large" name="notifications-outline"></ion-icon>
+          <ion-badge class="badge-pulse" color="warning" style="--background: #9e7b3b;">3</ion-badge>
+        </ion-button>
+      </ion-buttons>
+    </ion-toolbar>
+  </ion-header>
 
-  <!-- Banner de boas-vindas com animação -->
-  <ion-row class="animate__animated animate__fadeInUp">
-    <ion-col size="12">
-      <ion-card class="welcome-card glass-card">
-        <div class="card-blur-bg"></div>
-        <ion-card-content>
-          <h1 class="welcome-title">Bem-vindo, Personal!</h1>
-          <p class="welcome-subtitle">Gerencie seus alunos e treinos de forma eficiente.</p>
-          <ion-button shape="round" fill="outline" size="small" color="light" class="floating-button" (click)="navigateTo('personal/manage-students')">
-            Iniciar
-          </ion-button>
-        </ion-card-content>
-      </ion-card>
-    </ion-col>
-  </ion-row>
+  <ion-content fullscreen="true" class="ion-padding">
+    <div class="background-gradient"></div>
 
-  <!-- Resumo de Alunos com efeito hover e contadores animados -->
-  <ion-row class="animate__animated animate__fadeInUp animate__delay-1s">
-    <ion-col size="12">
-      <ion-card class="stat-card">
-        <ion-card-header>
-          <ion-card-title class="gold-text">Resumo de Alunos</ion-card-title>
-        </ion-card-header>
-        <ion-card-content>
-          <ion-row>
-            <ion-col size="4">
-              <div class="statistic-box hover-scale">
-                <h2 class="counter-number" data-count="15">15</h2>
-                <div class="stat-divider"></div>
-                <p>Total de alunos</p>
-              </div>
-            </ion-col>
-            <ion-col size="4">
-              <div class="statistic-box hover-scale">
-                <h2 class="counter-number" data-count="8">8</h2>
-                <div class="stat-divider"></div>
-                <p>Treinos ativos</p>
-              </div>
-            </ion-col>
-            <ion-col size="4">
-              <div class="statistic-box hover-scale">
-                <h2 class="counter-number" data-count="3">3</h2>
-                <div class="stat-divider"></div>
-                <p>Feedbacks novos</p>
-              </div>
-            </ion-col>
-          </ion-row>
-        </ion-card-content>
-      </ion-card>
-    </ion-col>
-  </ion-row>
+    <!-- Banner de boas-vindas com animação -->
+    <ion-row class="animate__animated animate__fadeInUp">
+      <ion-col size="12">
+        <ion-card class="welcome-card glass-card">
+          <div class="card-blur-bg"></div>
+          <ion-card-content>
+            <h1 class="welcome-title">Bem-vindo, {{ userName }}!</h1>
+            <p class="welcome-subtitle">Gerencie seus alunos e treinos de forma eficiente.</p>
+            <ion-button shape="round" fill="outline" size="small" color="light" class="floating-button" (click)="navigateTo('personal/manage-students')">
+              Iniciar
+            </ion-button>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
 
-  <!-- Acesso Rápido com cards flutuantes e efeito hover -->
-  <div class="section-header animate__animated animate__fadeInUp animate__delay-2s">
-    <h2 class="gold-text">Acesso Rápido</h2>
-    <div class="gold-line"></div>
-  </div>
+    <!-- Resumo de Alunos com efeito hover e contadores animados -->
+    <ion-row class="animate__animated animate__fadeInUp animate__delay-1s">
+      <ion-col size="12">
+        <ion-card class="stat-card">
+          <ion-card-header>
+            <ion-card-title class="gold-text">Resumo de Alunos</ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <ion-row>
+              <ion-col size="4">
+                <div class="statistic-box hover-scale">
+                  <h2 class="counter-number" data-count="15">15</h2>
+                  <div class="stat-divider"></div>
+                  <p>Total de alunos</p>
+                </div>
+              </ion-col>
+              <ion-col size="4">
+                <div class="statistic-box hover-scale">
+                  <h2 class="counter-number" data-count="8">8</h2>
+                  <div class="stat-divider"></div>
+                  <p>Treinos ativos</p>
+                </div>
+              </ion-col>
+              <ion-col size="4">
+                <div class="statistic-box hover-scale">
+                  <h2 class="counter-number" data-count="3">3</h2>
+                  <div class="stat-divider"></div>
+                  <p>Feedbacks novos</p>
+                </div>
+              </ion-col>
+            </ion-row>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
 
-  <ion-row class="animate__animated animate__fadeInUp animate__delay-2s">
-    <ion-col size="6">
-      <ion-card button routerLink="/alunos" class="float-card">
-        <div class="card-overlay"></div>
-        <ion-card-content class="icon-card">
-          <ion-icon name="people" color="warning" class="feature-icon"></ion-icon>
-          <p class="feature-text">Gerenciar Alunos</p>
-        </ion-card-content>
-      </ion-card>
-    </ion-col>
-    <ion-col size="6">
-      <ion-card button routerLink="/montar-treino" class="float-card">
-        <div class="card-overlay"></div>
-        <ion-card-content class="icon-card">
-          <ion-icon name="barbell" color="warning" class="feature-icon"></ion-icon>
-          <p class="feature-text">Montar Treino</p>
-        </ion-card-content>
-      </ion-card>
-    </ion-col>
-    <ion-col size="6">
-      <ion-card button routerLink="/biblioteca" class="float-card">
-        <div class="card-overlay"></div>
-        <ion-card-content class="icon-card">
-          <ion-icon name="library" color="warning" class="feature-icon"></ion-icon>
-          <p class="feature-text">Biblioteca</p>
-        </ion-card-content>
-      </ion-card>
-    </ion-col>
-    <ion-col size="6">
-      <ion-card button routerLink="/mensagens" class="float-card">
-        <div class="card-overlay"></div>
-        <ion-card-content class="icon-card">
-          <ion-icon name="chatbubbles" color="warning" class="feature-icon"></ion-icon>
-          <p class="feature-text">Mensagens</p>
-        </ion-card-content>
-      </ion-card>
-    </ion-col>
-  </ion-row>
+    <!-- Acesso Rápido com cards flutuantes e efeito hover -->
+    <div class="section-header animate__animated animate__fadeInUp animate__delay-2s">
+      <h2 class="gold-text">Acesso Rápido</h2>
+      <div class="gold-line"></div>
+    </div>
 
-  <!-- Agenda do Dia com efeitos de animação e hover -->
-  <ion-row class="animate__animated animate__fadeInUp animate__delay-3s">
-    <ion-col size="12">
-      <ion-card class="agenda-card">
-        <ion-card-header>
-          <ion-card-title class="gold-text">
-            <ion-icon name="calendar-outline" class="header-icon"></ion-icon>
-            Agenda de Hoje
-          </ion-card-title>
-        </ion-card-header>
-        <ion-card-content>
-          <ion-list lines="none">
-            <ion-item class="agenda-item slide-in">
+    <ion-row class="animate__animated animate__fadeInUp animate__delay-2s">
+      <ion-col size="6">
+        <ion-card button (click)="navigateTo('personal/manage-students')" class="float-card">
+          <div class="card-overlay"></div>
+          <ion-card-content class="icon-card">
+            <ion-icon name="people" color="warning" class="feature-icon"></ion-icon>
+            <p class="feature-text">Gerenciar Alunos</p>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+      <ion-col size="6">
+        <ion-card button (click)="navigateTo('personal/create-workout')" class="float-card">
+          <div class="card-overlay"></div>
+          <ion-card-content class="icon-card">
+            <ion-icon name="barbell" color="warning" class="feature-icon"></ion-icon>
+            <p class="feature-text">Montar Treino</p>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+      <ion-col size="6">
+        <ion-card button (click)="navigateTo('personal/library')" class="float-card">
+          <div class="card-overlay"></div>
+          <ion-card-content class="icon-card">
+            <ion-icon name="library" color="warning" class="feature-icon"></ion-icon>
+            <p class="feature-text">Biblioteca</p>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+      <ion-col size="6">
+        <ion-card button (click)="navigateTo('personal/messages')" class="float-card">
+          <div class="card-overlay"></div>
+          <ion-card-content class="icon-card">
+            <ion-icon name="chatbubbles" color="warning" class="feature-icon"></ion-icon>
+            <p class="feature-text">Mensagens</p>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+
+    <!-- Agenda do Dia com efeitos de animação e hover -->
+    <ion-row class="animate__animated animate__fadeInUp animate__delay-3s">
+      <ion-col size="12">
+        <ion-card class="agenda-card">
+          <ion-card-header>
+            <ion-card-title class="gold-text">
+              <ion-icon name="calendar-outline" class="header-icon"></ion-icon>
+              Agenda de Hoje
+            </ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <ion-list lines="none">
+              <ion-item class="agenda-item slide-in">
+                <ion-avatar slot="start">
+                  <img src="assets/avatar1.jpg" alt="Avatar">
+                </ion-avatar>
+                <ion-label>
+                  <h2>Carlos Silva</h2>
+                  <p>
+                    <ion-icon name="time-outline" class="small-icon"></ion-icon> 07:00
+                    <ion-icon name="fitness-outline" class="small-icon ion-margin-start"></ion-icon> Musculação
+                  </p>
+                </ion-label>
+                <ion-button fill="clear" slot="end" class="view-button" (click)="navigateTo('personal/student-details/1')">
+                  <ion-icon slot="icon-only" name="eye-outline"></ion-icon>
+                </ion-button>
+              </ion-item>
+              <ion-item class="agenda-item slide-in">
+                <ion-avatar slot="start">
+                  <img src="" alt="Avatar">
+                </ion-avatar>
+                <ion-label>
+                  <h2>Ana Ferreira</h2>
+                  <p>
+                    <ion-icon name="time-outline" class="small-icon"></ion-icon> 10:30
+                    <ion-icon name="water-outline" class="small-icon ion-margin-start"></ion-icon> Natação
+                  </p>
+                </ion-label>
+                <ion-button fill="clear" slot="end" class="view-button" (click)="navigateTo('personal/student-details/2')">
+                  <ion-icon slot="icon-only" name="eye-outline"></ion-icon>
+                </ion-button>
+              </ion-item>
+              <ion-item class="agenda-item slide-in">
+                <ion-avatar slot="start">
+                  <img src="assets/avatar3.jpg" alt="Avatar">
+                </ion-avatar>
+                <ion-label>
+                  <h2>Lucas Mendes</h2>
+                  <p>
+                    <ion-icon name="time-outline" class="small-icon"></ion-icon> 16:00
+                    <ion-icon name="fitness-outline" class="small-icon ion-margin-start"></ion-icon> Musculação
+                  </p>
+                </ion-label>
+                <ion-button fill="clear" slot="end" class="view-button" (click)="navigateTo('personal/student-details/3')">
+                  <ion-icon slot="icon-only" name="eye-outline"></ion-icon>
+                </ion-button>
+              </ion-item>
+            </ion-list>
+            <ion-button expand="block" color="dark" class="custom-button" (click)="navigateTo('personal/schedule')">
+              Ver agenda completa
+              <ion-icon name="arrow-forward" slot="end"></ion-icon>
+            </ion-button>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+
+    <!-- Feedbacks Recentes com cards modernos e animados -->
+    <ion-row class="animate__animated animate__fadeInUp animate__delay-4s">
+      <ion-col size="12">
+        <ion-card class="feedback-card">
+          <ion-card-header>
+            <ion-card-title class="gold-text">
+              <ion-icon name="chatbox-ellipses-outline" class="header-icon"></ion-icon>
+              Feedbacks Recentes
+            </ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <ion-item class="feedback-item">
               <ion-avatar slot="start">
-                <img src="assets/avatar1.jpg" alt="Avatar">
+                <img src="assets/avatar4.jpg" alt="Avatar">
               </ion-avatar>
               <ion-label>
-                <h2>Carlos Silva</h2>
-                <p>
-                  <ion-icon name="time-outline" class="small-icon"></ion-icon> 07:00
-                  <ion-icon name="fitness-outline" class="small-icon ion-margin-start"></ion-icon> Musculação
-                </p>
+                <div class="name-badge">
+                  <h2>Maria Santos</h2>
+                  <ion-badge color="warning" class="new-badge">Novo</ion-badge>
+                </div>
+                <p class="feedback-text">Estou sentindo dificuldade no exercício de perna...</p>
+                <p class="feedback-time">Hoje às 09:35</p>
               </ion-label>
-              <ion-button fill="clear" slot="end" class="view-button">
-                <ion-icon slot="icon-only" name="eye-outline"></ion-icon>
-              </ion-button>
             </ion-item>
-            <ion-item class="agenda-item slide-in">
+            <ion-item class="feedback-item">
               <ion-avatar slot="start">
-                <img src="" alt="Avatar">
+                <img src="assets/avatar5.jpg" alt="Avatar">
               </ion-avatar>
               <ion-label>
-                <h2>Ana Ferreira</h2>
-                <p>
-                  <ion-icon name="time-outline" class="small-icon"></ion-icon> 10:30
-                  <ion-icon name="water-outline" class="small-icon ion-margin-start"></ion-icon> Natação
-                </p>
+                <div class="name-badge">
+                  <h2>Pedro Almeida</h2>
+                  <ion-badge color="warning" class="new-badge">Novo</ion-badge>
+                </div>
+                <p class="feedback-text">Consegui completar o treino de natação com facilidade!</p>
+                <p class="feedback-time">Hoje às 08:15</p>
               </ion-label>
-              <ion-button fill="clear" slot="end" class="view-button">
-                <ion-icon slot="icon-only" name="eye-outline"></ion-icon>
-              </ion-button>
             </ion-item>
-            <ion-item class="agenda-item slide-in">
-              <ion-avatar slot="start">
-                <img src="assets/avatar3.jpg" alt="Avatar">
-              </ion-avatar>
-              <ion-label>
-                <h2>Lucas Mendes</h2>
-                <p>
-                  <ion-icon name="time-outline" class="small-icon"></ion-icon> 16:00
-                  <ion-icon name="fitness-outline" class="small-icon ion-margin-start"></ion-icon> Musculação
-                </p>
-              </ion-label>
-              <ion-button fill="clear" slot="end" class="view-button">
-                <ion-icon slot="icon-only" name="eye-outline"></ion-icon>
-              </ion-button>
-            </ion-item>
-          </ion-list>
-          <ion-button expand="block" color="dark" class="custom-button">
-            Ver agenda completa
-            <ion-icon name="arrow-forward" slot="end"></ion-icon>
-          </ion-button>
-        </ion-card-content>
-      </ion-card>
-    </ion-col>
-  </ion-row>
+            <ion-button expand="block" color="dark" class="custom-button" (click)="navigateTo('personal/feedbacks')">
+              Ver todos os feedbacks
+              <ion-icon name="arrow-forward" slot="end"></ion-icon>
+            </ion-button>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-content>
 
-  <!-- Feedbacks Recentes com cards modernos e animados -->
-  <ion-row class="animate__animated animate__fadeInUp animate__delay-4s">
-    <ion-col size="12">
-      <ion-card class="feedback-card">
-        <ion-card-header>
-          <ion-card-title class="gold-text">
-            <ion-icon name="chatbox-ellipses-outline" class="header-icon"></ion-icon>
-            Feedbacks Recentes
-          </ion-card-title>
-        </ion-card-header>
-        <ion-card-content>
-          <ion-item class="feedback-item">
-            <ion-avatar slot="start">
-              <img src="assets/avatar4.jpg" alt="Avatar">
-            </ion-avatar>
-            <ion-label>
-              <div class="name-badge">
-                <h2>Maria Santos</h2>
-                <ion-badge color="warning" class="new-badge">Novo</ion-badge>
-              </div>
-              <p class="feedback-text">Estou sentindo dificuldade no exercício de perna...</p>
-              <p class="feedback-time">Hoje às 09:35</p>
-            </ion-label>
-          </ion-item>
-          <ion-item class="feedback-item">
-            <ion-avatar slot="start">
-              <img src="assets/avatar5.jpg" alt="Avatar">
-            </ion-avatar>
-            <ion-label>
-              <div class="name-badge">
-                <h2>Pedro Almeida</h2>
-                <ion-badge color="warning" class="new-badge">Novo</ion-badge>
-              </div>
-              <p class="feedback-text">Consegui completar o treino de natação com facilidade!</p>
-              <p class="feedback-time">Hoje às 08:15</p>
-            </ion-label>
-          </ion-item>
-          <ion-button expand="block" color="dark" class="custom-button">
-            Ver todos os feedbacks
-            <ion-icon name="arrow-forward" slot="end"></ion-icon>
-          </ion-button>
-        </ion-card-content>
-      </ion-card>
-    </ion-col>
-  </ion-row>
-</ion-content>
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed" class="animate__animated animate__bounceIn animate__delay-5s">
+    <ion-fab-button color="warning" style="--background: #9e7b3b;">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+    <ion-fab-list side="top">
+      <ion-fab-button color="dark" (click)="navigateTo('personal/add-student')">
+        <ion-icon name="person-add-outline"></ion-icon>
+      </ion-fab-button>
+      <ion-fab-button color="dark" (click)="navigateTo('personal/create-workout')">
+        <ion-icon name="fitness-outline"></ion-icon>
+      </ion-fab-button>
+      <ion-fab-button color="dark" (click)="navigateTo('personal/schedule-appointment')">
+        <ion-icon name="calendar-outline"></ion-icon>
+      </ion-fab-button>
+    </ion-fab-list>
+  </ion-fab>
 
-<ion-fab vertical="bottom" horizontal="end" slot="fixed" class="animate__animated animate__bounceIn animate__delay-5s">
-  <ion-fab-button color="warning" style="--background: #9e7b3b;">
-    <ion-icon name="add"></ion-icon>
-  </ion-fab-button>
-  <ion-fab-list side="top">
-    <ion-fab-button color="dark">
-      <ion-icon name="person-add-outline"></ion-icon>
-    </ion-fab-button>
-    <ion-fab-button color="dark">
-      <ion-icon name="fitness-outline"></ion-icon>
-    </ion-fab-button>
-    <ion-fab-button color="dark">
-      <ion-icon name="calendar-outline"></ion-icon>
-    </ion-fab-button>
-  </ion-fab-list>
-</ion-fab>
-
-<ion-footer class="ion-no-border animate__animated animate__fadeInUp">
-  <ion-toolbar color="dark" class="footer-toolbar">
-    <ion-title size="small" class="ion-text-center">Torquato IT &copy; 2025</ion-title>
-  </ion-toolbar>
-</ion-footer>
+  <ion-footer class="ion-no-border animate__animated animate__fadeInUp">
+    <ion-toolbar color="dark" class="footer-toolbar">
+      <ion-title size="small" class="ion-text-center">Torquato IT &copy; 2025</ion-title>
+    </ion-toolbar>
+  </ion-footer>
+</div>

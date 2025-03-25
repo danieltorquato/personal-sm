@@ -9,33 +9,47 @@
 
   <!-- Logo -->
   <div class="logo-container">
-    <img src="" alt="Logo" class="logo">
+    <img src="assets/logo.png" alt="Logo" class="logo">
     <h1>Personal SM</h1>
   </div>
 
   <!-- Formulário de Login -->
   <ion-card class="login-card">
     <ion-card-content>
-      <form>
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
         <ion-item-group>
           <ion-item>
             <ion-label position="stacked">E-mail</ion-label>
-            <ion-input type="email" placeholder="Seu e-mail"></ion-input>
+            <ion-input type="email" placeholder="Seu e-mail" formControlName="email"></ion-input>
           </ion-item>
+          <div class="error-message" *ngIf="loginForm.get('email')?.invalid && loginForm.get('email')?.touched">
+            <span *ngIf="loginForm.get('email')?.errors?.['required']">E-mail é obrigatório</span>
+            <span *ngIf="loginForm.get('email')?.errors?.['email']">Insira um e-mail válido</span>
+          </div>
 
           <ion-item>
             <ion-label position="stacked">Senha</ion-label>
-            <ion-input type="password" placeholder="Sua senha"></ion-input>
+            <ion-input [type]="showPassword ? 'text' : 'password'" placeholder="Sua senha" formControlName="password"></ion-input>
+            <ion-icon slot="end" [name]="showPassword ? 'eye-off-outline' : 'eye-outline'" (click)="togglePasswordVisibility()" class="password-toggle"></ion-icon>
           </ion-item>
+          <div class="error-message" *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched">
+            <span *ngIf="loginForm.get('password')?.errors?.['required']">Senha é obrigatória</span>
+            <span *ngIf="loginForm.get('password')?.errors?.['minlength']">A senha deve ter pelo menos 6 caracteres</span>
+          </div>
         </ion-item-group>
 
+        <!-- Mensagem de erro geral -->
+        <div class="error-message general-error" *ngIf="loginError">
+          {{ loginError }}
+        </div>
+
         <div class="form-actions">
-          <ion-button expand="block" class="login-button">
+          <ion-button expand="block" class="login-button" type="submit" [disabled]="isLoading">
             <ion-icon name="log-in-outline" slot="start"></ion-icon>
-            Entrar
+            {{ isLoading ? 'Entrando...' : 'Entrar' }}
           </ion-button>
 
-          <ion-button expand="block" fill="clear" class="forgot-password">
+          <ion-button expand="block" fill="clear" class="forgot-password" (click)="navigateTo('auth/forgot-password')">
             Esqueceu sua senha?
           </ion-button>
         </div>
@@ -46,7 +60,7 @@
   <!-- Registro -->
   <div class="register-container">
     <p>Não tem uma conta?</p>
-    <ion-button expand="block" fill="outline" class="register-button">
+    <ion-button expand="block" fill="outline" class="register-button" (click)="navigateTo('auth/register')">
       <ion-icon name="person-add-outline" slot="start"></ion-icon>
       Criar Conta
     </ion-button>
