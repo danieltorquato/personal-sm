@@ -19,13 +19,14 @@ import {
   checkmarkCircleOutline
 } from 'ionicons/icons';
 import { addIcons } from 'ionicons';
+import { NavbarComponent } from 'src/app/components/navbar/navbar.component';
 
 @Component({
   selector: 'app-current-workout',
   templateUrl: './current-workout.page.html',
   styleUrls: ['./current-workout.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule, RouterModule]
+  imports: [IonicModule, CommonModule, FormsModule, RouterModule, NavbarComponent,]
 })
 export class CurrentWorkoutPage implements OnInit {
 

@@ -6,13 +6,12 @@ import { RouteReuseStrategy } from '@angular/router';
 
 import { routes } from './app/app.routes';
 import { AppComponent } from './app/app.component';
-import { authInterceptor } from './app/interceptors/auth.interceptor';
 
 bootstrapApplication(AppComponent, {
   providers: [
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
     provideRouter(routes),
-    provideHttpClient(withInterceptors([authInterceptor])),
+    provideHttpClient(),
     provideIonicAngular({
       mode: 'md'
     })

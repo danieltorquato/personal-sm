@@ -1,6 +1,6 @@
 <?php
-require_once '../config/Database.php';
 
+require_once __DIR__ . '../../config/Database.php';
 class User {
     // Conexão com o banco e tabela
     private $conn;
@@ -20,8 +20,10 @@ class User {
     public $updated_at;
 
     // Construtor
-    public function __construct($db) {
-        $this->conn = $db;
+    public function __construct() {
+      $db = new Database();
+    	$this->conn = $db->getConnection();
+
     }
 
     // Autenticar usuário (login)
@@ -50,6 +52,7 @@ class User {
 
             // Verificar senha
             if(password_verify($this->password, $row['password'])) {
+
                 // Criar token de autenticação
                 $auth_token = $this->createAuthToken($row['id']);
 

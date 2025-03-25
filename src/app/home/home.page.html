@@ -1,46 +1,7 @@
-<ion-menu contentId="main-content">
-  <ion-header>
-    <ion-toolbar color="dark">
-      <ion-title>Menu</ion-title>
-    </ion-toolbar>
-  </ion-header>
-  <ion-content>
-    <div class="menu-header">
-      <div class="user-avatar">
-        <img src="assets/avatar-personal.jpg" alt="Avatar" onerror="this.src='assets/default-avatar.png'">
-      </div>
-      <h2>{{ userName }}</h2>
-      <p>{{ userType }}</p>
-    </div>
+<app-navbar>
 
-    <ion-list lines="none">
-      <ion-item button routerLink="/personal/dashboard">
-        <ion-icon name="speedometer-outline" slot="start"></ion-icon>
-        <ion-label>Dashboard</ion-label>
-      </ion-item>
-      <ion-item button routerLink="/personal/manage-students">
-        <ion-icon name="people" slot="start"></ion-icon>
-        <ion-label>Gerenciar Alunos</ion-label>
-      </ion-item>
-      <ion-item button routerLink="/personal/create-workout">
-        <ion-icon name="barbell" slot="start"></ion-icon>
-        <ion-label>Montar Treino</ion-label>
-      </ion-item>
-      <ion-item button routerLink="/personal/settings">
-        <ion-icon name="settings-outline" slot="start"></ion-icon>
-        <ion-label>Configurações</ion-label>
-      </ion-item>
-      <ion-item button routerLink="/personal/help">
-        <ion-icon name="help-circle-outline" slot="start"></ion-icon>
-        <ion-label>Ajuda</ion-label>
-      </ion-item>
-      <ion-item button (click)="logout()" color="light" class="logout-item">
-        <ion-icon name="log-out-outline" slot="start" color="danger"></ion-icon>
-        <ion-label color="danger">Sair</ion-label>
-      </ion-item>
-    </ion-list>
-  </ion-content>
-</ion-menu>
+</app-navbar>
+
 
 <div class="ion-page" id="main-content">
   <ion-header class="ion-no-border">
@@ -174,7 +135,7 @@
             <ion-list lines="none">
               <ion-item class="agenda-item slide-in">
                 <ion-avatar slot="start">
-                  <img src="assets/avatar1.jpg" alt="Avatar">
+                  <img src="" alt="Avatar">
                 </ion-avatar>
                 <ion-label>
                   <h2>Carlos Silva</h2>
@@ -204,7 +165,7 @@
               </ion-item>
               <ion-item class="agenda-item slide-in">
                 <ion-avatar slot="start">
-                  <img src="assets/avatar3.jpg" alt="Avatar">
+                  <img src="" alt="Avatar">
                 </ion-avatar>
                 <ion-label>
                   <h2>Lucas Mendes</h2>
@@ -240,7 +201,7 @@
           <ion-card-content>
             <ion-item class="feedback-item">
               <ion-avatar slot="start">
-                <img src="assets/avatar4.jpg" alt="Avatar">
+                <img src="" alt="Avatar">
               </ion-avatar>
               <ion-label>
                 <div class="name-badge">
@@ -253,7 +214,7 @@
             </ion-item>
             <ion-item class="feedback-item">
               <ion-avatar slot="start">
-                <img src="assets/avatar5.jpg" alt="Avatar">
+                <img src="" alt="Avatar">
               </ion-avatar>
               <ion-label>
                 <div class="name-badge">

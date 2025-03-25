@@ -24,10 +24,11 @@ import {
   speedometerOutline
 } from 'ionicons/icons';
 import { Router } from '@angular/router';
-import { AuthService } from '../core/services/auth.service';
+import { AuthService } from '../services/auth.service';
 import { CommonModule } from '@angular/common';
 import { AlertController } from '@ionic/angular';
 import { RouterLink } from '@angular/router';
+import { NavbarComponent } from '../components/navbar/navbar.component';
 
 @Component({
   selector: 'app-home',
@@ -63,7 +64,8 @@ import { RouterLink } from '@angular/router';
     IonContent,
     IonMenu,
     IonMenuButton,
-    IonMenuToggle
+    IonMenuToggle,
+    NavbarComponent
   ],
 })
 export class HomePage implements OnInit {

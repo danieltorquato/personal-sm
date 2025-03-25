@@ -1,180 +1,188 @@
 import { Injectable } from '@angular/core';
-import { ApiService } from './api.service';
-import { BehaviorSubject, Observable, tap } from 'rxjs';
-import { User, LoginData, RegisterData, LoginResponse } from '../Models/user.model';
-import { ApiResponse } from '../Models/workout.model';
+import { HttpClient } from '@angular/common/http';
+import { Observable, of, throwError } from 'rxjs';
+import { catchError, map, tap, delay } from 'rxjs/operators';
+import { Router } from '@angular/router';
+import { environment } from 'src/environments/environment';
+
+export interface User {
+  id: number;
+  email: string;
+  name: string;
+  userType: 'aluno' | 'personal' | 'admin';
+  token?: string;
+}
+
+export interface LoginResponse {
+  data: any;
+  success: boolean;
+  user: User;
+  token: string;
+  message?: string;
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private currentUserSubject = new BehaviorSubject<User | null>(null);
-  public currentUser = this.currentUserSubject.asObservable();
-  private tokenExpirationTimer: any;
+  // URL da API real
+  private apiUrl = environment.apiUrl; // Ajuste conforme necessário para sua API
+  public currentUser: User | null = null;
 
-  constructor(private apiService: ApiService) {
-    this.checkAuth();
+  constructor(
+    private http: HttpClient,
+    private router: Router
+  ) {
+    // Tenta recuperar o usuário do localStorage ao iniciar o serviço
+    this.loadUserFromStorage();
   }
 
-  /**
-   * Realiza login na aplicação
-   */
-  login(loginData: LoginData): Observable<LoginResponse> {
-    return this.apiService.post<LoginResponse>('users/login', loginData).pipe(
-      tap(response => {
-        if (response.status === 'success' && response.data) {
-          this.setUserData(response.data);
-        }
-      })
+  // Login do usuário com email e senha
+  login(email: string, password: string): Observable<User> {
+    const endpoint = `${this.apiUrl}/users/login`;
+
+    console.log('Tentando login na API:', endpoint);
+
+    return this.http.post<LoginResponse>(endpoint, { email, password })
+      .pipe(
+        delay(500),
+        map(response => {
+          console.log('Resposta da API:', response);
+
+          // Se a resposta contiver status success, considerar como login bem-sucedido
+          if (response.success || (response as any).status === 'success') {
+            const user: User = {
+              id: response.data.id,
+          email: response.data.email,
+          name: response.data.name,
+          userType: response.data.type_name,
+          token: response.data.token,
+            };
+            console.log('Tipo de usuário:', user);
+            this.setCurrentUser(user);
+            return user;
+          } else {
+            throw new Error(response.message || 'Falha no login, tente novamente');
+          }
+        }),
+        catchError(error => {
+          console.error('Erro no login:', error);
+
+          if (error.status === 401) {
+            return throwError(() => new Error('E-mail ou senha incorretos'));
+          } else if (error.status === 404) {
+            return throwError(() => new Error('Servidor não encontrado. Verifique sua conexão'));
+          }
+
+          return throwError(() => new Error(
+            error.error?.message ||
+            error.message ||
+            'Falha na autenticação, verifique suas credenciais'
+          ));
+        })
+      );
+  }
+
+  // Para testes sem API - remove antes de produção
+  mockLogin(email: string, password: string): Observable<User> {
+    console.warn('Usando mockLogin - substitua por login real em produção');
+
+    // Simulação de resposta do servidor para desenvolvimento
+    let userType: 'aluno' | 'personal' | 'admin';
+
+    if (email.includes('aluno')) {
+      userType = 'aluno';
+    } else if (email.includes('admin')) {
+      userType = 'admin';
+    } else {
+      userType = 'personal';
+    }
+
+    const mockUser: User = {
+      id: 1,
+      email: email,
+      name: 'Usuário Teste',
+      userType: userType,
+      token: 'mock-jwt-token'
+    };
+
+    // Simulação de atraso de rede (500ms)
+    return of(mockUser).pipe(
+      delay(800),
+      tap(user => this.setCurrentUser(user)),
+      catchError(error => throwError(() => new Error('Falha na autenticação')))
     );
   }
 
-  /**
-   * Realiza o registro de um novo usuário
-   */
-  register(registerData: RegisterData): Observable<ApiResponse<{ id: number }>> {
-    return this.apiService.post<ApiResponse<{ id: number }>>('users/register', registerData);
+  // Logout do usuário
+  logout(): void {
+    localStorage.removeItem('currentUser');
+    this.currentUser = null;
+    this.router.navigate(['/login']);
   }
 
-  /**
-   * Obtém o perfil do usuário logado
-   */
-  getProfile(): Observable<ApiResponse<User>> {
-    return this.apiService.get<ApiResponse<User>>('users/profile').pipe(
-      tap(response => {
-        if (response.status === 'success' && response.data) {
-          // Preserva o token atual
-          const currentToken = this.getToken();
-          const userData = {
-            ...response.data,
-            token: currentToken || undefined
-          };
-          this.setUserData(userData);
-        }
-      })
-    );
+  // Verificar se o usuário está logado
+  isLoggedIn(): boolean {
+    return !!this.currentUser;
   }
 
-  /**
-   * Atualiza o perfil do usuário
-   */
-  updateProfile(userData: Partial<User>): Observable<ApiResponse<null>> {
-    return this.apiService.put<ApiResponse<null>>('users/update-profile', userData);
-  }
-
-  /**
-   * Altera a senha do usuário
-   */
-  changePassword(currentPassword: string, newPassword: string): Observable<ApiResponse<null>> {
-    return this.apiService.put<ApiResponse<null>>('users/change-password', {
-      current_password: currentPassword,
-      new_password: newPassword
-    });
-  }
-
-  /**
-   * Verifica se o usuário está autenticado
-   */
-  checkAuth() {
-    const userData = localStorage.getItem('user_data');
-    const token = localStorage.getItem('auth_token');
-
-    if (userData && token) {
-      const user = JSON.parse(userData);
-      this.currentUserSubject.next(user);
-      return true;
-    }
-
-    this.currentUserSubject.next(null);
-    return false;
-  }
-
-  /**
-   * Realiza logout na aplicação
-   */
-  logout() {
-    localStorage.removeItem('user_data');
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('token_expiration');
-    this.currentUserSubject.next(null);
-
-    if (this.tokenExpirationTimer) {
-      clearTimeout(this.tokenExpirationTimer);
-    }
-    this.tokenExpirationTimer = null;
-  }
-
-  /**
-   * Armazena os dados do usuário e token
-   */
-  private setUserData(user: User) {
-    localStorage.setItem('user_data', JSON.stringify(user));
-
-    if (user.token) {
-      localStorage.setItem('auth_token', user.token);
-
-      // Configurar expiração do token (30 dias)
-      const expirationDate = new Date(new Date().getTime() + 30 * 24 * 60 * 60 * 1000);
-      localStorage.setItem('token_expiration', expirationDate.toISOString());
-
-      this.autoLogout(30 * 24 * 60 * 60 * 1000);
-    }
-
-    this.currentUserSubject.next(user);
-  }
-
-  /**
-   * Realiza logout automático após expiração do token
-   */
-  private autoLogout(expirationDuration: number) {
-    if (this.tokenExpirationTimer) {
-      clearTimeout(this.tokenExpirationTimer);
-    }
-
-    this.tokenExpirationTimer = setTimeout(() => {
-      this.logout();
-    }, expirationDuration);
-  }
-
-  /**
-   * Obtém o token de autenticação
-   */
-  getToken(): string | null {
-    return localStorage.getItem('auth_token');
-  }
-
-  /**
-   * Verifica se o usuário é um personal
-   */
-  isTrainer(): boolean {
-    const user = this.currentUserSubject.value;
-    return !!user && user.type_name === 'trainer';
-  }
-
-  /**
-   * Verifica se o usuário é um aluno
-   */
-  isStudent(): boolean {
-    const user = this.currentUserSubject.value;
-    return !!user && user.type_name === 'student';
-  }
-
-  /**
-   * Verifica se o usuário é um administrador
-   */
-  isAdmin(): boolean {
-    const user = this.currentUserSubject.value;
-    return !!user && user.type_name === 'admin';
-  }
-
-  /**
-   * Obtém o usuário atual
-   */
+  // Obter o usuário atual
   getCurrentUser(): User | null {
-    return this.currentUserSubject.value;
+    return this.currentUser;
+  }
+
+  // Verificar se o usuário é de um tipo específico
+  isUserType(type: 'aluno' | 'personal' | 'admin'): boolean {
+    return this.currentUser?.userType === type;
+  }
+
+  // Verificar se o token ainda é válido
+  validateToken(): Observable<boolean> {
+    if (!this.currentUser || !this.currentUser.token) {
+      return of(false);
+    }
+
+    return this.http.get<{valid: boolean}>(`${this.apiUrl}/auth/validate-token`)
+      .pipe(
+        map(response => response.valid),
+        catchError(() => of(false))
+      );
+  }
+
+  // Redirecionar para a página inicial apropriada com base no tipo de usuário
+  redirectBasedOnUserType(userType: any): void {
+    if (!userType) {
+      this.router.navigate(['/login']);
+      return;
+    }
+
+    switch (userType) {
+      case 'pupil':
+        this.router.navigate(['/home-pupil']);
+        break;
+      case 'personal':
+      case 'admin':
+        this.router.navigate(['/home']);
+        break;
+      default:
+        this.router.navigate(['/login']);
+    }
+  }
+
+  // Métodos privados auxiliares
+  private setCurrentUser(user: User): void {
+    this.currentUser = user;
+    localStorage.setItem('currentUser', JSON.stringify(user));
+  }
+
+  private loadUserFromStorage(): void {
+    const userStr = localStorage.getItem('currentUser');
+    if (userStr) {
+      try {
+        this.currentUser = JSON.parse(userStr);
+      } catch (e) {
+        localStorage.removeItem('currentUser');
+      }
+    }
   }
 }
-
-
-
-

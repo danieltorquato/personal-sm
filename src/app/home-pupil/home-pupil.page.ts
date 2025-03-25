@@ -1,3 +1,4 @@
+import { NavbarComponent } from './../components/navbar/navbar.component';
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -27,12 +28,12 @@ import {
   IonAvatar,
   IonMenu,
   IonMenuButton,
-  IonMenuToggle
+  IonMenuToggle,
 } from "@ionic/angular/standalone";
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { Router } from '@angular/router';
 import { RouterLink } from '@angular/router';
-import { AuthService } from '../core/services/auth.service';
+import { AuthService } from '../services/auth.service';
 import { AlertController } from '@ionic/angular';
 import {
   notificationsOutline,
@@ -59,7 +60,8 @@ import {
   settingsOutline,
   personOutline,
   helpCircleOutline,
-  speedometerOutline
+  speedometerOutline,
+
 } from 'ionicons/icons';
 import { addIcons } from 'ionicons';
 
@@ -98,7 +100,8 @@ import { addIcons } from 'ionicons';
     IonMenuButton,
     IonMenuToggle,
     CommonModule,
-    FormsModule
+    FormsModule,
+    NavbarComponent
   ]
 })
 export class HomePupilPage implements OnInit {

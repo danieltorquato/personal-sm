@@ -1,50 +1,6 @@
-<ion-menu contentId="main-content">
-  <ion-header>
-    <ion-toolbar color="dark">
-      <ion-title>Menu</ion-title>
-    </ion-toolbar>
-  </ion-header>
-  <ion-content>
-    <div class="menu-header">
-      <div class="user-avatar">
-        <img src="assets/avatar-pupil.jpg" alt="Avatar" onerror="this.src='assets/default-avatar.png'">
-      </div>
-      <h2>{{ userName }}</h2>
-      <p>Aluno</p>
-    </div>
+<app-navbar>
 
-    <ion-list lines="none">
-      <ion-item button routerLink="/pupil/dashboard">
-        <ion-icon name="speedometer-outline" slot="start"></ion-icon>
-        <ion-label>Dashboard</ion-label>
-      </ion-item>
-      <ion-item button routerLink="/pupil/my-workouts">
-        <ion-icon name="barbell" slot="start"></ion-icon>
-        <ion-label>Meus Treinos</ion-label>
-      </ion-item>
-      <ion-item button routerLink="/pupil/evolution">
-        <ion-icon name="trending-up" slot="start"></ion-icon>
-        <ion-label>Minha Evolução</ion-label>
-      </ion-item>
-      <ion-item button routerLink="/pupil/profile">
-        <ion-icon name="person-outline" slot="start"></ion-icon>
-        <ion-label>Meu Perfil</ion-label>
-      </ion-item>
-      <ion-item button routerLink="/pupil/settings">
-        <ion-icon name="settings-outline" slot="start"></ion-icon>
-        <ion-label>Configurações</ion-label>
-      </ion-item>
-      <ion-item button routerLink="/pupil/help">
-        <ion-icon name="help-circle-outline" slot="start"></ion-icon>
-        <ion-label>Ajuda</ion-label>
-      </ion-item>
-      <ion-item button (click)="logout()" color="light" class="logout-item">
-        <ion-icon name="log-out-outline" slot="start" color="danger"></ion-icon>
-        <ion-label color="danger">Sair</ion-label>
-      </ion-item>
-    </ion-list>
-  </ion-content>
-</ion-menu>
+</app-navbar>
 
 <div class="ion-page" id="main-content">
   <ion-header class="ion-no-border">
@@ -52,15 +8,18 @@
       <ion-buttons slot="start">
         <ion-menu-button class="menu-button"></ion-menu-button>
       </ion-buttons>
-      <ion-title class="animate__animated animate__fadeInDown">Personal SM</ion-title>
+      <ion-title class="animate__animated animate__fadeInDown">
+        <img src="./assets/logo.png" alt="Personal SM" height="80" class="logo-pulse">
+      </ion-title>
       <ion-buttons slot="end">
-        <ion-button class="notification-button animate__animated animate__fadeInDown">
-          <ion-icon name="notifications-outline"></ion-icon>
-          <ion-badge color="warning" style="--background: #9e7b3b;">3</ion-badge>
+        <ion-button class="notification-button animate__animated animate__fadeInDown" (click)="navigateTo('personal/notifications')">
+        <ion-icon size="large" name="notifications-outline"></ion-icon>
+          <ion-badge class="badge-pulse" color="warning" style="--background: #9e7b3b;">3</ion-badge>
         </ion-button>
       </ion-buttons>
     </ion-toolbar>
   </ion-header>
+
 
   <ion-content fullscreen="true" class="ion-padding">
     <div class="background-gradient"></div>
@@ -236,7 +195,7 @@
           <ion-card-content>
             <ion-item class="feedback-item">
               <ion-avatar slot="start">
-                <img src="assets/personal-avatar.jpg" alt="Personal Avatar">
+                <img src="" alt="Personal Avatar">
               </ion-avatar>
               <ion-label>
                 <div class="name-badge">
@@ -249,7 +208,7 @@
             </ion-item>
             <ion-item class="feedback-item">
               <ion-avatar slot="start">
-                <img src="assets/personal-avatar.jpg" alt="Personal Avatar">
+                <img src="./assets/logo.png" alt="Personal Avatar">
               </ion-avatar>
               <ion-label>
                 <h2>Personal Paulo</h2>

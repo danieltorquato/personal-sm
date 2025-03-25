@@ -1,0 +1,90 @@
+// Estilos para o menu lateral
+ion-menu {
+  --width: 280px;
+  --background: #1a1a1a;
+  --border-style: none;
+
+  ion-toolbar {
+    --background: var(--ion-color-dark);
+  }
+
+  .menu-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 30px 20px 20px;
+    background: linear-gradient(135deg, var(--ion-color-dark) 0%, #272727 100%);
+
+    .user-avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      overflow: hidden;
+      border: 3px solid rgba(158, 123, 59, 0.7);
+      margin-bottom: 15px;
+
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+    }
+
+    h2 {
+      color: white;
+      margin: 5px 0;
+      font-size: 18px;
+      font-weight: 500;
+    }
+
+    p {
+      color: #9e7b3b;
+      margin: 0;
+      font-size: 14px;
+      font-weight: 500;
+    }
+  }
+
+  ion-content {
+    --background: #1a1a1a;
+    --padding-start: 0;
+    --padding-end: 0;
+  }
+
+  ion-list {
+    background: transparent;
+    padding: 0;
+
+    ion-item {
+      --background: transparent;
+      --background-activated: rgba(158, 123, 59, 0.1);
+      --background-focused: rgba(158, 123, 59, 0.1);
+      --background-hover: rgba(158, 123, 59, 0.1);
+      --color: #ffffff;
+      --border-style: none;
+      --min-height: 50px;
+      --padding-start: 20px;
+
+      ion-icon {
+        color: #9e7b3b;
+        margin-right: 10px;
+        font-size: 20px;
+      }
+    }
+
+    .logout-item {
+      margin-top: 30px;
+      --background: rgba(244, 67, 54, 0.1);
+
+      ion-icon {
+        color: var(--ion-color-danger);
+      }
+    }
+  }
+}
+
+// Estilo para o botão do menu
+.menu-button {
+  font-size: 24px;
+  color: #ffffff;
+}

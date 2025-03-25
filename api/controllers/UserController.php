@@ -1,6 +1,6 @@
 <?php
-require_once '../Models/User.php';
-require_once '../helpers/ApiResponse.php';
+require_once __DIR__ . '../../models/User.php';
+require_once __DIR__ . '../../helpers/ApiResponse.php';
 
 class UserController {
     private $user;
@@ -28,6 +28,7 @@ class UserController {
         $user_data = $this->user->login();
 
         if($user_data) {
+          header("Location: /home.php");
             return ApiResponse::success("Login realizado com sucesso", $user_data);
         } else {
             return ApiResponse::unauthorized("Email ou senha incorretos");

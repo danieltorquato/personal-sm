@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AlertController, IonicModule, LoadingController } from '@ionic/angular';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { AuthService } from '../../../../core/services/auth.service';
+import { AuthService } from '../../../../services/auth.service';
 import {
   logInOutline,
   personAddOutline,
@@ -25,7 +25,7 @@ export class LoginPage implements OnInit {
   isLoading: boolean = false;
   showPassword: boolean = false;
   loginError: string = '';
-
+  userType: string = '';
   constructor(
     private formBuilder: FormBuilder,
     private authService: AuthService,
@@ -50,11 +50,12 @@ export class LoginPage implements OnInit {
 
   ngOnInit() {
     // Obter a URL de retorno dos parâmetros de consulta ou usar o padrão
-    this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '';
+    // this.returnUrl = 'personal'
 
     // Verificar se o usuário já está logado
     if (this.authService.isLoggedIn()) {
-      this.authService.redirectBasedOnUserType();
+      this.userType = this.authService.currentUser?.userType || '';
+      this.authService.redirectBasedOnUserType(this.userType);
     }
   }
 
@@ -81,17 +82,12 @@ export class LoginPage implements OnInit {
 
       // Usar o serviço de autenticação real
       this.authService.login(email, password).subscribe({
-        next: (user) => {
-          console.log('Login bem-sucedido:', user);
+        next: (response) => {
+          console.log('Login bem-sucedido:', response);
           loading.dismiss();
           this.isLoading = false;
-
-          // Redirecionar com base no tipo de usuário
-          if (this.returnUrl) {
-            this.router.navigateByUrl(this.returnUrl);
-          } else {
-            this.authService.redirectBasedOnUserType();
-          }
+          this.userType = response.userType;
+          this.authService.redirectBasedOnUserType( this.userType);
         },
         error: (error) => {
           console.error('Erro no login:', error);

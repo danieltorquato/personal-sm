@@ -1,5 +1,4 @@
 import { Routes } from '@angular/router';
-import { AuthGuard } from './core/services/auth.guard';
 
 export const routes: Routes = [
   {
@@ -10,13 +9,13 @@ export const routes: Routes = [
   {
     path: 'home',
     loadComponent: () => import('./home/home.page').then(m => m.HomePage),
-    canActivate: [AuthGuard],
+
     data: { userType: 'personal' }
   },
   {
     path: 'home-pupil',
     loadComponent: () => import('./home-pupil/home-pupil.page').then(m => m.HomePupilPage),
-    canActivate: [AuthGuard],
+
     data: { userType: 'aluno' }
   },
   // Auth Routes
@@ -52,7 +51,6 @@ export const routes: Routes = [
   // Personal Trainer Routes
   {
     path: 'personal',
-    canActivate: [AuthGuard],
     data: { userType: 'personal' },
     children: [
       {
@@ -89,7 +87,6 @@ export const routes: Routes = [
   // Pupil Routes
   {
     path: 'pupil',
-    canActivate: [AuthGuard],
     data: { userType: 'aluno' },
     children: [
       {
