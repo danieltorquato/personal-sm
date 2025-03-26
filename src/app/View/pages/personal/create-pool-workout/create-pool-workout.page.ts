@@ -1,8 +1,30 @@
 import { Component, OnInit, NgZone, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonicModule, AlertController, ToastController, ItemReorderEventDetail } from '@ionic/angular';
+import { IonicModule, AlertController, ToastController, ItemReorderEventDetail, ModalController, ToastOptions } from '@ionic/angular';
 import { Router } from '@angular/router';
+import { HttpClient, HttpHeaders, HttpClientModule } from '@angular/common/http';
+import { environment } from 'src/environments/environment';
+import { Observable, forkJoin } from 'rxjs';
+import { AuthService } from 'src/app/services/auth.service';
+import { WorkoutService } from 'src/app/services/workout.service';
+import { ApiService } from 'src/app/services/api.service';
+import { addIcons } from 'ionicons';
+import {
+  timerOutline,
+  fitnessOutline,
+  timeOutline,
+  flameOutline,
+  barbellOutline,
+  repeatOutline,
+  checkmarkCircle,
+  ellipseOutline,
+  informationCircleOutline,
+  add,
+  removeOutline,
+  pencilOutline,
+  trashOutline
+} from 'ionicons/icons';
 
 interface Student {
   id: string;
@@ -19,6 +41,7 @@ interface WorkoutSet {
   restTime: number;
   notes?: string;
   partialDistances?: number[]; // Distâncias parciais pré-definidas pelo professor
+  partialInterval?: number; // Intervalo para marcação automática de parciais (25m, 50m, etc.)
   variation?: string; // Variação do exercício
   equipment?: string[]; // Equipamentos necessários (array de strings)
   intensity?: string; // Intensidade do exercício (A1, A2, A3)
@@ -30,6 +53,7 @@ interface WorkoutTemplate {
   description: string;
   level: string;
   estimatedDuration: number;
+  intensity?: string;
   students: string[];
   sets: WorkoutSet[];
 }
@@ -47,7 +71,7 @@ interface ExerciseInfo {
   templateUrl: './create-pool-workout.page.html',
   styleUrls: ['./create-pool-workout.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule]
+  imports: [IonicModule, CommonModule, FormsModule, HttpClientModule]
 })
 export class CreatePoolWorkoutPage implements OnInit {
   // Estado do formulário
@@ -122,6 +146,7 @@ export class CreatePoolWorkoutPage implements OnInit {
     repetitions: 2,
     restTime: 30,
     partialDistances: [25], // Por padrão, metade da distância
+    partialInterval: 25, // Por padrão, 25m
     intensity: 'A1', // Intensidade padrão
     equipment: [] // Array vazio de equipamentos
   };
@@ -162,22 +187,117 @@ export class CreatePoolWorkoutPage implements OnInit {
     { value: 'oculos', label: 'Óculos de Natação' }
   ];
 
+  // Intervalos de marcação padrão
+  partialIntervalOptions = [
+    { value: 25, label: 'A cada 25m' },
+    { value: 50, label: 'A cada 50m' },
+    { value: 100, label: 'A cada 100m' }
+  ];
+
+  // Estado de carregamento
+  isLoading: boolean = false;
+  errorMessage: string = '';
+
+  // Lista de alunos disponíveis
+  students: Student[] = [];
+
+  // Estado da UI
+  currentView = 'sets'; // 'sets' ou 'students'
+  isSaving = false;
+  saveSuccess = false;
+  saveError = false;
+  isLoadingStudents = false;
+
   constructor(
-    private router: Router,
+    public router: Router,
     private alertController: AlertController,
     private toastController: ToastController,
     private zone: NgZone,
-    private changeDetector: ChangeDetectorRef
+    private changeDetector: ChangeDetectorRef,
+    private http: HttpClient,
+    private authService: AuthService,
+    private workoutService: WorkoutService,
+    private apiService: ApiService,
+    private modalController: ModalController
   ) {
     // Garantir que os modais comecem fechados
     this.showSetModal = false;
     this.showStudentSelector = false;
+
+    // Adicionando ícones
+    addIcons({
+      timerOutline,
+      fitnessOutline,
+      timeOutline,
+      flameOutline,
+      barbellOutline,
+      repeatOutline,
+      checkmarkCircle,
+      ellipseOutline,
+      informationCircleOutline,
+      add,
+      removeOutline,
+      pencilOutline,
+      trashOutline
+    });
   }
 
   ngOnInit() {
     this.filteredStudents = [...this.allStudents];
+    // Carregar alunos do servidor se disponível
+    this.loadStudents();
     // Forçar detecção de mudanças para garantir estado inicial correto
     this.changeDetector.detectChanges();
+  }
+
+  // Carregar lista de alunos do servidor
+  loadStudents() {
+    this.isLoadingStudents = true;
+    this.isLoading = true;
+
+    // Verificar autenticação antes de fazer a chamada
+    if (!this.authService.isLoggedIn()) {
+      this.showToast('Você precisa estar logado para ver seus alunos.', 'danger');
+      this.isLoadingStudents = false;
+      this.isLoading = false;
+      return;
+    }
+
+    // Usar o ApiService diretamente até implementarmos o método correto no WorkoutService
+    this.apiService.get<any>('users/students').subscribe({
+      next: (response: any) => {
+        if (response && response.success && response.data) {
+          // Substituir dados de exemplo por dados reais
+          this.students = response.data.map((student: any) => ({
+            id: student.id.toString(),
+            name: student.name,
+            avatar: student.photo || 'assets/icon/avatar.svg',
+            category: student.level || 'Intermediário',
+            selected: false
+          }));
+
+          this.allStudents = [...this.students];
+          this.filteredStudents = [...this.students];
+        }
+        this.isLoading = false;
+        this.isLoadingStudents = false;
+      },
+      // error: (error: any) => {
+      //   console.error('Erro ao carregar alunos:', error);
+
+      //   // Verificar se é erro de autenticação
+      //   if (error.status === 401 || error?.error?.message?.includes('Token')) {
+      //     this.showToast('Sessão expirada. Por favor, faça login novamente.', 'danger');
+      //     this.authService.logout();
+      //     this.router.navigate(['/login']);
+      //   } else {
+      //     this.showToast('Erro ao carregar alunos. Tente novamente mais tarde.', 'danger');
+      //   }
+
+      //   this.isLoading = false;
+      //   this.isLoadingStudents = false;
+      // }
+    });
   }
 
   // --- Métodos para gerenciar séries ---
@@ -190,6 +310,7 @@ export class CreatePoolWorkoutPage implements OnInit {
       repetitions: 2,
       restTime: 30,
       partialDistances: [25], // Por padrão, metade da distância
+      partialInterval: 25, // Por padrão, 25m
       intensity: 'A1',
       equipment: []
     };
@@ -198,60 +319,78 @@ export class CreatePoolWorkoutPage implements OnInit {
     this.zone.run(() => {
       this.showSetModal = true;
       this.changeDetector.detectChanges();
-      console.log('Modal de série aberto:', this.showSetModal);
     });
   }
 
   editSet(index: number) {
-    // Configurar valores para edição
-    this.editingSetIndex = index;
-    this.currentSet = {...this.workoutTemplate.sets[index]};
+    if (index >= 0 && index < this.workoutTemplate.sets.length) {
+      this.editingSetIndex = index;
 
-    // Garantir que o modal abra com a detecção de mudanças
-    this.zone.run(() => {
-      this.showSetModal = true;
-      this.changeDetector.detectChanges();
-      console.log('Modal de edição de série aberto:', this.showSetModal);
-    });
+      // Fazer cópia profunda do objeto
+      this.currentSet = JSON.parse(JSON.stringify(this.workoutTemplate.sets[index]));
+
+      // Garantir que partialInterval esteja definido
+      if (!this.currentSet.partialInterval) {
+        this.currentSet.partialInterval = 25; // Valor padrão
+      }
+
+      // Garantir que partialDistances esteja definido
+      if (!this.currentSet.partialDistances) {
+        this.currentSet.partialDistances = [];
+      }
+
+      // Abrir o modal
+      this.zone.run(() => {
+        this.showSetModal = true;
+        this.changeDetector.detectChanges();
+      });
+    }
   }
 
   saveSet() {
-    // Validar dados básicos
-    if (!this.currentSet.exercise || this.currentSet.distance <= 0 || this.currentSet.repetitions <= 0) {
-      this.presentAlert(
-        'Dados Incompletos',
-        'Por favor, selecione um exercício e defina valores válidos para distância e repetições.',
-        [{ text: 'OK' }]
-      );
+    // Validações básicas
+    if (!this.currentSet.exercise) {
+      this.presentAlert('Erro', 'Selecione um exercício', [{ text: 'OK' }]);
       return;
     }
 
-    // Se não foram definidas distâncias parciais e a distância for maior que 25m,
-    // criar automaticamente parciais (metade da distância)
-    if (!this.currentSet.partialDistances || this.currentSet.partialDistances.length === 0) {
-      if (this.currentSet.distance > 25) {
-        this.currentSet.partialDistances = [Math.floor(this.currentSet.distance / 2)];
-      } else {
-        this.currentSet.partialDistances = [];
-      }
+    if (this.currentSet.distance <= 0) {
+      this.presentAlert('Erro', 'A distância deve ser maior que zero', [{ text: 'OK' }]);
+      return;
     }
 
-    // Adicionar ou atualizar a série
-    if (this.editingSetIndex === -1) {
-      this.workoutTemplate.sets.push({ ...this.currentSet });
-    } else {
+    if (this.currentSet.repetitions <= 0) {
+      this.presentAlert('Erro', 'O número de repetições deve ser maior que zero', [{ text: 'OK' }]);
+      return;
+    }
+
+    if (this.currentSet.restTime < 0) {
+      this.presentAlert('Erro', 'O tempo de descanso não pode ser negativo', [{ text: 'OK' }]);
+      return;
+    }
+
+    // Garantir que partialInterval esteja definido
+    if (!this.currentSet.partialInterval || this.currentSet.partialInterval <= 0) {
+      this.currentSet.partialInterval = 25; // Valor padrão
+    }
+
+    // Se estiver editando, atualiza a série existente
+    if (this.editingSetIndex >= 0) {
       this.workoutTemplate.sets[this.editingSetIndex] = { ...this.currentSet };
+    } else {
+      // Senão, adiciona uma nova série
+      this.workoutTemplate.sets.push({ ...this.currentSet });
     }
 
-    // Fechar o modal usando NgZone e forçar detecção de mudanças
-    this.zone.run(() => {
-      this.showSetModal = false;
-      this.changeDetector.detectChanges();
+    // Fechar o modal
+    this.showSetModal = false;
 
-      // Dar feedback de confirmação
-      const acao = this.editingSetIndex === -1 ? 'adicionada' : 'atualizada';
-      this.presentToast(`Série ${acao} com sucesso!`);
-    });
+    // Força a detecção de mudanças
+    this.changeDetector.detectChanges();
+
+    // Dar feedback de confirmação
+    const acao = this.editingSetIndex === -1 ? 'adicionada' : 'atualizada';
+    this.showToast(`Série ${acao} com sucesso!`);
   }
 
   cancelSetEdit() {
@@ -283,7 +422,7 @@ export class CreatePoolWorkoutPage implements OnInit {
   // --- Métodos para seleção de alunos ---
   openStudentSelection() {
     // Resetar filtro e garantir que todos os alunos estejam visíveis
-    this.filteredStudents = [...this.allStudents];
+    this.filteredStudents = [...this.students];
 
     // Atualizar o estado de seleção baseado nos alunos já selecionados
     this.filteredStudents.forEach(student => {
@@ -324,7 +463,7 @@ export class CreatePoolWorkoutPage implements OnInit {
 
       // Adicionar feedback visual de sucesso usando toast
       const count = this.selectedStudents.length;
-      this.presentToast(
+      this.showToast(
         `${count} ${count === 1 ? 'aluno selecionado' : 'alunos selecionados'} com sucesso.`
       );
 
@@ -342,23 +481,18 @@ export class CreatePoolWorkoutPage implements OnInit {
   }
 
   filterStudents(event: any) {
-    const query = event.detail.value.toLowerCase();
+    const query = event.target.value.toLowerCase();
 
     // Se o campo de busca estiver vazio, mostrar todos os alunos
     if (!query.trim()) {
-      this.filteredStudents = [...this.allStudents];
+      this.filteredStudents = [...this.students];
     } else {
       // Filtrar mantendo estado de seleção
-      this.filteredStudents = this.allStudents.filter(student => {
+      this.filteredStudents = this.students.filter(student => {
         return student.name.toLowerCase().includes(query) ||
-               student.category.toLowerCase().includes(query);
+               (student.category && student.category.toLowerCase().includes(query));
       });
     }
-
-    // Garantir que o estado de seleção seja preservado
-    this.filteredStudents.forEach(student => {
-      student.selected = this.workoutTemplate.students.includes(student.id);
-    });
   }
 
   getSelectedStudentsCount(): number {
@@ -380,33 +514,123 @@ export class CreatePoolWorkoutPage implements OnInit {
   }
 
   saveWorkoutTemplate() {
-    if (!this.isWorkoutValid()) {
-      this.presentAlert(
-        'Informações Incompletas',
-        'Por favor, preencha todos os campos obrigatórios.',
-        [{ text: 'OK' }]
-      );
+    // Verificar se o treino tem pelo menos um exercício
+    if (this.workoutTemplate.sets.length === 0) {
+      this.showToast('Adicione pelo menos um exercício ao treino.', 'warning');
       return;
     }
 
-    // Em um caso real, aqui enviaria para um serviço de backend
-    console.log('Treino salvo:', this.workoutTemplate);
+    // Verificar se o nome do treino foi preenchido
+    if (!this.workoutTemplate.name.trim()) {
+      this.showToast('Por favor, dê um nome ao seu treino.', 'warning');
+      return;
+    }
 
-    // Simular um ID gerado para o treino
-    this.workoutTemplate.id = Date.now().toString();
+    // Verificar autenticação
+    if (!this.authService.isLoggedIn()) {
+      this.showToast('Você precisa estar logado para salvar treinos.', 'danger');
+      this.router.navigate(['/login']);
+      return;
+    }
 
-    this.presentAlert(
-      'Treino Salvo',
-      'O treino foi criado com sucesso e atribuído aos alunos selecionados.',
-      [
-        {
-          text: 'OK',
-          handler: () => {
-            this.router.navigate(['/personal/dashboard']);
+    // Indicar que está salvando
+    this.isSaving = true;
+    this.saveSuccess = false;
+    this.saveError = false;
+
+    // Obter o ID do trainer do usuário logado
+    const userProfile = this.authService.getCurrentUser();
+    const trainerId = userProfile?.id || 0;
+
+    // Preparar dados para envio
+    const workoutData = {
+      name: this.workoutTemplate.name,
+      description: this.workoutTemplate.description,
+      level: this.workoutTemplate.level,
+      intensity: this.workoutTemplate.intensity,
+      estimated_duration: this.calculateTotalTime(),
+      total_distance: this.calculateTotalDistance(),
+      trainer_id: trainerId,
+      sets: this.workoutTemplate.sets.map((set, index) => ({
+        exercise_name: set.exercise,
+        distance: set.distance,
+        repetitions: set.repetitions,
+        rest_time: set.restTime,
+        notes: set.notes || '',
+        variation: set.variation || '',
+        equipment: set.equipment || [],
+        intensity: set.intensity || 'medium',
+        partial_interval: set.partialInterval || 0,
+        order: index + 1,
+        exercise_id: 0,
+        exercise_type: 'swim' as 'swim' | 'run' | 'bike' | 'other'
+      }))
+    };
+
+    // Enviar para a API
+    this.workoutService.createWorkout(workoutData).subscribe({
+      next: (response: any) => {
+        console.log('Treino salvo com sucesso:', response);
+
+        if (response && response.success && response.data && response.data.id) {
+          this.saveSuccess = true;
+
+          // Se há alunos selecionados, atribuir o treino a eles
+          const selectedStudents = this.allStudents.filter(s => s.selected);
+          if (selectedStudents.length > 0) {
+            this.assignWorkoutToStudents(response.data.id, selectedStudents);
+          } else {
+            this.showToast('Treino criado com sucesso!', 'success');
+            this.isSaving = false;
+            this.router.navigate(['/personal/workouts']);
           }
+        } else {
+          this.saveError = true;
+          this.showToast('Erro ao salvar o treino. Tente novamente.', 'danger');
+          this.isSaving = false;
         }
-      ]
-    );
+      },
+      error: (error: any) => {
+        console.error('Erro ao salvar treino:', error);
+        this.saveError = true;
+
+        // Verificar se é erro de autenticação
+        if (error.status === 401 || error?.error?.message?.includes('Token')) {
+          this.showToast('Sessão expirada. Por favor, faça login novamente.', 'danger');
+          this.authService.logout();
+          this.router.navigate(['/login']);
+        } else {
+          this.showToast('Erro ao salvar o treino. Verifique sua conexão e tente novamente.', 'danger');
+        }
+
+        this.isSaving = false;
+      }
+    });
+  }
+
+  // Atribuir treino aos alunos selecionados
+  assignWorkoutToStudents(workoutId: number, students: Student[]) {
+    const assignRequests: Observable<any>[] = [];
+
+    // Criar um array de observables para cada estudante
+    students.forEach(student => {
+      assignRequests.push(this.workoutService.assignWorkout(workoutId, parseInt(student.id)));
+    });
+
+    // Executar todas as requisições em paralelo
+    forkJoin(assignRequests).subscribe({
+      next: () => {
+        this.showToast(`Treino criado e atribuído a ${students.length} aluno(s)!`, 'success');
+        this.isSaving = false;
+        this.router.navigate(['/personal/workouts']);
+      },
+      error: (error: any) => {
+        console.error('Erro ao atribuir treino:', error);
+        this.showToast('Treino criado, mas não foi possível atribuí-lo a todos os alunos.', 'warning');
+        this.isSaving = false;
+        this.router.navigate(['/personal/workouts']);
+      }
+    });
   }
 
   // --- Utilitários ---
@@ -535,17 +759,6 @@ export class CreatePoolWorkoutPage implements OnInit {
     }
   }
 
-  async presentToast(message: string) {
-    const toast = await this.toastController.create({
-      message: message,
-      duration: 2000,
-      position: 'bottom',
-      color: 'success',
-      cssClass: 'toast-success'
-    });
-    await toast.present();
-  }
-
   // Função para forçar reinício do modal em caso de problemas
   resetStudentSelectionModal() {
     this.zone.run(() => {
@@ -555,7 +768,7 @@ export class CreatePoolWorkoutPage implements OnInit {
 
       // Aguardar um pouco e reabrir se necessário
       setTimeout(() => {
-        this.presentToast(
+        this.showToast(
           "Modal de seleção reiniciado. Tente selecionar os alunos novamente."
         );
       }, 500);
@@ -622,5 +835,76 @@ export class CreatePoolWorkoutPage implements OnInit {
     const itemToMove = this.workoutTemplate.sets.splice(event.detail.from, 1)[0];
     this.workoutTemplate.sets.splice(event.detail.to, 0, itemToMove);
     event.detail.complete();
+  }
+
+  // Método para atualizar automaticamente as distâncias parciais com base no intervalo
+  updatePartialDistancesFromInterval(): void {
+    if (!this.currentSet.partialInterval || this.currentSet.partialInterval <= 0) {
+      return;
+    }
+
+    const interval = this.currentSet.partialInterval;
+    const distances = this.getMultipleDistances(interval);
+
+    if (!this.currentSet.partialDistances) {
+      this.currentSet.partialDistances = [];
+    }
+
+    // Substituir as distâncias parciais pelas geradas pelo intervalo
+    this.currentSet.partialDistances = [...distances];
+
+    // Ordenar após adicionar
+    this.currentSet.partialDistances.sort((a, b) => a - b);
+  }
+
+  // Método chamado quando a distância do exercício é alterada
+  onDistanceChange(): void {
+    // Atualizar as distâncias parciais com base no intervalo
+    this.updatePartialDistancesFromInterval();
+  }
+
+  // Método para definir o intervalo de marcação
+  setPartialInterval(interval: number): void {
+    this.currentSet.partialInterval = interval;
+    this.updatePartialDistancesFromInterval();
+  }
+
+  // Método para obter o rótulo do intervalo atual
+  getPartialIntervalLabel(): string {
+    if (!this.currentSet.partialInterval) {
+      return 'Não definido';
+    }
+
+    const option = this.partialIntervalOptions.find(opt => opt.value === this.currentSet.partialInterval);
+    return option ? option.label : `A cada ${this.currentSet.partialInterval}m`;
+  }
+
+  async showToast(message: string, color: string = 'primary') {
+    const toast = await this.toastController.create({
+      message: message,
+      duration: 3000,
+      position: 'bottom',
+      color: color
+    } as ToastOptions);
+    await toast.present();
+  }
+
+  // Calcular a duração total do treino (em minutos)
+  calculateTotalTime(): number {
+    let totalSeconds = 0;
+
+    // Somar o tempo de todos os exercícios (incluindo repetições e descanso)
+    this.workoutTemplate.sets.forEach(set => {
+      // Tempo estimado por repetição (assumindo velocidade média de 2m/s)
+      const secondsPerRep = (set.distance / 2);
+
+      // Tempo total do exercício = (tempo por repetição * número de repetições) + (tempo de descanso * (repetições - 1))
+      const totalExerciseSeconds = (secondsPerRep * set.repetitions) + (set.restTime * (set.repetitions - 1));
+
+      totalSeconds += totalExerciseSeconds;
+    });
+
+    // Converter para minutos e arredondar para cima
+    return Math.ceil(totalSeconds / 60);
   }
 }

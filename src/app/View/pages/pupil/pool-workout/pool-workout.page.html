@@ -26,25 +26,120 @@
       <h2>{{workout.sets[currentSetIndex].exerciseName}}</h2>
       <p>Repetição {{currentRepetition}}/{{workout.sets[currentSetIndex].repetitions}}</p>
       <p>{{workout.sets[currentSetIndex].distance}}m</p>
+      <p *ngIf="nextPartialDistance <= workout.sets[currentSetIndex].distance">
+        Próxima parcial: {{nextPartialDistance}}m
+      </p>
     </div>
-    <div class="tap-instruction">
-      <ion-icon name="hand-right-outline"></ion-icon>
-      <p>Toque na tela ao completar a volta</p>
+
+    <div class="touch-controls">
+      <div class="tap-instruction">
+        <ion-icon name="hand-right-outline"></ion-icon>
+        <p>Toque na tela para marcar tempo</p>
+      </div>
     </div>
   </div>
 
-  <!-- Tela de descanso -->
-  <div class="rest-overlay" *ngIf="isRestTimerActive">
-    <div class="rest-container">
-      <h2>Descanso</h2>
-      <div class="rest-timer">{{formatTime(restTimer)}}</div>
+  <!-- Resumo e descanso -->
+  <div class="rest-summary-overlay" *ngIf="isRestTimerActive">
+    <div class="rest-summary-container">
+      <div class="rest-header">
+        <h2>Descanso</h2>
+        <div class="rest-timer">{{formatTime(restTimer)}}</div>
+      </div>
+
       <div class="rest-progress-container">
         <div class="rest-progress" [style.width.%]="(restTimer / initialRestTime) * 100"></div>
       </div>
+
+      <!-- Resumo detalhado da série completada -->
+      <div class="set-summary">
+        <h3 class="summary-title">Série Completada</h3>
+
+        <!-- Detalhes do exercício -->
+        <div class="exercise-detail-card">
+          <div class="exercise-icon">
+            <ion-icon name="water-outline"></ion-icon>
+          </div>
+          <div class="exercise-info">
+            <h4>{{workout.sets[currentSetIndex].exerciseName}}</h4>
+            <div class="exercise-metadata">
+              <span class="meta-item">
+                <ion-icon name="resize-outline"></ion-icon>
+                {{workout.sets[currentSetIndex].distance}}m
+              </span>
+              <span class="meta-item">
+                <ion-icon name="repeat-outline"></ion-icon>
+                Rep {{currentRepetition}}/{{workout.sets[currentSetIndex].repetitions}}
+              </span>
+              <span class="meta-item" *ngIf="workout.sets[currentSetIndex].notes">
+                <ion-icon name="information-circle-outline"></ion-icon>
+                {{workout.sets[currentSetIndex].notes}}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Estatísticas do desempenho -->
+        <div class="performance-stats">
+          <div class="stat-item">
+            <div class="stat-value">{{ getCurrentRepetitionTotalTime() }}</div>
+            <div class="stat-label">Tempo Total</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value">{{ getCurrentRepetitionAvgPace() }}</div>
+            <div class="stat-label">Ritmo Médio</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value">{{ workout.sets[currentSetIndex].distance }}m</div>
+            <div class="stat-label">Distância</div>
+          </div>
+        </div>
+
+        <!-- Tabela detalhada de tempos parciais -->
+        <div class="detailed-laps-section">
+          <h4 class="section-title">Tempos Detalhados</h4>
+          <div class="laps-table">
+            <div class="table-header">
+              <div class="th">Parcial</div>
+              <div class="th">Distância</div>
+              <div class="th">Tempo</div>
+              <div class="th">Ritmo</div>
+            </div>
+            <div class="table-body">
+              <div class="table-row" *ngFor="let lap of getCurrentRepetitionLaps(); let i = index">
+                <div class="td">{{ i + 1 }}</div>
+                <div class="td">
+                  <span *ngIf="lap.isPartial">{{ lap.partialDistance }}m</span>
+                  <span *ngIf="!lap.isPartial">{{ lap.distance }}m</span>
+                </div>
+                <div class="td">{{ formatTime(lap.time) }}</div>
+                <div class="td">{{ lap.pace }}</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Gráfico de ritmo ao longo da distância, se houver mais de uma parcial -->
+          <div class="pace-chart" *ngIf="getCurrentRepetitionLaps().length > 1">
+            <h4 class="section-title">Evolução do Ritmo</h4>
+            <div class="chart-bars">
+              <div class="chart-bar" *ngFor="let lap of getCurrentRepetitionLaps(); let i = index"
+                  [style.height.%]="getLapPacePercentage(lap)"
+                  [class.faster]="isLapFaster(lap, i)">
+                <span class="bar-label">{{ lap.isPartial ? lap.partialDistance : lap.distance }}m</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Próximo exercício -->
       <div class="next-exercise">
-        <p>Próximo: {{workout.sets[currentSetIndex].exerciseName}}</p>
+        <h3>Próximo</h3>
+        <p>{{workout.sets[currentSetIndex].exerciseName}}</p>
         <p>Repetição {{currentRepetition}}/{{workout.sets[currentSetIndex].repetitions}}</p>
       </div>
+
+      <!-- Controles de descanso -->
       <div class="rest-controls">
         <ion-button color="primary" (click)="toggleRest()">
           <ion-icon [name]="isRestPaused ? 'play-outline' : 'pause-outline'" slot="start"></ion-icon>
@@ -149,14 +244,15 @@
     <div class="laps-history" *ngIf="laps.length > 0">
       <h2>Voltas Completadas</h2>
       <div class="laps-list">
-        <div class="lap-item" *ngFor="let lap of laps.slice().reverse()">
+        <div class="lap-item" *ngFor="let lap of laps.slice().reverse()" [ngClass]="{'partial-lap': lap.isPartial}">
           <div class="lap-exercise">
             <ion-icon name="water-outline"></ion-icon>
             <span>{{lap.exerciseName}}</span>
+            <span *ngIf="lap.isPartial" class="partial-badge">Parcial</span>
           </div>
           <div class="lap-details">
             <div class="lap-rep">Rep {{lap.repetition}}</div>
-            <div class="lap-distance">{{lap.distance}}m</div>
+            <div class="lap-distance">{{lap.isPartial ? lap.partialDistance : lap.distance}}m</div>
             <div class="lap-time">{{formatTime(lap.time)}}</div>
             <div class="lap-pace" *ngIf="lap.pace">{{lap.pace}}</div>
           </div>
@@ -168,6 +264,12 @@
     <ion-button expand="block" class="finish-button" (click)="showFinishConfirm()" *ngIf="currentSetIndex < workout.sets.length">
       <ion-icon name="flag-outline" slot="start"></ion-icon>
       Finalizar Treino
+    </ion-button>
+
+    <!-- Botão de reiniciar -->
+    <ion-button expand="block" fill="outline" class="reset-button" (click)="showResetConfirm()" *ngIf="isWorkoutStarted">
+      <ion-icon name="refresh-outline" slot="start"></ion-icon>
+      Reiniciar Treino
     </ion-button>
   </div>
 </ion-content>

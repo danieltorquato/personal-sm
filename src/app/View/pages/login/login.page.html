@@ -1,0 +1,45 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Login</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="login-container">
+    <div class="logo-container">
+      <img src="assets/logo.png" alt="Logo" class="logo" />
+      <h1>Swimming Master</h1>
+      <p>Plataforma de gerenciamento de treinos de natação</p>
+    </div>
+
+    <div class="form-container">
+      <form (ngSubmit)="login()">
+        <ion-item>
+          <ion-label position="floating">Email</ion-label>
+          <ion-input type="email" [(ngModel)]="email" name="email" required></ion-input>
+        </ion-item>
+
+        <ion-item>
+          <ion-label position="floating">Senha</ion-label>
+          <ion-input type="password" [(ngModel)]="password" name="password" required></ion-input>
+        </ion-item>
+
+        <div class="error-message" *ngIf="errorMessage">
+          <ion-icon name="alert-circle-outline"></ion-icon>
+          <span>{{ errorMessage }}</span>
+        </div>
+
+        <ion-button type="submit" expand="block" [disabled]="isLoading">
+          <ion-spinner name="crescent" *ngIf="isLoading"></ion-spinner>
+          <span *ngIf="!isLoading">Entrar</span>
+        </ion-button>
+      </form>
+
+      <div class="extras">
+        <ion-button fill="clear" size="small" routerLink="/forgot-password">
+          Esqueceu a senha?
+        </ion-button>
+      </div>
+    </div>
+  </div>
+</ion-content>

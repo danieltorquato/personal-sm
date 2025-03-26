@@ -8,7 +8,7 @@ class UserController {
 
     public function __construct($db) {
         $this->db = $db;
-        $this->user = new User($db);
+        $this->user = new User();
     }
 
     // Login de usuário

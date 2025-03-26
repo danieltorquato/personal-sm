@@ -114,7 +114,7 @@ export const routes: Routes = [
         loadComponent: () => import('./View/pages/pupil/pool-workout/pool-workout.page').then(m => m.PoolWorkoutPage)
       },
       {
-        path: 'pool-workout-summary/:id',
+        path: 'pool-workout-summary/:sessionId',
         loadComponent: () => import('./View/pages/pupil/pool-workout-summary/pool-workout-summary.page').then(m => m.PoolWorkoutSummaryPage)
       },
     ]

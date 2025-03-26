@@ -151,7 +151,7 @@ export class AuthService {
 
   // Redirecionar para a página inicial apropriada com base no tipo de usuário
   redirectBasedOnUserType(userType: any): void {
-    if (!userType) {
+    if (!this.currentUser) {
       this.router.navigate(['/login']);
       return;
     }

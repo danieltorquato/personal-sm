@@ -87,7 +87,7 @@ export class LoginPage implements OnInit {
           loading.dismiss();
           this.isLoading = false;
           this.userType = response.userType;
-          this.authService.redirectBasedOnUserType( this.userType);
+          this.authService.redirectBasedOnUserType(this.userType);
         },
         error: (error) => {
           console.error('Erro no login:', error);

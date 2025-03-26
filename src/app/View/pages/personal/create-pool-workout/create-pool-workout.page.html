@@ -95,90 +95,126 @@
     </div>
 
     <!-- Séries de exercícios -->
-    <div class="workout-card">
-      <div class="card-header">
-        <ion-icon name="list-outline"></ion-icon>
-        <h2>Séries de Exercícios</h2>
-      </div>
-      <div class="card-content">
-        <div class="sets-list-container">
-          <ion-reorder-group [disabled]="!isReorderActive" (ionItemReorder)="reorderSets($event)">
-            <ion-item-sliding *ngFor="let set of workoutTemplate.sets; let i = index">
-              <ion-item [class]="getExerciseStyleClass(set.exercise)" class="set-item">
-                <ion-label>
-                  <h2>{{ getExerciseDisplayName(set.exercise) }}</h2>
-                  <p>
-                    {{ set.distance }}m x {{ set.repetitions }} repetições • Descanso: {{ formatTime(set.restTime) }}
-                    <span *ngIf="set.intensity" class="intensity-tag intensity-{{set.intensity.toLowerCase()}}">
-                      {{ getIntensityLabel(set.intensity) }}
-                    </span>
-                  </p>
-                  <p *ngIf="set.variation" class="variation-text">Variação: {{ set.variation }}</p>
-                  <p *ngIf="set.equipment && set.equipment.length > 0" class="equipment-text">Equipamentos: {{ getEquipmentLabels(set.equipment) }}</p>
-                </ion-label>
-                <ion-note slot="end">Total: {{ set.distance * set.repetitions }}m</ion-note>
-                <ion-reorder slot="end" *ngIf="isReorderActive"></ion-reorder>
-              </ion-item>
+    <div class="sets-container">
+      <h2 class="section-title">Séries do Treino</h2>
+      <p class="section-description">Configure as séries do treino, definindo exercícios, distância, repetições e descanso.</p>
 
-              <ion-item-options side="end">
-                <ion-item-option (click)="editSet(i)" color="primary">
-                  <ion-icon slot="icon-only" name="create"></ion-icon>
-                </ion-item-option>
-                <ion-item-option (click)="removeSet(i)" color="danger">
-                  <ion-icon slot="icon-only" name="trash"></ion-icon>
-                </ion-item-option>
-              </ion-item-options>
-            </ion-item-sliding>
-          </ion-reorder-group>
+      <div class="sets-wrapper">
+        <!-- Lista de séries configuradas -->
+        <ion-reorder-group [disabled]="!isReorderActive" (ionItemReorder)="reorderSets($event)">
+          <div class="set-card" *ngFor="let set of workoutTemplate.sets; let i = index">
+            <ion-reorder slot="start" class="reorder-handle" *ngIf="isReorderActive"></ion-reorder>
+            <div class="set-header">
+              <div class="exercise-icon" [ngClass]="getExerciseStyleClass(set.exercise)">
+                <ion-icon name="water-outline"></ion-icon>
+              </div>
+              <div class="set-info">
+                <h3>{{ getExerciseDisplayName(set.exercise) }}</h3>
+                <div class="set-details">
+                  <div class="detail-item">
+                    <ion-icon name="resize-outline"></ion-icon>
+                    <span>{{ set.distance }}m</span>
+                  </div>
+                  <div class="detail-item">
+                    <ion-icon name="repeat-outline"></ion-icon>
+                    <span>{{ set.repetitions }}x</span>
+                  </div>
+                  <div class="detail-item">
+                    <ion-icon name="time-outline"></ion-icon>
+                    <span>{{ set.restTime }}s</span>
+                  </div>
+                </div>
+              </div>
+              <div class="set-actions">
+                <ion-button fill="clear" (click)="editSet(i)">
+                  <ion-icon name="create-outline" slot="icon-only"></ion-icon>
+                </ion-button>
+                <ion-button fill="clear" color="danger" (click)="removeSet(i)">
+                  <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
+                </ion-button>
+              </div>
+            </div>
 
-          <div class="empty-state" *ngIf="workoutTemplate.sets.length === 0">
-            <ion-icon name="barbell-outline"></ion-icon>
-            <p>Nenhum exercício adicionado</p>
+            <!-- Equipamentos -->
+            <div class="equipment-section" *ngIf="set.equipment && set.equipment.length > 0">
+              <ion-icon name="construct-outline"></ion-icon>
+              <span>{{ getEquipmentLabels(set.equipment) }}</span>
+            </div>
+
+            <!-- Parciais -->
+            <div class="partials-info" *ngIf="set.partialInterval">
+              <div class="partials-interval">
+                <ion-icon name="timer-outline"></ion-icon>
+                <span>Marcação a cada {{ set.partialInterval }}m</span>
+              </div>
+
+              <div class="partials-list" *ngIf="set.partialDistances && set.partialDistances.length > 0">
+                <span class="partials-label">Pontos de marcação:</span>
+                <div class="partials-values">
+                  <ion-chip *ngFor="let distance of set.partialDistances" outline size="small">{{ distance }}m</ion-chip>
+                </div>
+              </div>
+            </div>
+
+            <!-- Notas -->
+            <div class="set-notes" *ngIf="set.notes">
+              <ion-icon name="information-circle-outline"></ion-icon>
+              <p>{{ set.notes }}</p>
+            </div>
           </div>
-        </div>
+        </ion-reorder-group>
 
-        <div class="buttons-container">
-          <ion-button *ngIf="workoutTemplate.sets.length > 0" fill="clear" size="small" (click)="toggleReorder()">
-            <ion-icon [name]="isReorderActive ? 'checkmark-outline' : 'reorder-three-outline'" slot="start"></ion-icon>
-            {{ isReorderActive ? 'Concluir' : 'Reordenar' }}
-          </ion-button>
-
-          <ion-button class="add-set-button" (click)="addNewSet()">
+        <!-- Botão para adicionar série -->
+        <div class="add-set-button">
+          <ion-button expand="block" (click)="addNewSet()" [disabled]="showSetModal">
             <ion-icon name="add-outline" slot="start"></ion-icon>
             Adicionar Série
           </ion-button>
         </div>
+      </div>
+    </div>
 
-        <!-- Resumo das estatísticas do treino -->
-        <div class="summary-card" *ngIf="workoutTemplate.sets.length > 0">
-          <div class="summary-header">
-            <h3>Resumo do Treino</h3>
+    <!-- Resumo das estatísticas do treino -->
+    <div class="summary-card" *ngIf="workoutTemplate.sets.length > 0">
+      <div class="summary-header">
+        <h3>Resumo do Treino</h3>
+      </div>
+      <div class="summary-content">
+        <div class="summary-stats">
+          <div class="stat-item">
+            <div class="stat-value">{{ calculateTotalDistance() }}</div>
+            <div class="stat-label">Total de Metros</div>
           </div>
-          <div class="summary-content">
-            <div class="summary-stats">
-              <div class="stat-item">
-                <div class="stat-value">{{ calculateTotalDistance() }}</div>
-                <div class="stat-label">Total de Metros</div>
-              </div>
-              <div class="stat-item">
-                <div class="stat-value">{{ workoutTemplate.sets.length }}</div>
-                <div class="stat-label">Séries</div>
-              </div>
-              <div class="stat-item">
-                <div class="stat-value">{{ calculateTotalSets() }}</div>
-                <div class="stat-label">Repetições</div>
-              </div>
-            </div>
+          <div class="stat-item">
+            <div class="stat-value">{{ workoutTemplate.sets.length }}</div>
+            <div class="stat-label">Séries</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value">{{ calculateTotalSets() }}</div>
+            <div class="stat-label">Repetições</div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Botão de salvar -->
-    <ion-button class="save-button" expand="block" (click)="saveWorkoutTemplate()" [disabled]="!isWorkoutValid()">
-      <ion-icon name="save-outline" slot="start"></ion-icon>
-      Salvar Treino
-    </ion-button>
+    <!-- Footer com botões -->
+    <ion-footer>
+      <ion-toolbar>
+        <ion-buttons slot="start">
+          <ion-button (click)="router.navigate(['/personal/dashboard'])">
+            <ion-icon slot="start" name="arrow-back-outline"></ion-icon>
+            Cancelar
+          </ion-button>
+        </ion-buttons>
+        <ion-buttons slot="end">
+          <ion-button [disabled]="!isWorkoutValid() || isLoading" (click)="saveWorkoutTemplate()" color="primary">
+            <ion-icon slot="start" name="save-outline"></ion-icon>
+            Salvar Treino
+            <ion-spinner name="crescent" *ngIf="isLoading"></ion-spinner>
+          </ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-footer>
   </div>
 </ion-content>
 
@@ -208,7 +244,7 @@
       <div class="set-details">
         <ion-item>
           <ion-label position="stacked">Distância (metros)</ion-label>
-          <ion-input type="number" [(ngModel)]="currentSet.distance" min="25" step="25"></ion-input>
+          <ion-input type="number" [(ngModel)]="currentSet.distance" min="25" step="25" (ionChange)="onDistanceChange()"></ion-input>
         </ion-item>
 
         <ion-item>
@@ -250,6 +286,22 @@
           <ion-item class="section-header">
             <ion-label>Marcação de Tempos Parciais</ion-label>
           </ion-item>
+
+          <!-- Intervalo de marcação automática -->
+          <ion-item>
+            <ion-label>Intervalo para Marcação</ion-label>
+            <ion-select [(ngModel)]="currentSet.partialInterval" (ionChange)="updatePartialDistancesFromInterval()" interface="popover">
+              <ion-select-option *ngFor="let option of partialIntervalOptions" [value]="option.value">
+                {{ option.label }}
+              </ion-select-option>
+            </ion-select>
+          </ion-item>
+
+          <div class="interval-info" *ngIf="currentSet.partialInterval">
+            <ion-note>
+              O aluno tocará na tela a cada {{currentSet.partialInterval}}m para marcar o tempo parcial
+            </ion-note>
+          </div>
 
           <ion-item *ngIf="currentSet.distance >= 50">
             <ion-label>Marcar metade da distância ({{currentSet.distance / 2}}m)</ion-label>
@@ -320,3 +372,6 @@
     </div>
   </div>
 </div>
+
+<!-- Indicador de carregamento global -->
+<ion-loading [isOpen]="isLoading" message="Carregando..."></ion-loading>
