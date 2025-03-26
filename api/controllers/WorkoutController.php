@@ -426,5 +426,101 @@ class WorkoutController {
             return ApiResponse::serverError("Erro ao registrar volta");
         }
     }
+
+    /**
+     * Obtém uma sessão de treino específica
+     * @return string JSON com dados da sessão
+     */
+    public function getWorkoutSession() {
+        // Verificar se o usuário está autenticado
+        $userData = $this->authenticate();
+        if (!$userData) {
+            return ApiResponse::unauthorized("Usuário não autenticado");
+        }
+
+        // Obter ID da sessão
+        $sessionId = isset($_GET['session_id']) ? intval($_GET['session_id']) : 0;
+
+        if ($sessionId <= 0) {
+            return ApiResponse::badRequest("ID da sessão inválido");
+        }
+
+        // Consultar sessão no banco de dados
+        $query = "SELECT
+                    ws.*,
+                    w.name as workout_name,
+                    u.name as trainer_name,
+                    u.avatar as trainer_avatar,
+                    s.name as student_name,
+                    s.avatar as student_avatar
+                 FROM workout_sessions ws
+                 JOIN workouts w ON ws.workout_id = w.id
+                 JOIN users u ON ws.trainer_id = u.id
+                 JOIN users s ON ws.student_id = s.id
+                 WHERE ws.id = ?";
+
+        $stmt = $this->db->prepare($query);
+        $stmt->bindParam(1, $sessionId);
+        $stmt->execute();
+
+        $sessionData = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$sessionData) {
+            return ApiResponse::notFound("Sessão não encontrada");
+        }
+
+        // Verificar permissão - apenas o próprio aluno ou o personal podem ver
+        $userId = $userData['id'];
+        $role = $userData['type_name'];
+
+        if ($role !== 'admin' &&
+            $sessionData['student_id'] != $userId &&
+            $sessionData['trainer_id'] != $userId) {
+            return ApiResponse::forbidden("Você não tem permissão para acessar esta sessão");
+        }
+
+        // Obter os conjuntos de exercícios da sessão
+        $query = "SELECT
+                    ss.*,
+                    e.name as exercise_name
+                 FROM session_sets ss
+                 JOIN exercises e ON ss.exercise_id = e.id
+                 WHERE ss.session_id = ?
+                 ORDER BY ss.set_order ASC";
+
+        $stmt = $this->db->prepare($query);
+        $stmt->bindParam(1, $sessionId);
+        $stmt->execute();
+
+        $sets = [];
+        while ($set = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $setId = $set['id'];
+
+            // Obter voltas para este conjunto
+            $query = "SELECT * FROM session_laps
+                      WHERE set_id = ?
+                      ORDER BY repetition_number ASC, lap_order ASC";
+            $lapsStmt = $this->db->prepare($query);
+            $lapsStmt->bindParam(1, $setId);
+            $lapsStmt->execute();
+
+            $laps = [];
+            while ($lap = $lapsStmt->fetch(PDO::FETCH_ASSOC)) {
+                $laps[] = $lap;
+            }
+
+            $set['laps'] = $laps;
+            $sets[] = $set;
+        }
+
+        // Montar a resposta
+        $response = [
+            'success' => true,
+            'data' => $sessionData,
+            'sets' => $sets
+        ];
+
+        return json_encode($response);
+    }
 }
 ?>

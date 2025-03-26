@@ -1,10 +1,11 @@
-import { Component, OnInit, ViewChild, ElementRef, CUSTOM_ELEMENTS_SCHEMA, AfterViewInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, CUSTOM_ELEMENTS_SCHEMA, AfterViewInit, OnDestroy, inject } from '@angular/core';
 import { IonicSlides, AlertController, ToastController, ActionSheetController } from '@ionic/angular';
 import { Router } from '@angular/router';
-import { AudioService } from '../../../components/audio-service/audio.service';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { register } from 'swiper/element';
+import { WorkoutService } from '../../../../services/workout.service';
+import { ApiService } from '../../../../services/api.service';
 
 interface WorkoutSet {
   exercise: string;
@@ -72,50 +73,7 @@ export class DynamicPoolWorkoutPage implements OnInit, AfterViewInit, OnDestroy 
   };
 
   // Biblioteca de exercícios
-  exerciseLibrary: ExerciseInfo[] = [
-    {
-      value: 'nado-livre',
-      name: 'Nado Livre',
-      image: 'assets/exercises/freestyle.jpg',
-      description: 'Estilo mais rápido e eficiente, utilizado em longas distâncias'
-    },
-    {
-      value: 'nado-costas',
-      name: 'Nado Costas',
-      image: 'assets/exercises/backstroke.jpg',
-      description: 'Excelente para fortalecimento da região lombar e ombros'
-    },
-    {
-      value: 'nado-peito',
-      name: 'Nado Peito',
-      image: 'assets/exercises/breaststroke.jpg',
-      description: 'Fortalece principalmente peitoral e pernas'
-    },
-    {
-      value: 'borboleta',
-      name: 'Borboleta',
-      image: 'assets/exercises/butterfly.jpg',
-      description: 'Estilo mais desafiador que trabalha todo o corpo'
-    },
-    {
-      value: 'batida-pernas',
-      name: 'Batida de Pernas',
-      image: 'assets/exercises/kickboard.jpg',
-      description: 'Exercício com prancha focado no fortalecimento das pernas'
-    },
-    {
-      value: 'pullbuoy',
-      name: 'Braçada com Pullbuoy',
-      image: 'assets/exercises/pullbuoy.jpg',
-      description: 'Exercício com flutuador entre as pernas para focar na braçada'
-    },
-    {
-      value: 'medley',
-      name: 'Medley',
-      image: 'assets/exercises/medley.jpg',
-      description: 'Combinação de todos os quatro estilos na mesma série'
-    }
-  ];
+  exerciseLibrary: ExerciseInfo[] = [];
 
   // Dados do treino
   workout: {
@@ -125,66 +83,11 @@ export class DynamicPoolWorkoutPage implements OnInit, AfterViewInit, OnDestroy 
     studentId: string;
     sets: WorkoutSet[];
   } = {
-    id: new Date().getTime().toString(),
-    name: 'Treino de Natação',
+    id: '',
+    name: '',
     date: new Date(),
-    studentId: '1', // Seria obtido na navegação real
-    sets: [
-      {
-        exercise: 'nado-livre',
-        distance: 50,
-        repetitions: 4,
-        restTime: 30,
-        notes: 'Concentre-se na respiração bilateral',
-        completedRepetitions: 1,
-        laps: [] as Lap[],
-        partialDistances: [25], // Adicionando distância parcial
-        equipment: []
-      },
-      {
-        exercise: 'nado-costas',
-        distance: 50,
-        repetitions: 2,
-        restTime: 45,
-        notes: 'Mantenha o corpo alinhado na superfície',
-        completedRepetitions: 1,
-        laps: [] as Lap[],
-        partialDistances: [25], // Adicionando distância parcial
-        equipment: []
-      },
-      {
-        exercise: 'batida-pernas',
-        distance: 25,
-        repetitions: 4,
-        restTime: 20,
-        notes: 'Use a prancha e mantenha as pernas estendidas',
-        completedRepetitions: 1,
-        laps: [] as Lap[],
-        partialDistances: [], // Sem distâncias parciais
-        equipment: []
-      },
-      {
-        exercise: 'nado-peito',
-        distance: 50,
-        repetitions: 2,
-        restTime: 40,
-        completedRepetitions: 1,
-        laps: [] as Lap[],
-        partialDistances: [25], // Adicionando distância parcial
-        equipment: []
-      },
-      {
-        exercise: 'pullbuoy',
-        distance: 50,
-        repetitions: 2,
-        restTime: 30,
-        notes: 'Foco na técnica de braçada e rotação de ombros',
-        completedRepetitions: 1,
-        laps: [] as Lap[],
-        partialDistances: [25], // Adicionando distância parcial
-        equipment: []
-      }
-    ]
+    studentId: '',
+    sets: []
   };
 
   // Estado atual do treino
@@ -237,47 +140,223 @@ export class DynamicPoolWorkoutPage implements OnInit, AfterViewInit, OnDestroy 
   currentLapDistance: number = 0; // Distância acumulada das voltas parciais
 
   // Equipamentos de natação
-  equipmentOptions = [
-    { value: 'prancha', label: 'Prancha' },
-    { value: 'pullbuoy', label: 'Pullbuoy' },
-    { value: 'nadadeiras', label: 'Nadadeiras' },
-    { value: 'palmar', label: 'Palmar' },
-    { value: 'snorkel', label: 'Snorkel' },
-    { value: 'tubo', label: 'Tubo Flutuador' },
-    { value: 'elastico', label: 'Elástico' },
-    { value: 'caneleira', label: 'Caneleira' },
-    { value: 'paraquedas', label: 'Paraquedas de Resistência' },
-    { value: 'oculos', label: 'Óculos de Natação' }
-  ];
+  equipmentOptions: {value: string, label: string}[] = [];
+
+  // Adicionar propriedades privadas
+  private workoutService: WorkoutService;
+  private apiService: ApiService;
 
   constructor(
     private router: Router,
     private alertController: AlertController,
     private toastController: ToastController,
     private actionSheetController: ActionSheetController,
-    private audioService: AudioService
-  ) {}
+
+  ) {
+    this.workoutService = inject(WorkoutService);
+    this.apiService = inject(ApiService);
+  }
 
   ngOnInit() {
     register();
-    this.preloadSounds();
-    this.initWorkout();
 
-    // Criar exemplo de equipamentos para os exercícios
-    for (let i = 0; i < this.workout.sets.length; i++) {
-      // Verificar se o exercício já tem equipamento definido
-      if (!('equipment' in this.workout.sets[i])) {
-        // Adicionar equipamentos de exemplo
-        (this.workout.sets[i] as WorkoutSet).equipment = [];
 
-        // Adicionar exemplo para alguns exercícios
-        if (i % 2 === 0) {
-          (this.workout.sets[i] as WorkoutSet).equipment!.push('prancha');
-        } else if (i % 3 === 0) {
-          (this.workout.sets[i] as WorkoutSet).equipment!.push('pullbuoy');
+    // Carregar exercícios do banco de dados
+    this.loadExercises();
+
+    // Carregar equipamentos do banco de dados
+    this.loadEquipment();
+
+    // Verificar se existe um treino em andamento
+    this.loadSavedWorkout();
+  }
+
+  // Carregar exercícios do banco de dados
+  loadExercises() {
+    this.apiService.get<any>('exercises/list').subscribe({
+      next: (response: any) => {
+        if (response && response.success) {
+          this.exerciseLibrary = response.data.map((exercise: any) => ({
+            value: exercise.id,
+            name: exercise.name,
+            image: exercise.image_url || 'assets/exercises/default.jpg',
+            description: exercise.description || ''
+          }));
+        } else {
+          console.error('Erro ao buscar exercícios:', response.message);
         }
+      },
+      error: (err: any) => {
+        console.error('Erro ao buscar exercícios:', err);
+      }
+    });
+  }
+
+  // Carregar equipamentos do banco de dados
+  loadEquipment() {
+    this.apiService.get<any>('equipment/list').subscribe({
+      next: (response: any) => {
+        if (response && response.success) {
+          this.equipmentOptions = response.data.map((equipment: any) => ({
+            value: equipment.id,
+            label: equipment.name
+          }));
+        } else {
+          console.error('Erro ao buscar equipamentos:', response.message);
+        }
+      },
+      error: (err: any) => {
+        console.error('Erro ao buscar equipamentos:', err);
+      }
+    });
+  }
+
+  // Carregar treino salvo ou carregar da API se ID estiver na URL
+  loadSavedWorkout() {
+    // Verificar se há um ID de treino na URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const workoutId = urlParams.get('id');
+
+    if (workoutId) {
+      // Buscar treino do banco de dados
+      this.workoutService.getWorkout(Number(workoutId)).subscribe({
+        next: (response) => {
+          if (response && response.success) {
+            const workoutData = response.data;
+
+            this.workout = {
+              id: workoutData?.id?.toString() ?? '',
+              name: workoutData?.name ?? '',
+              date: new Date(workoutData?.created_at ?? Date.now()),
+              studentId: workoutData?.id?.toString() ?? '',
+              sets: (workoutData?.sets || []).map((set: any) => ({
+                exercise: set.exercise_id,
+                distance: set.distance,
+                repetitions: set.repetitions,
+                restTime: set.rest_time,
+                notes: set.notes || '',
+                completedRepetitions: 1,
+                laps: [],
+                partialDistances: set.partial_distances ? JSON.parse(set.partial_distances) : [],
+                equipment: set.equipment ? JSON.parse(set.equipment) : []
+              }))
+            };
+
+            // Inicializar o treino
+            this.initializeWorkout();
+          } else {
+            // Se falhar ao carregar o treino, crie um treino em branco
+            this.createEmptyWorkout();
+          }
+        },
+        error: (err) => {
+          console.error('Erro ao buscar treino:', err);
+          this.createEmptyWorkout();
+        }
+      });
+    } else {
+      // Recuperar treino salvo localmente ou criar um novo
+      const savedState = localStorage.getItem(this.WORKOUT_STATE_KEY);
+      if (savedState) {
+        this.loadWorkoutState(JSON.parse(savedState));
+      } else {
+        this.createEmptyWorkout();
       }
     }
+  }
+
+  // Criar um treino em branco
+  createEmptyWorkout() {
+    this.workout = {
+      id: new Date().getTime().toString(),
+      name: 'Novo Treino',
+      date: new Date(),
+      studentId: '',
+      sets: []
+    };
+  }
+
+  // Método modificado para criar treino fictício
+  createFictitiousWorkout() {
+    // Mostrar alerta informando que está buscando dados do banco
+    this.showLoadingDataAlert();
+
+    // Buscar um treino de exemplo do banco de dados
+    this.apiService.get('workouts/sample').subscribe({
+      next: (response: any) => {
+        if (response && response.success && response.data) {
+          // Usar o treino de exemplo retornado pela API
+          const sampleWorkout = response.data;
+          this.workout = {
+            id: new Date().getTime().toString(),
+            name: sampleWorkout.name,
+            date: new Date(),
+            studentId: sampleWorkout.student_id || '',
+            sets: sampleWorkout.sets.map((set: any) => ({
+              exercise: set.exercise_id,
+              distance: set.distance,
+              repetitions: set.repetitions,
+              restTime: set.rest_time,
+              notes: set.notes || '',
+              completedRepetitions: 1,
+              laps: [],
+              partialDistances: set.partial_distances ? JSON.parse(set.partial_distances) : [],
+              equipment: set.equipment ? JSON.parse(set.equipment) : []
+            }))
+          };
+        } else {
+          // Fallback para um treino básico caso a API não retorne dados
+          this.createBasicSampleWorkout();
+        }
+
+        // Limpar estado anterior e inicializar novo treino
+        localStorage.removeItem(this.WORKOUT_STATE_KEY);
+        this.initializeWorkout();
+      },
+      error: (err) => {
+        console.error('Erro ao buscar treino de exemplo:', err);
+        this.createBasicSampleWorkout();
+        this.initializeWorkout();
+      }
+    });
+  }
+
+  // Criar um treino básico de exemplo como fallback
+  createBasicSampleWorkout() {
+    const defaultExercise = this.exerciseLibrary.length > 0 ?
+                           this.exerciseLibrary[0].value :
+                           'nado-livre';
+
+    this.workout = {
+      id: new Date().getTime().toString(),
+      name: 'Treino Básico',
+      date: new Date(),
+      studentId: '',
+      sets: [
+        {
+          exercise: defaultExercise,
+          distance: 50,
+          repetitions: 4,
+          restTime: 30,
+          notes: '',
+          completedRepetitions: 1,
+          laps: [],
+          partialDistances: [25],
+          equipment: []
+        }
+      ]
+    };
+  }
+
+  // Mostrar alerta de carregamento de dados
+  async showLoadingDataAlert() {
+    const alert = await this.alertController.create({
+      header: 'Carregando Dados',
+      message: 'Buscando informações do banco de dados...',
+      buttons: ['OK']
+    });
+
+    await alert.present();
   }
 
   ngAfterViewInit() {
@@ -296,15 +375,9 @@ export class DynamicPoolWorkoutPage implements OnInit, AfterViewInit, OnDestroy 
     });
   }
 
-  preloadSounds() {
-    // Pré-carregar os arquivos de áudio
-    this.audioService.preloadAudio('beep', 'assets/sounds/beep.mp3');
-    this.audioService.preloadAudio('start', 'assets/sounds/start.mp3');
-    this.audioService.preloadAudio('end', 'assets/sounds/end.mp3');
-  }
 
   // Inicializa o treino
-  initWorkout() {
+  initializeWorkout() {
     this.currentSetIndex = 0;
     this.currentRepetition = 1;
     this.currentSet = { ...this.workout.sets[0] };
@@ -579,8 +652,6 @@ export class DynamicPoolWorkoutPage implements OnInit, AfterViewInit, OnDestroy 
 
     console.log('Iniciando timer de descanso:', this.restTimerValue, 'segundos');
 
-    // Tocar som de início de descanso
-    this.playSound('rest-start');
 
     // Limpar qualquer intervalo anterior
     if (this.restTimerInterval) {
@@ -591,10 +662,7 @@ export class DynamicPoolWorkoutPage implements OnInit, AfterViewInit, OnDestroy 
     this.restTimerInterval = setInterval(() => {
       this.restTimerValue--;
 
-      // Tocar beep nos últimos 3 segundos
-      if (this.restTimerValue <= 3 && this.restTimerValue > 0) {
-        this.playSound('countdown');
-      }
+
 
       if (this.restTimerValue <= 0) {
         this.endRestTimer();
@@ -617,10 +685,7 @@ export class DynamicPoolWorkoutPage implements OnInit, AfterViewInit, OnDestroy 
       this.restTimerInterval = setInterval(() => {
         this.restTimerValue--;
 
-        // Tocar beep nos últimos 3 segundos
-        if (this.restTimerValue <= 3 && this.restTimerValue > 0) {
-          this.playSound('countdown');
-        }
+
 
         if (this.restTimerValue <= 0) {
           this.endRestTimer();
@@ -638,8 +703,7 @@ export class DynamicPoolWorkoutPage implements OnInit, AfterViewInit, OnDestroy 
     this.isRestTimerActive = false;
     this.isRestTimerPaused = false;
 
-    // Tocar som de fim de descanso
-    this.playSound('rest-end');
+
 
     // Zerar o timer atual
     this.currentTimerValue = 0;
@@ -793,16 +857,7 @@ export class DynamicPoolWorkoutPage implements OnInit, AfterViewInit, OnDestroy 
     return Array(size);
   }
 
-  playSound(type: 'countdown' | 'rest-start' | 'rest-end') {
-    // Usar o AudioService para reproduzir os sons
-    if (type === 'countdown') {
-      this.audioService.playCountdownBeep();
-    } else if (type === 'rest-start') {
-      this.audioService.playStartBeep();
-    } else if (type === 'rest-end') {
-      this.audioService.playEndBeep();
-    }
-  }
+
 
   async presentToast(message: string): Promise<void> {
     const toast = await this.toastController.create({
@@ -851,53 +906,43 @@ export class DynamicPoolWorkoutPage implements OnInit, AfterViewInit, OnDestroy 
     localStorage.setItem(this.WORKOUT_STATE_KEY, JSON.stringify(state));
   }
 
-  private loadWorkoutState() {
-    const savedState = localStorage.getItem(this.WORKOUT_STATE_KEY);
-    if (savedState) {
-      try {
-        const state = JSON.parse(savedState);
-        this.workout = state.workout;
-        this.currentSetIndex = state.currentSetIndex;
-        this.currentRepetition = state.currentRepetition;
-        this.currentSet = state.currentSet;
-        this.totalWorkoutTime = state.totalWorkoutTime;
-        this.currentTimerValue = state.currentTimerValue;
-        this.timerCentiseconds = state.timerCentiseconds || 0;
-        this.workoutSummary = state.workoutSummary;
-        this.isCountdownActive = state.isCountdownActive || false;
-        this.countdownTimer = state.countdownTimer || 0;
-        this.currentLapDistance = state.currentLapDistance || 0;
+  private loadWorkoutState(state: any) {
+    this.workout = state.workout;
+    this.currentSetIndex = state.currentSetIndex;
+    this.currentRepetition = state.currentRepetition;
+    this.currentSet = state.currentSet;
+    this.totalWorkoutTime = state.totalWorkoutTime;
+    this.currentTimerValue = state.currentTimerValue;
+    this.timerCentiseconds = state.timerCentiseconds || 0;
+    this.workoutSummary = state.workoutSummary;
+    this.isCountdownActive = state.isCountdownActive || false;
+    this.countdownTimer = state.countdownTimer || 0;
+    this.currentLapDistance = state.currentLapDistance || 0;
 
-        // Restaurar os timers
-        if (state.isMainTimerRunning) {
-          this.startMainTimerAfterCountdown();
-        }
+    // Restaurar os timers
+    if (state.isMainTimerRunning) {
+      this.startMainTimerAfterCountdown();
+    }
 
-        if (state.isRestTimerActive) {
-          this.isRestTimerActive = true;
-          this.isRestTimerPaused = state.isRestTimerPaused;
-          this.restTimerValue = state.restTimerValue;
+    if (state.isRestTimerActive) {
+      this.isRestTimerActive = true;
+      this.isRestTimerPaused = state.isRestTimerPaused;
+      this.restTimerValue = state.restTimerValue;
 
-          if (!this.isRestTimerPaused) {
-            this.startRestTimer();
-          }
-        }
-
-        // Restaurar a contagem regressiva, se estiver ativa
-        if (state.isCountdownActive && state.countdownTimer > 0) {
-          this.startCountdown(() => {
-            this.startMainTimerAfterCountdown();
-          });
-        }
-
-        // Notificar o usuário
-        this.presentToast('Treino recuperado da última sessão');
-      } catch (error) {
-        console.error('Erro ao carregar o estado salvo:', error);
-        // Se houver erro, inicializar normalmente
-        this.initWorkout();
+      if (!this.isRestTimerPaused) {
+        this.startRestTimer();
       }
     }
+
+    // Restaurar a contagem regressiva, se estiver ativa
+    if (state.isCountdownActive && state.countdownTimer > 0) {
+      this.startCountdown(() => {
+        this.startMainTimerAfterCountdown();
+      });
+    }
+
+    // Notificar o usuário
+    this.presentToast('Treino recuperado da última sessão');
   }
 
   // Método para contagem regressiva
@@ -905,23 +950,18 @@ export class DynamicPoolWorkoutPage implements OnInit, AfterViewInit, OnDestroy 
     this.isCountdownActive = true;
     this.countdownTimer = 3;
 
-    // Tocar som inicial
-    this.audioService.playCountdownBeep();
 
     clearInterval(this.countdownInterval);
     this.countdownInterval = setInterval(() => {
       this.countdownTimer--;
 
       if (this.countdownTimer > 0) {
-        // Tocar beep durante a contagem
-        this.audioService.playCountdownBeep();
+
       } else {
         // Contagem finalizada
         clearInterval(this.countdownInterval);
         this.isCountdownActive = false;
 
-        // Tocar som mais forte no final
-        this.audioService.playStartBeep();
 
         // Executar o callback após a contagem
         callback();
@@ -1121,80 +1161,6 @@ export class DynamicPoolWorkoutPage implements OnInit, AfterViewInit, OnDestroy 
 
     await alert.present();
     return;
-  }
-
-  // Método para criar um novo treino fictício para demonstração
-  createFictitiousWorkout() {
-    // Limpar qualquer estado anterior
-    localStorage.removeItem(this.WORKOUT_STATE_KEY);
-
-    // Definir um novo treino de exemplo
-    this.workout = {
-      id: new Date().getTime().toString(),
-      name: 'Treino Avançado de Velocidade',
-      date: new Date(),
-      studentId: 'Matheus Santos',
-      sets: [
-        {
-          exercise: 'nado-livre',
-          distance: 100,
-          repetitions: 4,
-          restTime: 40,
-          notes: 'Foco na técnica de respiração bilateral e braçada longa',
-          completedRepetitions: 1,
-          laps: [],
-          partialDistances: [25, 50, 75],
-          equipment: ['toledo', 'prancha']
-        },
-        {
-          exercise: 'batida-pernas',
-          distance: 50,
-          repetitions: 6,
-          restTime: 30,
-          notes: 'Manter pernas esticadas, usar prancha grande',
-          completedRepetitions: 1,
-          laps: [],
-          partialDistances: [25],
-          equipment: ['prancha']
-        },
-        {
-          exercise: 'borboleta',
-          distance: 50,
-          repetitions: 2,
-          restTime: 60,
-          notes: 'Foco na ondulação do corpo e na sincronização dos braços',
-          completedRepetitions: 1,
-          laps: [],
-          partialDistances: [25],
-          equipment: ['toledo']
-        },
-        {
-          exercise: 'pullbuoy',
-          distance: 75,
-          repetitions: 4,
-          restTime: 45,
-          notes: 'Concentre-se na pegada e puxada subaquática',
-          completedRepetitions: 1,
-          laps: [],
-          partialDistances: [25, 50],
-          equipment: ['toledo']
-        },
-        {
-          exercise: 'medley',
-          distance: 100,
-          repetitions: 2,
-          restTime: 60,
-          notes: 'Sequência: borboleta, costas, peito, livre - 25m cada',
-          completedRepetitions: 1,
-          laps: [],
-          partialDistances: [25, 50, 75],
-          equipment: ['toledo']
-        }
-      ]
-    };
-
-    // Inicializar o treino com os novos dados
-    this.initWorkout();
   }
 
   // Função para obter os rótulos dos equipamentos a partir dos valores

@@ -108,4 +108,11 @@ export class WorkoutService {
     const paceSeconds = (timeInSeconds / distanceInMeters) * 100;
     return this.formatTime(Math.round(paceSeconds));
   }
+
+  /**
+   * Obtém uma sessão de treino por ID
+   */
+  getWorkoutSession(session_id: number): Observable<ApiResponse<WorkoutSession>> {
+    return this.apiService.get<ApiResponse<WorkoutSession>>('workouts/session', { session_id });
+  }
 }

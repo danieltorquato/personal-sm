@@ -106,6 +106,34 @@ try {
                 case 'record-lap':
                     echo $controller->recordLap();
                     break;
+                case 'session':
+                    echo $controller->getWorkoutSession();
+                    break;
+                default:
+                    echo ApiResponse::notFound("Ação não encontrada");
+            }
+            break;
+
+        case 'dashboard':
+            require_once "controllers/DashboardController.php";
+            $controller = new DashboardController($db);
+
+            switch ($action) {
+                case 'personal':
+                    echo $controller->getPersonalDashboard();
+                    break;
+                case 'pupil':
+                    echo $controller->getPupilDashboard();
+                    break;
+                case 'stats':
+                    echo $controller->getStats();
+                    break;
+                case 'upcoming-workouts':
+                    echo $controller->getUpcomingWorkouts();
+                    break;
+                case 'recent-sessions':
+                    echo $controller->getRecentSessions();
+                    break;
                 default:
                     echo ApiResponse::notFound("Ação não encontrada");
             }

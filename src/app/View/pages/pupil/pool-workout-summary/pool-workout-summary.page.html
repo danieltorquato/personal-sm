@@ -41,7 +41,7 @@
           <div class="divider"></div>
 
           <div class="stat-item">
-            <div class="stat-value">{{formatDuration(workoutSummary.duration)}}</div>
+            <div class="stat-value">{{formatDuration(workoutSummary.duration || 0)}}</div>
             <div class="stat-label">Tempo Total</div>
           </div>
 
@@ -121,27 +121,7 @@
       </ion-card-content>
     </ion-card>
 
-    <!-- Comparação com treinos anteriores -->
-    <h3 class="section-title">Progresso</h3>
-    <ion-card class="progress-card">
-      <ion-card-content>
-        <div class="progress-header">
-          <div class="progress-info">
-            <div class="progress-title">Comparado ao último treino</div>
-            <div class="progress-value" [class.improved]="workoutSummary.improvement > 0" [class.declined]="workoutSummary.improvement < 0">
-              <ion-icon [name]="workoutSummary.improvement > 0 ? 'arrow-up-outline' : 'arrow-down-outline'" *ngIf="workoutSummary.improvement != 0"></ion-icon>
-              {{workoutSummary.improvement > 0 ? '+' : ''}}{{workoutSummary.improvement}}%
-            </div>
-          </div>
-        </div>
-
-        <div class="progress-chart">
-          <div class="chart-placeholder">
-            <p>Gráfico de progresso será exibido aqui</p>
-          </div>
-        </div>
-      </ion-card-content>
-    </ion-card>
+  
 
     <!-- Feedback do personal -->
     <h3 class="section-title">Feedback do Personal</h3>
