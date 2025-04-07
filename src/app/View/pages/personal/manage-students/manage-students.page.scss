@@ -57,3 +57,22 @@ ion-badge {
 ion-fab-button {
   --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
+
+ion-popover ion-item {
+  --background:transparent;
+  --padding-start: 2px;
+  --padding-end: 2px;
+  --inner-padding-end: 2px;
+  --inner-padding-start: 10px;
+  --border-radius: 0px;
+  --box-shadow: none;
+}
+ion-popover ion-list{
+  --background:rgba(255, 8, 8, 0.6);
+  --padding-start: 0px;
+  --padding-end: 0px;
+  --inner-padding-end: 0px;
+  --inner-padding-start: 0px;
+  --border-radius: 50px;
+  --box-shadow: none;
+}

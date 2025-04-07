@@ -61,7 +61,7 @@ export class LoginPage implements OnInit {
 
   redirectBasedOnUserType() {
     const user = this.authService.getCurrentUser();
-
+    console.log('Redirecionando usuário:', user);
     if (!user) {
       return;
     }

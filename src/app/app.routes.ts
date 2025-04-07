@@ -81,6 +81,10 @@ export const routes: Routes = [
         path: 'create-pool-workout',
         loadComponent: () => import('./View/pages/personal/create-pool-workout/create-pool-workout.page').then(m => m.CreatePoolWorkoutPage)
       },
+      {
+        path: 'student-details/:id',
+        loadComponent: () => import('./View/pages/personal/student-details/student-details.page').then( m => m.StudentDetailsPage)
+      }
     ]
   },
 
@@ -91,7 +95,7 @@ export const routes: Routes = [
     children: [
       {
         path: 'dashboard',
-        loadComponent: () => import('./View/pages/pupil/dashboard/dashboard.page').then(m => m.PupilDashboardPage)
+        loadComponent: () => import('./View/pages/pupil/dashboard/dashboard.page').then(m => m.DashboardPage)
       },
       {
         path: 'settings',
@@ -122,5 +126,7 @@ export const routes: Routes = [
   {
     path: '**',
     redirectTo: 'login'
-  }
+  },
+
+
 ];

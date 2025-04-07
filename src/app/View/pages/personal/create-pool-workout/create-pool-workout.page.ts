@@ -513,7 +513,7 @@ export class CreatePoolWorkoutPage implements OnInit {
     );
   }
 
-  saveWorkoutTemplate() {
+  async saveWorkoutTemplate() {
     // Verificar se o treino tem pelo menos um exercício
     if (this.workoutTemplate.sets.length === 0) {
       this.showToast('Adicione pelo menos um exercício ao treino.', 'warning');
@@ -539,8 +539,8 @@ export class CreatePoolWorkoutPage implements OnInit {
     this.saveError = false;
 
     // Obter o ID do trainer do usuário logado
-    const userProfile = this.authService.getCurrentUser();
-    const trainerId = userProfile?.id || 0;
+    const userProfile = await this.authService.getCurrentUser().toPromise();
+    const trainerId = userProfile?.id || undefined;
 
     // Preparar dados para envio
     const workoutData = {

@@ -6,11 +6,20 @@ import { Router } from '@angular/router';
 import { environment } from 'src/environments/environment';
 
 export interface User {
-  id: number;
+  id: any;
   email: string;
   name: string;
   userType: 'aluno' | 'personal' | 'admin';
+  phone?: string;
+  birth_date?: string;
+  gender?: 'male' | 'female' | 'other';
+  avatar?: string;
+  active?: boolean;
+  created_at?: string;
+  updated_at?: string;
+  personal_id?: any;
   token?: string;
+  last_training?: string;
 }
 
 export interface LoginResponse {
@@ -55,7 +64,7 @@ export class AuthService {
               id: response.data.id,
           email: response.data.email,
           name: response.data.name,
-          userType: response.data.type_name,
+          userType: response.data.user_type,
           token: response.data.token,
             };
             console.log('Tipo de usuário:', user);
@@ -127,8 +136,26 @@ export class AuthService {
   }
 
   // Obter o usuário atual
-  getCurrentUser(): User | null {
-    return this.currentUser;
+  getCurrentUser(): Observable<User | null> {
+    const endpoint = `${this.apiUrl}/users/current`;
+
+    console.log('Tentando obter o usuário atual na API:', endpoint);
+
+    return this.http.get<LoginResponse>(endpoint).pipe(
+      map(response => {
+        if (response.success) {
+          return {
+            id: response.user.id,
+            email: response.user.email,
+            name: response.user.name,
+            userType: response.user.userType,
+            token: response.user.token
+          } as User;
+        }
+        return null;
+      }),
+      catchError(() => of(null))
+    );
   }
 
   // Verificar se o usuário é de um tipo específico

@@ -29,9 +29,8 @@ class User {
     // Autenticar usuário (login)
     public function login() {
         // Query para verificar se o email existe
-        $query = "SELECT u.*, ut.type_name FROM " . $this->table_name . " u
-                  LEFT JOIN user_types ut ON u.user_type_id = ut.id
-                  WHERE u.email = :email AND u.is_active = 1
+        $query = "SELECT * FROM " . $this->table_name . "
+                  WHERE email = :email AND active = 1
                   LIMIT 0,1";
 
         // Preparar a query

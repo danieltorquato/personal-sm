@@ -139,6 +139,19 @@ try {
             }
             break;
 
+        case 'personal':
+            require_once "controllers/PersonalController.php";
+            $controller = new PersonalController($db);
+
+            switch ($action) {
+                case 'pupils':
+                    echo $controller->getPupils();
+                    break;
+                default:
+                    echo ApiResponse::notFound("Ação não encontrada");
+            }
+            break;
+
         default:
             echo ApiResponse::notFound("Endpoint não encontrado");
     }
