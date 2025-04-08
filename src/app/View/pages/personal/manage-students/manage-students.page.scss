@@ -1,78 +1,270 @@
-.background-gradient {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
-  z-index: -1;
+/* Variables for consistent styling */
+:host {
+  --card-border-radius: 16px;
+  --primary-font: 'Poppins', sans-serif;
+  --card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+  --active-color: #4caf50;
+  --inactive-color: #f44336;
+  --card-bg: #ffffff;
+  --card-text: #333333;
+  --card-secondary-text: #666666;
 }
 
-.transparent-toolbar {
-  --background: transparent;
+/* Toolbar styles */
+.modern-toolbar {
+  --background: var(--ion-color-primary);
+  --color: var(--ion-color-primary-contrast);
+  --border-style: none;
+  --padding-top: 16px;
+  --padding-bottom: 16px;
+  font-weight: 600;
 }
 
-.student-list {
+/* Segment styles */
+.segment-container {
   margin: 16px 0;
 }
 
-ion-item {
-  --background: rgba(255, 255, 255, 0.05);
-  --border-radius: 10px;
-  margin-bottom: 8px;
-  --padding-start: 16px;
-  --padding-end: 16px;
-  --inner-padding-end: 8px;
+ion-segment {
+  --background: var(--ion-color-light);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
 }
 
-ion-avatar {
-  width: 48px;
-  height: 48px;
-}
-
-ion-item h2 {
+ion-segment-button {
+  --indicator-color: var(--ion-color-primary);
+  --color: var(--ion-color-medium);
+  --color-checked: var(--ion-color-primary);
+  --indicator-height: 4px;
   font-weight: 600;
-  margin-bottom: 4px;
-  color: var(--ion-color-light);
+  text-transform: none;
+  min-height: 44px;
 }
 
-ion-item p {
-  font-size: 0.9em;
+/* Stats section */
+.student-stats {
+  display: flex;
+  justify-content: space-between;
+  margin: 20px 0;
+  padding: 16px;
+  background: var(--ion-color-light);
+  border-radius: 12px;
+  box-shadow: var(--card-shadow);
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  width: 33%;
+}
+
+.stat-value {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--ion-color-primary);
+}
+
+.stat-label {
+  font-size: 0.85rem;
+  color: var(--ion-color-medium);
+  margin-top: 4px;
+}
+
+/* Search bar */
+.search-container {
+  margin: 16px 0;
+}
+
+ion-searchbar {
+  --background: var(--ion-color-light);
+  --border-radius: 12px;
+  --box-shadow: none;
+  --placeholder-color: var(--ion-color-medium);
+  --icon-color: var(--ion-color-primary);
+  --color: var(--ion-color-dark);
+  padding: 0;
+}
+
+/* Student cards grid */
+.student-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  margin-bottom: 80px; /* Space for FAB */
+}
+
+.student-card {
+  margin: 0;
+  border-radius: var(--card-border-radius);
+  overflow: hidden;
+  box-shadow: var(--card-shadow);
+  background: var(--card-bg);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.student-card:active, .student-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 15px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.student-card-content {
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+}
+
+/* Student avatar styles */
+.student-avatar-container {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.student-avatar {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto;
+  border: 3px solid var(--ion-color-light);
+}
+
+.status-indicator {
+  position: absolute;
+  bottom: 2px;
+  right: calc(50% - 35px);
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid white;
+}
+
+.status-indicator.active {
+  background-color: var(--active-color);
+}
+
+.status-indicator.inactive {
+  background-color: var(--inactive-color);
+}
+
+/* Student info */
+.student-info {
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+.student-name {
+  margin: 0 0 8px;
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: var(--card-text);
+}
+
+.student-detail {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  color: var(--card-secondary-text);
+  margin: 0;
+  gap: 5px;
+}
+
+.student-detail ion-icon {
+  font-size: 14px;
   color: var(--ion-color-medium);
 }
 
-ion-item-divider {
-  --background: transparent;
-  --color: var(--ion-color-light);
-  font-weight: 600;
-  margin-top: 16px;
+/* Action buttons */
+.student-actions {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 8px;
+  border-top: 1px solid var(--ion-color-light);
+  padding-top: 8px;
+}
+
+.action-button {
+  --padding-start: 8px;
+  --padding-end: 8px;
+  --padding-top: 10px;
+  --padding-bottom: 10px;
+  height: 36px;
+}
+
+.action-button ion-icon {
+  font-size: 20px;
+}
+
+.action-button:nth-child(1) ion-icon {
+  color: var(--ion-color-primary);
+}
+
+.action-button:nth-child(2) ion-icon {
+  color: var(--ion-color-success);
+}
+
+.action-button:nth-child(3) ion-icon {
+  color: var(--ion-color-warning);
+}
+
+/* Empty state */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 16px;
+  text-align: center;
+  border-radius: var(--card-border-radius);
+  background: var(--ion-color-light);
+  margin: 20px 0;
+}
+
+.empty-icon {
+  font-size: 64px;
+  color: var(--ion-color-medium);
   margin-bottom: 16px;
 }
 
-ion-badge {
-  padding: 8px 12px;
-  border-radius: 20px;
+.empty-state h3 {
+  font-weight: 600;
+  color: var(--ion-color-dark);
+  margin: 0 0 8px;
 }
 
+.empty-state p {
+  color: var(--ion-color-medium);
+  max-width: 240px;
+  margin: 0;
+}
+
+/* FAB button */
 ion-fab-button {
-  --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  --box-shadow: var(--card-shadow);
+  --background: var(--ion-color-primary);
+  --background-activated: var(--ion-color-primary-shade);
+  --background-hover: var(--ion-color-primary-shade);
 }
 
-ion-popover ion-item {
-  --background:transparent;
-  --padding-start: 2px;
-  --padding-end: 2px;
-  --inner-padding-end: 2px;
-  --inner-padding-start: 10px;
-  --border-radius: 0px;
-  --box-shadow: none;
-}
-ion-popover ion-list{
-  --background:rgba(255, 8, 8, 0.6);
-  --padding-start: 0px;
-  --padding-end: 0px;
-  --inner-padding-end: 0px;
-  --inner-padding-start: 0px;
-  --border-radius: 50px;
-  --box-shadow: none;
+/* Media queries for responsive design */
+@media (max-width: 576px) {
+  .student-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .student-stats {
+    flex-direction: row;
+    padding: 12px 8px;
+  }
+
+  .stat-value {
+    font-size: 1.5rem;
+  }
+
+  .stat-label {
+    font-size: 0.75rem;
+  }
 }

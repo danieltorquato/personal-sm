@@ -1,57 +1,101 @@
 <ion-header class="ion-no-border">
-  <ion-toolbar color="dark" class="transparent-toolbar">
+  <ion-toolbar color="primary" class="modern-toolbar">
     <ion-buttons slot="start">
       <ion-menu-button></ion-menu-button>
     </ion-buttons>
-    <ion-title>Gerenciar Alunos</ion-title>
+    <ion-title>Meus Alunos</ion-title>
     <ion-buttons slot="end">
       <ion-button>
         <ion-icon name="search-outline"></ion-icon>
-      </ion-button>
-      <ion-button>
-        <ion-icon name="person-add"></ion-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content fullscreen="true" class="ion-padding">
-  <div class="background-gradient"></div>
+<ion-content class="ion-padding">
+  <!-- Filtro / Segmento -->
+  <div class="segment-container">
+    <ion-segment [(ngModel)]="selectedSegment" (ionChange)="segmentChanged($event)" mode="md">
+      <ion-segment-button value="todos">
+        <ion-label>Todos</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="ativos">
+        <ion-label>Ativos</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="inativos">
+        <ion-label>Inativos</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+  </div>
 
-  <!-- Lista de Alunos -->
-  <ion-list lines="none" class="ion-margin-top student-list" >
-    <ion-item-group>
-      <ion-item-divider sticky>
-        <ion-label>Alunos Ativos</ion-label>
-        <ion-badge slot="end" color="success">{{studentsLength}}</ion-badge>
-      </ion-item-divider>
+  <!-- Informações do Total -->
+  <div class="student-stats">
+    <div class="stat-item">
+      <span class="stat-value">{{studentsLength}}</span>
+      <span class="stat-label">Alunos</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-value">{{getActiveStudentsCount()}}</span>
+      <span class="stat-label">Ativos</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-value">{{getPendingWorkoutsCount()}}</span>
+      <span class="stat-label">Treinos Pendentes</span>
+    </div>
+  </div>
 
-      <ion-item *ngFor="let student of students; let i = index"  >
-        <ion-avatar slot="start" (click)="studentDetails(student.id)">
-          <img src="" alt="Avatar">
-        </ion-avatar>
-        <ion-label (click)="studentDetails(student.id)">
-          <h2>{{student.name}}</h2>
-          <p *ngIf="student.last_training">Último treino: {{student.last_training  |  date: 'dd/MM/yyyy' }}</p>
-          <p *ngIf="!student.last_training">Sem treino registrado</p>
-        </ion-label>
-        <ion-buttons slot="end">
+  <!-- Barra de pesquisa -->
+  <div class="search-container">
+    <ion-searchbar placeholder="Buscar aluno" [(ngModel)]="searchTerm" (ionChange)="filterStudents()" animated></ion-searchbar>
+  </div>
 
-          <ion-button (click)="abrirMenu(student.id)">
-            <ion-icon name="ellipsis-vertical"></ion-icon>
+  <!-- Lista de Alunos em Cards -->
+  <div class="student-grid">
+    <ion-card *ngFor="let student of filteredStudents" class="student-card">
+      <div class="student-card-content">
+        <div class="student-avatar-container" (click)="studentDetails(student.id)">
+          <ion-avatar class="student-avatar">
+            <img [src]="student.photo || 'assets/default-avatar.png'" alt="{{student.name}}">
+          </ion-avatar>
+          <div *ngIf="student.isActive" class="status-indicator active"></div>
+          <div *ngIf="!student.isActive" class="status-indicator inactive"></div>
+        </div>
+
+        <div class="student-info" (click)="studentDetails(student.id)">
+          <h2 class="student-name">{{student.name}}</h2>
+          <p class="student-detail">
+            <ion-icon name="calendar-outline"></ion-icon>
+            <span *ngIf="student.last_training">Último treino: {{student.last_training | date: 'dd/MM/yyyy'}}</span>
+            <span *ngIf="!student.last_training">Sem treino registrado</span>
+          </p>
+        </div>
+
+        <div class="student-actions">
+          <ion-button fill="clear" (click)="verTreino(student.id)" class="action-button">
+            <ion-icon name="eye-outline"></ion-icon>
           </ion-button>
+          <ion-button fill="clear" (click)="adicionarTreino(student.id)" class="action-button">
+            <ion-icon name="add-circle-outline"></ion-icon>
+          </ion-button>
+          <ion-button fill="clear" (click)="editarTreino(student.id)" class="action-button">
+            <ion-icon name="create-outline"></ion-icon>
+          </ion-button>
+        </div>
+      </div>
+    </ion-card>
+  </div>
 
-        </ion-buttons>
-
-
-      </ion-item>
-    </ion-item-group>
-  </ion-list>
+  <!-- Mensagem quando não há alunos -->
+  <div *ngIf="filteredStudents.length === 0" class="empty-state">
+    <ion-icon name="people-outline" class="empty-icon"></ion-icon>
+    <h3>Nenhum aluno encontrado</h3>
+    <p>Adicione novos alunos ou altere seus critérios de busca</p>
+  </div>
 
   <!-- Botão Adicionar Aluno -->
   <ion-fab vertical="bottom" horizontal="end" slot="fixed">
-    <ion-fab-button color="light">
-      <ion-icon name="person-add"></ion-icon>
+    <ion-fab-button color="primary">
+      <ion-icon name="person-add-outline"></ion-icon>
     </ion-fab-button>
   </ion-fab>
 </ion-content>

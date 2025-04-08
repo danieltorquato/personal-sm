@@ -143,10 +143,11 @@ export class HomePupilPage implements OnInit {
 
   ngOnInit() {
     // Recuperar informações do usuário logado
-    const currentUser = this.authService.getCurrentUser();
-    if (currentUser) {
-      this.userName = currentUser.name;
-    }
+    this.authService.getCurrentUser().subscribe(currentUser => {
+      if (currentUser) {
+        this.userName = currentUser.name;
+      }
+    });
   }
 
   navigateTo(page: string) {

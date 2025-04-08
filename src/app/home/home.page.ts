@@ -103,11 +103,12 @@ export class HomePage implements OnInit {
 
   ngOnInit() {
     // Recuperar informações do usuário logado
-    const currentUser = this.authService.getCurrentUser();
-    if (currentUser) {
-      this.userName = currentUser.name;
-      this.userType = currentUser.userType === 'personal' ? 'Personal Trainer' : 'Administrador';
-    }
+    this.authService.getCurrentUser().subscribe(currentUser => {
+      if (currentUser) {
+        this.userName = currentUser.name;
+        this.userType = currentUser.userType === 'personal' ? 'Personal Trainer' : 'Administrador';
+      }
+    });
   }
 
   navigateTo(page: string) {

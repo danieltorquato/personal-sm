@@ -1,13 +1,398 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>student-details</ion-title>
-  </ion-toolbar>
+<ion-header class="ion-no-border">
+  <div class="curved-toolbar">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/personal/students" text=""></ion-back-button>
+    </ion-buttons>
+    <h1>Perfil do Aluno</h1>
+    <ion-buttons slot="end">
+      <ion-button (click)="editStudent()">
+        <ion-icon slot="icon-only" name="create-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </div>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">student-details</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content>
+  <ion-refresher slot="fixed" (ionRefresh)="refreshData($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <!-- Loading state -->
+  <div class="loading-container" *ngIf="loading">
+    <ion-spinner name="circular"></ion-spinner>
+    <p>Carregando dados do aluno...</p>
+  </div>
+
+  <!-- Error state -->
+  <div class="error-container" *ngIf="error">
+    <ion-icon name="alert-circle-outline" size="large"></ion-icon>
+    <h2>Não foi possível carregar os dados</h2>
+    <ion-button (click)="loadStudentDetails()" fill="clear">
+      Tentar novamente
+    </ion-button>
+  </div>
+
+  <!-- Content wrapper -->
+  <div class="content-wrapper" *ngIf="student && !loading && !error">
+    <!-- Profile card -->
+    <div class="profile-card">
+      <div class="profile-header">
+        <div class="avatar-container" *ngIf="student.photo">
+          <img [src]="student.photo" alt="Foto de perfil" class="profile-avatar">
+          <span class="status-badge" [class.active]="student.status === 'active'">
+            {{ student.status === 'active' ? 'Ativo' : 'Inativo' }}
+          </span>
+        </div>
+        <div class="avatar-container" *ngIf="!student.photo">
+          <div class="initials-avatar">
+            {{ getInitials(student.name) }}
+          </div>
+          <span class="status-badge" [class.active]="student.status === 'active'">
+            {{ student.status === 'active' ? 'Ativo' : 'Inativo' }}
+          </span>
+        </div>
+        <div class="profile-info">
+          <h2>{{ student.name }}</h2>
+          <p class="level">{{ student.level || 'Sem nível definido' }}</p>
+          <p class="registration-date">
+            <ion-icon name="calendar-outline"></ion-icon>
+            Desde {{ formatDate(student.registrationDate) }}
+          </p>
+        </div>
+      </div>
+
+      <!-- Quick Stats -->
+      <div class="quick-stats">
+        <div class="stat-item">
+          <div class="stat-value">
+            {{ student.birthdate ? calculateAge(student.birthdate) : '?' }}
+          </div>
+          <div class="stat-label">Idade</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">{{ performanceMetrics[0]?.current || '?' }}</div>
+          <div class="stat-label">Ritmo</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">{{ performanceMetrics[1]?.current || '0' }}m</div>
+          <div class="stat-label">Distância</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">{{ performanceMetrics[2]?.current || '0' }}</div>
+          <div class="stat-label">Freq./Sem</div>
+        </div>
+      </div>
+
+      <!-- Contact Actions -->
+      <div class="contact-actions">
+        <ion-button fill="clear" *ngIf="student.phone" [href]="'tel:' + student.phone">
+          <ion-icon slot="icon-only" name="call-outline"></ion-icon>
+        </ion-button>
+        <ion-button fill="clear" *ngIf="student.email" [href]="'mailto:' + student.email">
+          <ion-icon slot="icon-only" name="mail-outline"></ion-icon>
+        </ion-button>
+        <ion-button fill="clear" *ngIf="student.phone" [href]="getWhatsAppLink(student.phone)">
+          <ion-icon slot="icon-only" name="logo-whatsapp"></ion-icon>
+        </ion-button>
+      </div>
+    </div>
+
+    <!-- Segment Navigation -->
+    <div class="nav-segments">
+      <ion-segment value="information" (ionChange)="segmentChanged($event)">
+        <ion-segment-button value="information">
+          <ion-label>Informações</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="workouts">
+          <ion-label>Treinos</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="progress">
+          <ion-label>Progresso</ion-label>
+        </ion-segment-button>
+      </ion-segment>
+    </div>
+
+    <!-- Segment Content -->
+    <div class="segment-content">
+      <!-- Information Section -->
+      <div class="information-section" *ngIf="currentSegment === 'information'">
+        <!-- Personal Information -->
+        <div class="section-card">
+          <h3 class="section-heading">
+            <ion-icon name="person-outline"></ion-icon>
+            Dados Pessoais
+          </h3>
+          <div class="info-list">
+            <div class="info-item" *ngIf="student.email">
+              <div class="info-label">Email</div>
+              <div class="info-value">{{ student.email }}</div>
+            </div>
+            <div class="info-item" *ngIf="student.phone">
+              <div class="info-label">Telefone</div>
+              <div class="info-value">{{ student.phone }}</div>
+            </div>
+            <div class="info-item" *ngIf="student.birthdate">
+              <div class="info-label">Data de Nascimento</div>
+              <div class="info-value">{{ formatDate(student.birthdate) }}</div>
+            </div>
+            <div class="info-item" *ngIf="student.address">
+              <div class="info-label">Endereço</div>
+              <div class="info-value">{{ student.address }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Additional Information -->
+        <div class="section-card">
+          <h3 class="section-heading">
+            <ion-icon name="information-circle-outline"></ion-icon>
+            Informações Adicionais
+          </h3>
+          <div class="info-list">
+            <div class="info-item" *ngIf="student.emergencyContact">
+              <div class="info-label">Contato de Emergência</div>
+              <div class="info-value">{{ student.emergencyContact }}</div>
+            </div>
+            <div class="info-item" *ngIf="student.medicalNotes">
+              <div class="info-label">Observações Médicas</div>
+              <div class="info-value">{{ student.medicalNotes }}</div>
+            </div>
+            <div class="info-item" *ngIf="student.goals">
+              <div class="info-label">Objetivos</div>
+              <div class="info-value">{{ student.goals }}</div>
+            </div>
+            <div class="info-item" *ngIf="student.observations">
+              <div class="info-label">Observações</div>
+              <div class="info-value">{{ student.observations }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Workouts Section -->
+      <div class="workouts-section" *ngIf="currentSegment === 'workouts'">
+        <!-- Active Workouts -->
+        <div class="section-card" *ngIf="activeWorkouts && activeWorkouts.length > 0">
+          <div class="card-header">
+            <h3>
+              <ion-icon name="play-outline"></ion-icon>
+              Treinos Ativos
+            </h3>
+            <ion-button fill="clear" (click)="assignWorkout()">
+              <ion-icon slot="icon-only" name="add-outline"></ion-icon>
+            </ion-button>
+          </div>
+          <div class="workout-list">
+            <div class="workout-card" [ngClass]="workout.status" *ngFor="let workout of activeWorkouts" (click)="viewWorkoutDetails(workout.id)">
+              <div class="workout-info">
+                <h4>{{ workout.title }}</h4>
+                <div class="workout-meta">
+                  <span class="meta-item">
+                    <ion-icon name="speedometer-outline"></ion-icon>
+                    {{ formatDistance(workout.totalDistance) }}
+                  </span>
+                  <span class="meta-item">
+                    <ion-icon name="layers-outline"></ion-icon>
+                    {{ workout.totalSeries }} séries
+                  </span>
+                  <span class="meta-item">
+                    <ion-icon name="calendar-outline"></ion-icon>
+                    {{ formatDate(workout.date) }}
+                  </span>
+                </div>
+                <p *ngIf="workout.description" class="description">{{ workout.description }}</p>
+              </div>
+              <div class="workout-status">
+                <div class="progress-container" *ngIf="workout.status === 'em_andamento'">
+                  <div class="progress-percentage">{{ workout.progress }}%</div>
+                  <div class="progress-bar">
+                    <div class="progress-fill" [style.width]="workout.progress + '%'"></div>
+                  </div>
+                </div>
+                <div class="status-text" *ngIf="workout.status !== 'em_andamento'">
+                  {{ workout.status === 'pendente' ? 'Pendente' :
+                     workout.status === 'concluido' ? 'Concluído' : 'Cancelado' }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Workouts -->
+        <div class="section-card" *ngIf="recentWorkouts && recentWorkouts.length > 0">
+          <div class="card-header">
+            <h3>
+              <ion-icon name="timer-outline"></ion-icon>
+              Treinos Recentes
+            </h3>
+            <ion-button fill="clear" (click)="viewWorkoutHistory()">
+              Ver todos
+            </ion-button>
+          </div>
+          <div class="workout-list">
+            <div class="workout-card" [ngClass]="workout.status" *ngFor="let workout of recentWorkouts" (click)="viewWorkoutDetails(workout.id)">
+              <div class="workout-info">
+                <h4>{{ workout.title }}</h4>
+                <div class="workout-meta">
+                  <span class="meta-item">
+                    <ion-icon name="speedometer-outline"></ion-icon>
+                    {{ formatDistance(workout.totalDistance) }}
+                  </span>
+                  <span class="meta-item">
+                    <ion-icon name="layers-outline"></ion-icon>
+                    {{ workout.totalSeries }} séries
+                  </span>
+                  <span class="meta-item">
+                    <ion-icon name="calendar-outline"></ion-icon>
+                    {{ formatDate(workout.date) }}
+                  </span>
+                </div>
+                <p *ngIf="workout.description" class="description">{{ workout.description }}</p>
+              </div>
+              <div class="workout-status">
+                <div class="status-text">
+                  {{ workout.status === 'pendente' ? 'Pendente' :
+                     workout.status === 'concluido' ? 'Concluído' :
+                     workout.status === 'em_andamento' ? 'Em Andamento' : 'Cancelado' }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- No Workouts -->
+        <div class="empty-state" *ngIf="(!activeWorkouts || activeWorkouts.length === 0) &&
+                                       (!recentWorkouts || recentWorkouts.length === 0)">
+          <ion-icon name="fitness-outline"></ion-icon>
+          <h3>Nenhum treino encontrado</h3>
+          <p>Você ainda não atribuiu treinos para este aluno.</p>
+          <ion-button (click)="assignWorkout()">
+            <ion-icon name="add-outline" slot="start"></ion-icon>
+            Atribuir Treino
+          </ion-button>
+        </div>
+      </div>
+
+      <!-- Progress Section -->
+      <div class="progress-section" *ngIf="currentSegment === 'progress'">
+        <!-- Performance Metrics -->
+        <div class="section-card" *ngIf="performanceMetrics && performanceMetrics.length > 0">
+          <h3 class="section-heading">
+            <ion-icon name="analytics-outline"></ion-icon>
+            Métricas de Desempenho
+          </h3>
+          <div class="metrics-list">
+            <div class="metric-item" *ngFor="let metric of performanceMetrics">
+              <div class="metric-info">
+                <div class="metric-name">{{ metric.name }}</div>
+                <div class="metric-values">
+                  <div class="current-value">{{ metric.current }}</div>
+                  <div class="change-value" [ngClass]="metric.isPositive ? 'positive' : 'negative'">
+                    <ion-icon [name]="metric.isPositive ? 'arrow-up-outline' : 'arrow-down-outline'"></ion-icon>
+                    {{ getAbsoluteValue(metric.change) }}%
+                  </div>
+                </div>
+              </div>
+              <div class="metric-bar">
+                <div class="metric-progress" [style.width]="calculateBarHeight(metric.change, 100) + '%'"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Sessions -->
+        <div class="section-card" *ngIf="recentSessions && recentSessions.length > 0">
+          <h3 class="section-heading">
+            <ion-icon name="pulse-outline"></ion-icon>
+            Sessões Recentes
+          </h3>
+          <div class="sessions-list">
+            <div class="session-item" *ngFor="let session of recentSessions">
+              <div class="session-header">
+                <div class="session-title">{{ session.title }}</div>
+                <div class="session-date">{{ formatDate(session.date) }}</div>
+              </div>
+              <div class="session-details">
+                <div class="detail-item">
+                  <ion-icon name="time-outline"></ion-icon>
+                  <span>{{ formatDuration(session.duration) }}</span>
+                </div>
+                <div class="detail-item">
+                  <ion-icon name="speedometer-outline"></ion-icon>
+                  <span>{{ formatDistance(session.distance) }}</span>
+                </div>
+                <div class="detail-item">
+                  <ion-icon name="flash-outline"></ion-icon>
+                  <span>{{ session.calories }} kcal</span>
+                </div>
+                <div class="detail-item">
+                  <ion-icon name="stopwatch-outline"></ion-icon>
+                  <span>{{ formatPace(session.avgPace) }}</span>
+                </div>
+              </div>
+              <div class="session-feedback" *ngIf="session.feedback">
+                <div class="feedback-label">Feedback</div>
+                <div class="feedback-content">{{ session.feedback }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Trend Charts -->
+        <div class="section-card">
+          <h3 class="section-heading">
+            <ion-icon name="trending-down-outline"></ion-icon>
+            Ritmo Médio
+          </h3>
+          <div class="chart-container">
+            <div class="chart-bar-container">
+              <div class="chart-bar" *ngFor="let item of paceTrendData"
+                   [style.height]="calculateBarHeight(2.2 - item.value, 0.5) + '%'">
+                <div class="bar-value">{{ item.value }}</div>
+              </div>
+            </div>
+            <div class="chart-labels">
+              <div class="chart-label" *ngFor="let item of paceTrendData">
+                {{ item.label }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-card">
+          <h3 class="section-heading">
+            <ion-icon name="trending-up-outline"></ion-icon>
+            Distância Total
+          </h3>
+          <div class="chart-container">
+            <div class="chart-bar-container">
+              <div class="chart-bar" *ngFor="let item of distanceTrendData"
+                   [style.height]="calculateBarHeight(item.value, 3500) + '%'">
+                <div class="bar-value">{{ item.value }}</div>
+              </div>
+            </div>
+            <div class="chart-labels">
+              <div class="chart-label" *ngFor="let item of distanceTrendData">
+                {{ item.label }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- No Progress Data -->
+        <div class="empty-state" *ngIf="(!performanceMetrics || performanceMetrics.length === 0) &&
+                                       (!recentSessions || recentSessions.length === 0)">
+          <ion-icon name="analytics-outline"></ion-icon>
+          <h3>Sem dados de progresso</h3>
+          <p>Nenhum dado de progresso está disponível para este aluno.</p>
+        </div>
+      </div>
+    </div>
+  </div>
 </ion-content>
+
+<ion-fab vertical="bottom" horizontal="end" slot="fixed" *ngIf="!loading && !error && student">
+  <ion-fab-button (click)="assignWorkout()">
+    <ion-icon name="add"></ion-icon>
+  </ion-fab-button>
+</ion-fab>

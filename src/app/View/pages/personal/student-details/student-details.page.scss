@@ -1,0 +1,681 @@
+// Variáveis
+:host {
+  --avatar-size: 80px;
+  --primary-color: var(--ion-color-primary, #DAA520); // Dourado
+  --secondary-color: var(--ion-color-dark, #222222); // Preto
+  --light-bg: var(--ion-color-light, #f8f8f8);
+  --card-radius: 12px;
+  --ion-color-success-tint: var(--ion-color-success-tint, #28ba62);
+  --ion-color-danger-tint: var(--ion-color-danger-tint, #eb445a);
+  --accent-color: var(--ion-color-secondary, #DAA520); // Dourado para acentos
+  --text-dark: var(--ion-color-dark, #222222);
+  --text-medium: var(--ion-color-medium, #555555);
+  --text-light: #888888;
+  --card-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.curved-toolbar {
+  --background: var(--secondary-color);
+  --color: var(--primary-color);
+  border-radius: 0 0 24px 24px;
+  padding: 10px 16px 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+
+  h1 {
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0;
+    padding: 10px 0;
+    text-align: center;
+  }
+
+  ion-back-button {
+    --color: var(--primary-color);
+  }
+
+  ion-button {
+    --color: var(--primary-color);
+  }
+}
+
+// Estado de carregamento
+.loading-container, .error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 70vh;
+  text-align: center;
+  color: var(--text-medium);
+
+  ion-spinner {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 16px;
+    --color: var(--primary-color);
+  }
+
+  ion-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+    color: var(--primary-color);
+  }
+
+  p {
+    margin: 8px 0 16px;
+    font-size: 16px;
+  }
+}
+
+// Container principal
+.content-wrapper {
+  margin-top: -20px;
+  padding: 0 16px;
+}
+
+// Cartão de perfil
+.profile-card {
+  background: #fff;
+  border-radius: var(--card-radius);
+  box-shadow: var(--card-shadow);
+  overflow: hidden;
+  margin-bottom: 20px;
+  border-top: 3px solid var(--primary-color);
+
+  .profile-header {
+    display: flex;
+    padding: 20px;
+
+    .avatar-container {
+      position: relative;
+      margin-right: 16px;
+
+      .avatar, .profile-avatar, .initials-avatar {
+        width: var(--avatar-size);
+        height: var(--avatar-size);
+        border-radius: 50%;
+        background-color: var(--secondary-color);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 32px;
+        font-weight: 500;
+        color: var(--primary-color);
+        border: 3px solid var(--primary-color);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        object-fit: cover;
+      }
+
+      .status-badge {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        font-size: 10px;
+        padding: 3px 6px;
+        border-radius: 10px;
+        text-transform: uppercase;
+        font-weight: 600;
+        background-color: var(--ion-color-medium);
+        color: white;
+
+        &.active {
+          background-color: var(--primary-color);
+          color: var(--secondary-color);
+        }
+      }
+    }
+
+    .profile-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+
+      h2 {
+        margin: 0 0 5px;
+        font-size: 22px;
+        font-weight: 600;
+        color: var(--secondary-color);
+      }
+
+      .level {
+        color: var(--text-medium);
+        margin: 0 0 8px;
+        font-size: 14px;
+        font-weight: 500;
+      }
+
+      .contact-info, .registration-date {
+        display: flex;
+        align-items: center;
+        margin: 4px 0;
+        font-size: 13px;
+        color: var(--text-medium);
+
+        ion-icon {
+          margin-right: 5px;
+          font-size: 16px;
+          color: var(--primary-color);
+        }
+      }
+    }
+  }
+
+  .quick-stats {
+    display: flex;
+    border-top: 1px solid rgba(0, 0, 0, 0.07);
+    background-color: #f9f9f9;
+
+    .stat-item {
+      flex: 1;
+      padding: 12px 8px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      border-right: 1px solid rgba(0, 0, 0, 0.07);
+
+      &:last-child {
+        border-right: none;
+      }
+
+      .stat-value {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 2px;
+        color: var(--secondary-color);
+      }
+
+      .stat-label {
+        font-size: 12px;
+        color: var(--text-medium);
+      }
+    }
+  }
+
+  .contact-actions {
+    display: flex;
+    justify-content: space-around;
+    padding: 8px;
+    border-top: 1px solid rgba(0, 0, 0, 0.07);
+
+    ion-button {
+      --color: var(--primary-color);
+      font-size: 20px;
+    }
+  }
+}
+
+// Segmentos de navegação
+.nav-segments {
+  margin-bottom: 16px;
+
+  ion-segment {
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    border-radius: var(--card-radius);
+    padding: 4px;
+
+    ion-segment-button {
+      --background-checked: var(--secondary-color);
+      --color-checked: var(--primary-color);
+      --indicator-color: transparent;
+      --ripple-color: transparent;
+      --color: var(--text-medium);
+      --padding-top: 8px;
+      --padding-bottom: 8px;
+      --border-radius: 8px;
+      min-height: 40px;
+      font-size: 13px;
+      font-weight: 500;
+      text-transform: none;
+
+      ion-icon {
+        margin-inline: 8px;
+      }
+    }
+  }
+}
+
+// Conteúdo do segmento
+.segment-content {
+  margin-bottom: 20px;
+}
+
+// Cards das seções
+.section-card {
+  background: #fff;
+  border-radius: var(--card-radius);
+  box-shadow: var(--card-shadow);
+  margin-bottom: 20px;
+  overflow: hidden;
+
+  .section-heading, .card-header h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--secondary-color);
+    margin: 0;
+    padding: 16px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    display: flex;
+    align-items: center;
+
+    ion-icon {
+      color: var(--primary-color);
+      margin-right: 10px;
+      font-size: 20px;
+    }
+  }
+
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-right: 8px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+
+    ion-button {
+      --color: var(--primary-color);
+    }
+  }
+}
+
+// Itens de informação
+.info-list {
+  .info-item {
+    display: flex;
+    align-items: center;
+    padding: 14px 16px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    .info-label {
+      flex: 1;
+      font-size: 14px;
+      color: var(--text-medium);
+    }
+
+    .info-value {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-dark);
+      text-align: right;
+    }
+  }
+}
+
+// Cards de treino
+.workout-list {
+  padding: 12px;
+}
+
+.workout-card {
+  background: #fff;
+  border-radius: var(--card-radius);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  padding: 16px;
+  margin-bottom: 12px;
+  display: flex;
+  justify-content: space-between;
+  border-left: 4px solid var(--text-light);
+  transition: transform 0.2s, box-shadow 0.2s;
+
+  &:active {
+    transform: translateY(1px);
+    box-shadow: 0 0 2px rgba(0, 0, 0, 0.05);
+  }
+
+  &.em_andamento, &.active {
+    border-left: 4px solid var(--primary-color);
+  }
+
+  &.concluido {
+    border-left: 4px solid var(--ion-color-success);
+  }
+
+  &.pendente {
+    border-left: 4px solid var(--ion-color-warning);
+  }
+
+  &.cancelado {
+    border-left: 4px solid var(--ion-color-danger);
+  }
+
+  .workout-info {
+    flex: 1;
+
+    h4 {
+      margin: 0 0 8px;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--secondary-color);
+    }
+
+    .workout-meta {
+      display: flex;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+
+      .meta-item {
+        display: flex;
+        align-items: center;
+        margin-right: 12px;
+        margin-bottom: 4px;
+        font-size: 13px;
+        color: var(--text-medium);
+
+        ion-icon {
+          margin-right: 4px;
+          color: var(--primary-color);
+        }
+      }
+    }
+
+    .description {
+      font-size: 13px;
+      color: var(--text-medium);
+      margin: 8px 0 0;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+  }
+
+  .workout-status {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: center;
+    min-width: 80px;
+
+    .progress-container {
+      text-align: center;
+    }
+
+    .progress-percentage {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--primary-color);
+      margin-bottom: 4px;
+    }
+
+    .progress-bar {
+      width: 60px;
+      height: 6px;
+      background-color: rgba(0, 0, 0, 0.1);
+      border-radius: 3px;
+      overflow: hidden;
+
+      .progress-fill {
+        height: 100%;
+        background-color: var(--primary-color);
+        border-radius: 3px;
+      }
+    }
+
+    .status-text {
+      font-size: 12px;
+      font-weight: 500;
+      padding: 4px 8px;
+      border-radius: 10px;
+      text-transform: uppercase;
+
+      .em_andamento & {
+        background-color: rgba(218, 165, 32, 0.2);
+        color: var(--primary-color);
+      }
+
+      .concluido & {
+        background-color: rgba(40, 186, 98, 0.2);
+        color: var(--ion-color-success);
+      }
+
+      .pendente & {
+        background-color: rgba(255, 196, 9, 0.2);
+        color: var(--ion-color-warning);
+      }
+
+      .cancelado & {
+        background-color: rgba(235, 68, 90, 0.2);
+        color: var(--ion-color-danger);
+      }
+    }
+  }
+}
+
+// Métricas de desempenho
+.metrics-list {
+  padding: 12px;
+
+  .metric-item {
+    margin-bottom: 16px;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    .metric-info {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+
+      .metric-name {
+        font-size: 14px;
+        color: var(--text-dark);
+      }
+
+      .metric-values {
+        display: flex;
+        align-items: center;
+
+        .current-value {
+          font-size: 14px;
+          font-weight: 600;
+          color: var(--secondary-color);
+          margin-right: 8px;
+        }
+
+        .change-value {
+          display: flex;
+          align-items: center;
+          font-size: 12px;
+
+          &.positive {
+            color: var(--ion-color-success);
+          }
+
+          &.negative {
+            color: var(--ion-color-danger);
+          }
+
+          ion-icon {
+            margin-right: 2px;
+          }
+        }
+      }
+    }
+
+    .metric-bar {
+      height: 6px;
+      background-color: rgba(0, 0, 0, 0.05);
+      border-radius: 3px;
+      overflow: hidden;
+
+      .metric-progress {
+        height: 100%;
+        background-color: var(--primary-color);
+        border-radius: 3px;
+      }
+    }
+  }
+}
+
+// Sessões recentes
+.sessions-list {
+  padding: 12px;
+
+  .session-item {
+    padding: 12px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    .session-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+
+      .session-title {
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--secondary-color);
+      }
+
+      .session-date {
+        font-size: 13px;
+        color: var(--text-medium);
+      }
+    }
+
+    .session-details {
+      display: flex;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+
+      .detail-item {
+        display: flex;
+        align-items: center;
+        margin-right: 12px;
+        margin-bottom: 6px;
+        font-size: 13px;
+        color: var(--text-medium);
+
+        ion-icon {
+          color: var(--primary-color);
+          margin-right: 4px;
+        }
+      }
+    }
+
+    .session-feedback {
+      background-color: rgba(218, 165, 32, 0.1);
+      border-radius: 8px;
+      padding: 10px;
+
+      .feedback-label {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--primary-color);
+        margin-bottom: 4px;
+      }
+
+      .feedback-content {
+        font-size: 13px;
+        color: var(--text-dark);
+        line-height: 1.4;
+      }
+    }
+  }
+}
+
+// Gráficos
+.chart-container {
+  padding: 24px 16px 30px;
+  position: relative;
+
+  .chart-bar-container {
+    display: flex;
+    justify-content: space-around;
+    align-items: flex-end;
+    height: 180px;
+    margin-bottom: 15px;
+
+    .chart-bar {
+      flex: 1;
+      background-color: var(--primary-color);
+      border-radius: 4px 4px 0 0;
+      max-width: 30px;
+      min-height: 20px;
+      position: relative;
+      margin: 0 8px;
+      transition: height 0.5s;
+
+      .bar-value {
+        position: absolute;
+        top: -20px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 12px;
+        color: var(--text-medium);
+        white-space: nowrap;
+      }
+    }
+  }
+
+  .chart-labels {
+    display: flex;
+    justify-content: space-around;
+
+    .chart-label {
+      flex: 1;
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-medium);
+      margin: 0 8px;
+    }
+  }
+}
+
+// Estado vazio
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 16px;
+  text-align: center;
+  background: #fff;
+  border-radius: var(--card-radius);
+  box-shadow: var(--card-shadow);
+
+  ion-icon {
+    font-size: 48px;
+    color: var(--primary-color);
+    margin-bottom: 16px;
+  }
+
+  h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--secondary-color);
+    margin: 0 0 8px;
+  }
+
+  p {
+    margin: 0 0 16px;
+    font-size: 14px;
+    color: var(--text-medium);
+  }
+
+  ion-button {
+    --background: var(--primary-color);
+    --color: var(--secondary-color);
+    font-weight: 600;
+  }
+}
+
+// FAB button
+ion-fab-button {
+  --background: var(--primary-color);
+  --color: var(--secondary-color);
+}
+
+ion-content {
+  --background: #f5f5f5;
+}

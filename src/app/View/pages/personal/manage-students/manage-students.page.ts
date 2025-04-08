@@ -7,10 +7,17 @@ import { Router, RouterModule } from '@angular/router';
 import {
   searchOutline,
   personAdd,
+  personAddOutline,
   ellipsisVertical,
   eye,
+  eyeOutline,
   add,
-  pencil
+  addCircleOutline,
+  pencil,
+  createOutline,
+  calendarOutline,
+  peopleOutline,
+  close
 } from 'ionicons/icons';
 import { addIcons } from 'ionicons';
 import { PersonalService } from 'src/app/services/personal.service';
@@ -23,92 +30,251 @@ import { PersonalService } from 'src/app/services/personal.service';
   imports: [IonicModule, CommonModule, FormsModule, RouterModule]
 })
 export class ManageStudentsPage implements OnInit {
-  students: any[] = []; // Array para armazenar os alunos
-  studentsLength: number = 0; // Variável para armazenar o comprimento do array de alunos
+  // Dados dos alunos
+  students: any[] = []; // Array original de alunos
+  filteredStudents: any[] = []; // Array filtrado para exibição
+  studentsLength: number = 0; // Total de alunos
 
-  constructor( private actionSheetController: ActionSheetController,private personalService: PersonalService, private router: Router) {
+  // Controles de interface
+  selectedSegment: string = 'todos'; // Segmento selecionado (todos, ativos, inativos)
+  searchTerm: string = ''; // Termo de busca
+  isLoading: boolean = false; // Controle de loading
+
+  // Alunos de demonstração
+  demoStudents: any[] = [
+    {
+      id: 1,
+      name: 'Ana Silva',
+      email: 'ana.silva@exemplo.com',
+      phone: '(11) 98765-4321',
+      photo: 'https://randomuser.me/api/portraits/women/44.jpg',
+      last_training: new Date(new Date().setDate(new Date().getDate() - 2)).toISOString(), // 2 dias atrás
+      isActive: true,
+      age: 28,
+      level: 'Intermediário',
+      goals: 'Resistência e condicionamento'
+    },
+    {
+      id: 2,
+      name: 'Carlos Mendes',
+      email: 'carlos.mendes@exemplo.com',
+      phone: '(11) 97654-3210',
+      photo: 'https://randomuser.me/api/portraits/men/33.jpg',
+      last_training: new Date(new Date().setDate(new Date().getDate() - 35)).toISOString(), // 35 dias atrás
+      isActive: false,
+      age: 42,
+      level: 'Avançado',
+      goals: 'Competição'
+    }
+  ];
+
+  constructor(
+    private actionSheetController: ActionSheetController,
+    private personalService: PersonalService,
+    private router: Router
+  ) {
     addIcons({
       searchOutline,
       personAdd,
+      personAddOutline,
       ellipsisVertical,
       eye,
+      eyeOutline,
       add,
-      pencil
+      addCircleOutline,
+      pencil,
+      createOutline,
+      calendarOutline,
+      peopleOutline,
+      close
     });
   }
 
   ngOnInit() {
     this.fetchStudents();
   }
+
+  /**
+   * Busca a lista de alunos do serviço
+   */
   fetchStudents() {
+    this.isLoading = true;
     this.personalService.getPupils().subscribe(
       (response: any) => {
         if (response && response.status) {
-          this.students = response.data;
+          // Adicionar propriedade isActive com base em algum critério (últimos 30 dias)
+          this.students = response.data.map((student: any) => {
+            // Determinar se o aluno está ativo (exemplo: treinou nos últimos 30 dias)
+            const isActive = student.last_training ?
+              (new Date().getTime() - new Date(student.last_training).getTime()) / (1000 * 3600 * 24) < 30 :
+              false;
+
+            return {
+              ...student,
+              isActive: isActive,
+              photo: student.photo || 'assets/avatar-placeholder.png' // Garantir foto padrão
+            };
+          });
+
+          if (this.students.length === 0) {
+            // Se não há alunos da API, utilizar os de demonstração
+            this.students = [...this.demoStudents];
+          }
+
+          this.studentsLength = this.students.length;
+          this.applyFilters(); // Aplicar filtros iniciais
           console.log('Alunos obtidos com sucesso:', this.students);
-          this.studentsLength = response.data.length; // Atualiza o comprimento do array de alunos
         } else {
           console.error('Erro ao obter alunos: resposta inválida');
+          // Carregar alunos de demonstração
+          this.students = [...this.demoStudents];
+          this.studentsLength = this.students.length;
+          this.applyFilters();
         }
+        this.isLoading = false;
       },
       (error) => {
         console.error('Erro ao obter alunos:', error);
+        // Carregar alunos de demonstração em caso de erro
+        this.students = [...this.demoStudents];
+        this.studentsLength = this.students.length;
+        this.applyFilters();
+        this.isLoading = false;
       }
     );
   }
- studentDetails(studentId: string) {
-    // Navegar para a página de detalhes do aluno com o ID do aluno
+
+  /**
+   * Aplica os filtros de segmento e busca
+   */
+  applyFilters() {
+    // Primeiro filtrar por segmento
+    let result = [...this.students];
+
+    if (this.selectedSegment === 'ativos') {
+      result = result.filter(student => student.isActive);
+    } else if (this.selectedSegment === 'inativos') {
+      result = result.filter(student => !student.isActive);
+    }
+
+    // Depois filtrar por termo de busca
+    if (this.searchTerm && this.searchTerm.trim() !== '') {
+      const term = this.searchTerm.toLowerCase().trim();
+      result = result.filter(student =>
+        student.name.toLowerCase().includes(term)
+      );
+    }
+
+    this.filteredStudents = result;
+  }
+
+  /**
+   * Manipula a mudança de segmento
+   */
+  segmentChanged(event: any) {
+    this.selectedSegment = event.detail.value;
+    this.applyFilters();
+  }
+
+  /**
+   * Filtra alunos baseado no termo de busca
+   */
+  filterStudents() {
+    this.applyFilters();
+  }
+
+  /**
+   * Retorna o número de alunos ativos
+   */
+  getActiveStudentsCount(): number {
+    return this.students.filter(student => student.isActive).length;
+  }
+
+  /**
+   * Retorna o número de treinos pendentes
+   * (Isso é um exemplo - você pode adaptar conforme seus dados)
+   */
+  getPendingWorkoutsCount(): number {
+    // Exemplo: contar alunos que não treinaram nos últimos 7 dias
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+    return this.students.filter(student => {
+      if (!student.last_training) return true;
+      return new Date(student.last_training) < sevenDaysAgo;
+    }).length;
+  }
+
+  /**
+   * Navega para a página de detalhes do aluno
+   */
+  studentDetails(studentId: string) {
     this.router.navigate(['/personal/student-details', studentId]);
     console.log('Navegando para os detalhes do aluno:', studentId);
-    // Aqui você pode usar o roteador para navegar para a página de detalhes do aluno
-    // Exemplo: this.router.navigate(['/student-details', studentId]);
-}
-verTreino(id: number) {
-  console.log('Ver treino do aluno', id);
-  // this.router.navigate(['/treino', id]);
-}
+  }
 
-adicionarTreino(id: number) {
-  console.log('Adicionar treino para aluno', id);
-}
+  /**
+   * Função para ver o treino do aluno
+   */
+  verTreino(studentId: number) {
+    console.log('Ver treino do aluno', studentId);
+    this.router.navigate(['/personal/view-workouts', studentId]);
+  }
 
-editarTreino(id: number) {
-  console.log('Editar treino do aluno', id);
-}
-async abrirMenu(studentId: number) {
-  const actionSheet = await this.actionSheetController.create({
-    header: 'Opções do aluno',
-    buttons: [
-      {
-        text: 'Ver treino',
-        icon: 'eye',
-        handler: () => {
-          this.verTreino(studentId);
+  /**
+   * Função para adicionar treino para o aluno
+   */
+  adicionarTreino(studentId: number) {
+    console.log('Adicionar treino para aluno', studentId);
+    this.router.navigate(['/personal/create-pool-workout'], {
+      queryParams: { studentId: studentId }
+    });
+  }
+
+  /**
+   * Função para editar treino do aluno
+   */
+  editarTreino(studentId: number) {
+    console.log('Editar treino do aluno', studentId);
+    this.router.navigate(['/personal/edit-workout', studentId]);
+  }
+
+  /**
+   * Abre o menu de ações para o aluno (não usado no novo design)
+   */
+  async abrirMenu(studentId: number) {
+    const actionSheet = await this.actionSheetController.create({
+      header: 'Opções do aluno',
+      buttons: [
+        {
+          text: 'Ver treino',
+          icon: 'eye',
+          handler: () => {
+            this.verTreino(studentId);
+          }
+        },
+        {
+          text: 'Adicionar treino',
+          icon: 'add',
+          handler: () => {
+            this.adicionarTreino(studentId);
+          }
+        },
+        {
+          text: 'Editar treino',
+          icon: 'pencil',
+          handler: () => {
+            this.editarTreino(studentId);
+          }
+        },
+        {
+          text: 'Cancelar',
+          icon: 'close',
+          role: 'cancel'
         }
-      },
-      {
-        text: 'Adicionar treino',
-        icon: 'add',
-        handler: () => {
-          this.adicionarTreino(studentId);
-        }
-      },
-      {
-        text: 'Editar treino',
-        icon: 'pencil',
-        handler: () => {
-          this.editarTreino(studentId);
-        }
-      },
-      {
-        text: 'Cancelar',
-        icon: 'close',
-        role: 'cancel'
-      }
-    ]
-  });
+      ]
+    });
 
-  await actionSheet.present();
-}
-
+    await actionSheet.present();
+  }
 }
