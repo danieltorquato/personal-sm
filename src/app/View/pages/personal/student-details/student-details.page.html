@@ -5,8 +5,14 @@
     </ion-buttons>
     <h1>Perfil do Aluno</h1>
     <ion-buttons slot="end">
+      <ion-button (click)="toggleStudentStatus()" [color]="active === 1 ? 'danger' : 'success'">
+        <ion-icon slot="icon-only" [name]="active === 1 ? 'close-circle-outline' : 'checkmark-circle-outline'"></ion-icon>
+      </ion-button>
       <ion-button (click)="editStudent()">
         <ion-icon slot="icon-only" name="create-outline"></ion-icon>
+      </ion-button>
+      <ion-button (click)="confirmDelete()" color="danger">
+        <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
   </div>
@@ -39,24 +45,24 @@
       <div class="profile-header">
         <div class="avatar-container" *ngIf="student.photo">
           <img [src]="student.photo" alt="Foto de perfil" class="profile-avatar">
-          <span class="status-badge" [class.active]="student.status === 'active'">
-            {{ student.status === 'active' ? 'Ativo' : 'Inativo' }}
+          <span class="status-badge" [class.active]="active === 1">
+            {{ active === 1 ? 'Ativo' : 'Inativo' }}
           </span>
         </div>
         <div class="avatar-container" *ngIf="!student.photo">
           <div class="initials-avatar">
             {{ getInitials(student.name) }}
           </div>
-          <span class="status-badge" [class.active]="student.status === 'active'">
-            {{ student.status === 'active' ? 'Ativo' : 'Inativo' }}
+          <span class="status-badge" [class.active]="active === 1">
+            {{ active === 1 ? 'Ativo' : 'Inativo' }}
           </span>
         </div>
         <div class="profile-info">
           <h2>{{ student.name }}</h2>
-          <p class="level">{{ student.level || 'Sem nível definido' }}</p>
+          <p class="level">{{ student.level_training_musc || 'Sem nível definido' }}</p>
           <p class="registration-date">
             <ion-icon name="calendar-outline"></ion-icon>
-            Desde {{ formatDate(student.registrationDate) }}
+            Desde {{ student.created_at | date: 'MM/yyyy' }}
           </p>
         </div>
       </div>
@@ -65,7 +71,7 @@
       <div class="quick-stats">
         <div class="stat-item">
           <div class="stat-value">
-            {{ student.birthdate ? calculateAge(student.birthdate) : '?' }}
+            {{ student.birth_date ? calculateAge(student.birth_date) : '?' }}
           </div>
           <div class="stat-label">Idade</div>
         </div>
@@ -131,13 +137,22 @@
               <div class="info-label">Telefone</div>
               <div class="info-value">{{ student.phone }}</div>
             </div>
-            <div class="info-item" *ngIf="student.birthdate">
+            <div class="info-item" *ngIf="student.birth_date">
               <div class="info-label">Data de Nascimento</div>
-              <div class="info-value">{{ formatDate(student.birthdate) }}</div>
+              <div class="info-value">{{ formatDate(student.birth_date) }}</div>
             </div>
-            <div class="info-item" *ngIf="student.address">
+            <div class="info-item" *ngIf="student.street">
               <div class="info-label">Endereço</div>
-              <div class="info-value">{{ student.address }}</div>
+              <div class="info-value">
+                <div>
+                  {{ student.street }}, {{ student.number }}
+                  <span *ngIf="student.complement">, {{ student.complement }}</span>
+                  <br>
+                  {{ student.neighborhood }} - {{ student.city }}/{{ student.state }}
+                  <br>
+                  CEP: {{ student.postal_code }}
+                </div>
+              </div>
             </div>
           </div>
         </div>

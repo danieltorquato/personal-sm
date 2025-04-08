@@ -40,33 +40,6 @@ export class ManageStudentsPage implements OnInit {
   searchTerm: string = ''; // Termo de busca
   isLoading: boolean = false; // Controle de loading
 
-  // Alunos de demonstração
-  demoStudents: any[] = [
-    {
-      id: 1,
-      name: 'Ana Silva',
-      email: 'ana.silva@exemplo.com',
-      phone: '(11) 98765-4321',
-      photo: 'https://randomuser.me/api/portraits/women/44.jpg',
-      last_training: new Date(new Date().setDate(new Date().getDate() - 2)).toISOString(), // 2 dias atrás
-      isActive: true,
-      age: 28,
-      level: 'Intermediário',
-      goals: 'Resistência e condicionamento'
-    },
-    {
-      id: 2,
-      name: 'Carlos Mendes',
-      email: 'carlos.mendes@exemplo.com',
-      phone: '(11) 97654-3210',
-      photo: 'https://randomuser.me/api/portraits/men/33.jpg',
-      last_training: new Date(new Date().setDate(new Date().getDate() - 35)).toISOString(), // 35 dias atrás
-      isActive: false,
-      age: 42,
-      level: 'Avançado',
-      goals: 'Competição'
-    }
-  ];
 
   constructor(
     private actionSheetController: ActionSheetController,
@@ -105,9 +78,11 @@ export class ManageStudentsPage implements OnInit {
           // Adicionar propriedade isActive com base em algum critério (últimos 30 dias)
           this.students = response.data.map((student: any) => {
             // Determinar se o aluno está ativo (exemplo: treinou nos últimos 30 dias)
-            const isActive = student.last_training ?
-              (new Date().getTime() - new Date(student.last_training).getTime()) / (1000 * 3600 * 24) < 30 :
-              false;
+            const isActive = student.active;
+
+            // student.last_training ?
+            //   (new Date().getTime() - new Date(student.last_training).getTime()) / (1000 * 3600 * 24) < 30 :
+            //   false;
 
             return {
               ...student,
@@ -116,18 +91,14 @@ export class ManageStudentsPage implements OnInit {
             };
           });
 
-          if (this.students.length === 0) {
-            // Se não há alunos da API, utilizar os de demonstração
-            this.students = [...this.demoStudents];
-          }
+
 
           this.studentsLength = this.students.length;
           this.applyFilters(); // Aplicar filtros iniciais
           console.log('Alunos obtidos com sucesso:', this.students);
         } else {
           console.error('Erro ao obter alunos: resposta inválida');
-          // Carregar alunos de demonstração
-          this.students = [...this.demoStudents];
+
           this.studentsLength = this.students.length;
           this.applyFilters();
         }
@@ -135,8 +106,7 @@ export class ManageStudentsPage implements OnInit {
       },
       (error) => {
         console.error('Erro ao obter alunos:', error);
-        // Carregar alunos de demonstração em caso de erro
-        this.students = [...this.demoStudents];
+
         this.studentsLength = this.students.length;
         this.applyFilters();
         this.isLoading = false;

@@ -1,0 +1,96 @@
+// Estilização para o cabeçalho
+ion-header {
+  ion-toolbar {
+    --background: var(--ion-color-primary);
+    --color: white;
+  }
+
+  ion-back-button {
+    --color: white;
+  }
+
+  ion-button {
+    --color: white;
+  }
+}
+
+// Estilo para o spinner de carregamento centralizado
+.spinner-center {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 100;
+}
+
+// Estilização para os acordeões
+ion-accordion {
+  margin-bottom: 16px;
+
+  ion-item[slot="header"] {
+    --border-radius: 8px;
+    margin-bottom: 2px;
+
+    ion-icon {
+      margin-right: 8px;
+      font-size: 20px;
+    }
+  }
+}
+
+// Estilização para os itens de formulário
+ion-item {
+  --border-radius: 8px;
+  --padding-start: 8px;
+  --inner-padding-end: 8px;
+  margin-bottom: 8px;
+
+  ion-label {
+    font-weight: 500;
+  }
+
+  ion-textarea {
+    min-height: 60px;
+  }
+}
+
+// Estilização para o grid de medidas
+ion-grid {
+  padding: 0;
+
+  ion-row {
+    margin-bottom: 8px;
+  }
+
+  ion-col {
+    padding: 0 4px;
+  }
+}
+
+// Estilização para toggles
+ion-toggle {
+  --background: var(--ion-color-medium);
+  --background-checked: var(--ion-color-primary);
+  --handle-background: white;
+  --handle-background-checked: white;
+}
+
+// Estilização para inputs numéricos
+ion-input[type="number"] {
+  font-weight: 500;
+  text-align: right;
+}
+
+// Estilização para selects
+ion-select {
+  width: 100%;
+}
+
+// Estilização para o modo de edição
+ion-textarea[readonly="false"],
+ion-input[readonly="false"] {
+  --background: rgba(var(--ion-color-primary-rgb), 0.05);
+  --border-radius: 4px;
+  --padding-start: 8px;
+  --padding-end: 8px;
+}

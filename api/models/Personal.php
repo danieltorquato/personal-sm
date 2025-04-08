@@ -40,4 +40,32 @@ public function pupils()
       }
 }
 }
+public function pupilDetails($id) {
+    $query = "SELECT * FROM users WHERE id = :id";
+    $stmt = $this->conn->prepare($query);
+    $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+    if ($stmt->execute()) {
+      $this->getAddress($id);
+     return $stmt->fetch(PDO::FETCH_ASSOC);
+
+}else{
+    echo json_encode([
+        'status' => 'error',
+        'message' => 'Aluno não encontrado.',
+        'data' => null
+    ]);
+    exit;
+}
+
+}
+public function getAddress($id) {
+    $query = "SELECT * FROM address WHERE user_id = :id";
+    $stmt = $this->conn->prepare($query);
+    $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+    if ($stmt->execute()) {
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    } else {
+        return null;
+    }
+}
 }

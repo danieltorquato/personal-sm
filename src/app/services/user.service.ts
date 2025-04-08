@@ -68,4 +68,18 @@ export class UserService {
 
     return user.name.substring(0, 2).toUpperCase();
   }
+
+  /**
+   * Atualiza o status de um aluno (ativo/inativo)
+   */
+  updateStudentStatus(studentId: number, active: number): Observable<ApiResponse<any>> {
+    return this.apiService.put<ApiResponse<any>>(`students/${studentId}/status`, { status });
+  }
+
+  /**
+   * Exclui um aluno
+   */
+  deleteStudent(studentId: number): Observable<ApiResponse<any>> {
+    return this.apiService.delete<ApiResponse<any>>(`students/${studentId}`);
+  }
 }

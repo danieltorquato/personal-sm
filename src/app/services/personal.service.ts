@@ -21,7 +21,7 @@ getPupils(): Observable<any[]> {
 
 // Método para obter detalhes de um aluno específico
 getPupilDetails(id: string): Observable<any> {
-  const endpoint = `${this.apiUrl}/personal/pupils/${id}`;
+  const endpoint = `${this.apiUrl}/personal/pupil-details?id=${id}`;
   console.log('Tentando obter detalhes do aluno na API:', endpoint);
   return this.http.get<any>(endpoint);
 }

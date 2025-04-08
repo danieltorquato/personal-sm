@@ -23,11 +23,17 @@ import {
   addCircleOutline,
   eyeOutline,
   trendingUpOutline,
-  statsChartOutline
+  statsChartOutline,
+  closeCircleOutline,
+  checkmarkCircleOutline,
+  trashOutline,
+  add
 } from 'ionicons/icons';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { AuthService } from 'src/app/services/auth.service';
 import { environment } from 'src/environments/environment';
+import { UserService } from '../../../../services/user.service';
+import { REMOVE_STYLES_ON_COMPONENT_DESTROY } from '@angular/platform-browser';
 
 interface Student {
   id: number;
@@ -35,15 +41,22 @@ interface Student {
   photo?: string;
   email?: string;
   phone?: string;
-  birthdate?: string;
-  level?: string;
+  birth_date?: string;
+  level_training_musc?: string;
   status: 'active' | 'inactive';
-  registrationDate: string;
+  created_at: string;
   address?: string;
   emergencyContact?: string;
   medicalNotes?: string;
   goals?: string;
   observations?: string;
+  street: string;
+  number: string;
+  complement?: string;
+  neighborhood: string;
+  city: string;
+  state: string;
+  postal_code: string;
 }
 
 interface Workout {
@@ -85,8 +98,9 @@ interface PerformanceMetric {
   imports: [IonicModule, CommonModule, FormsModule]
 })
 export class StudentDetailsPage implements OnInit {
-  studentId: number = 0;
+  studentId: any;
   student: Student | null = null;
+  students: any[] = []; // Array original de alunos
   loading = true;
   error = false;
 
@@ -125,7 +139,8 @@ export class StudentDetailsPage implements OnInit {
     private toastController: ToastController,
     private alertController: AlertController,
     private http: HttpClient,
-    private authService: AuthService
+    private authService: AuthService,
+    private userService: UserService
   ) {
     // Adicionar ícones
     addIcons({
@@ -145,10 +160,14 @@ export class StudentDetailsPage implements OnInit {
       addCircleOutline,
       eyeOutline,
       trendingUpOutline,
-      statsChartOutline
+      statsChartOutline,
+      closeCircleOutline,
+      checkmarkCircleOutline,
+      trashOutline,
+      add
     });
   }
-
+active = 0; // Variável para controlar o status do aluno
   ngOnInit() {
     this.route.paramMap.subscribe(params => {
       const idParam = params.get('id');
@@ -174,24 +193,17 @@ export class StudentDetailsPage implements OnInit {
       // Simulação de carregamento - substitua por chamada de API real
       await this.simulateLoading(1000);
 
-      // Dados simulados
-      this.student = {
-        id: this.studentId,
-        name: 'Maria Silva',
-        photo: 'assets/avatar.jpg',
-        email: 'maria.silva@email.com',
-        phone: '(21) 98765-4321',
-        birthdate: '1995-05-15',
-        level: 'Intermediário',
-        status: 'active',
-        registrationDate: '2022-01-10',
-        address: 'Rua das Flores, 123 - Jardim Primavera',
-        emergencyContact: 'João Silva (Pai) - (21) 99876-5432',
-        medicalNotes: 'Nenhuma condição médica relevante',
-        goals: 'Melhorar condicionamento físico e técnica de nado',
-        observations: 'Aluna dedicada com boa evolução técnica'
-      };
-
+    this.personalService.getPupilDetails(this.studentId).subscribe(
+        (response: any) => {
+          if (response && response.status) {
+            this.student = response.data;
+            this.active = response.data.active;
+            console.log('Detalhes do aluno:', this.student);
+          } else {
+            this.handleError('Erro ao obter detalhes do aluno');
+          }
+        }
+      );
       this.activeWorkouts = [
         {
           id: 1,
@@ -438,6 +450,82 @@ export class StudentDetailsPage implements OnInit {
   async refreshData(event: any) {
     await this.loadStudentDetails();
     event.target.complete();
+  }
+
+  async toggleStudentStatus() {
+    if (!this.student) return;
+
+    const alert = await this.alertController.create({
+      header: 'Confirmar ação',
+      message: `Deseja ${this.active === 1 ? 'inativar' : 'ativar'} este aluno?`,
+      buttons: [
+        {
+          text: 'Cancelar',
+          role: 'cancel'
+        },
+        {
+          text: 'Confirmar',
+          handler: async () => {
+            try {
+              if (!this.student) return;
+
+              const newStatus = this.active === 1 ? 0 : 1;
+              const response = await this.userService.updateStudentStatus(this.student.id, newStatus).toPromise();
+
+              if (response && response.success) {
+                this.active = newStatus;
+                this.presentToast(`Aluno ${newStatus === 1 ? 'ativado' : 'inativado'} com sucesso!`);
+              } else {
+                this.presentToast('Erro ao atualizar status do aluno', 'danger');
+              }
+            } catch (error) {
+              console.error('Erro ao atualizar status:', error);
+              this.presentToast('Erro ao atualizar status do aluno', 'danger');
+            }
+          }
+        }
+      ]
+    });
+
+    await alert.present();
+  }
+
+  async confirmDelete() {
+    if (!this.student) return;
+
+    const alert = await this.alertController.create({
+      header: 'Confirmar exclusão',
+      message: 'Tem certeza que deseja excluir este aluno? Esta ação não pode ser desfeita.',
+      buttons: [
+        {
+          text: 'Cancelar',
+          role: 'cancel'
+        },
+        {
+          text: 'Excluir',
+          cssClass: 'danger',
+          handler: async () => {
+            try {
+              if (!this.student) return;
+
+              const response = await this.userService.deleteStudent(this.student.id).toPromise();
+
+              if (response && response.success) {
+                this.presentToast('Aluno excluído com sucesso!');
+                this.router.navigate(['/personal/students']);
+              } else {
+                this.presentToast('Erro ao excluir aluno', 'danger');
+              }
+            } catch (error) {
+              console.error('Erro ao excluir aluno:', error);
+              this.presentToast('Erro ao excluir aluno', 'danger');
+            }
+          }
+        }
+      ]
+    });
+
+    await alert.present();
   }
 }
 

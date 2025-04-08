@@ -124,9 +124,14 @@ export const routes: Routes = [
     ]
   },
   {
+    path: 'anamnesis/:id',
+    loadComponent: () => import('./View/pages/shared/anamnesis/anamnesis.page').then( m => m.AnamnesisPage)
+  },
+  {
     path: '**',
     redirectTo: 'login'
   },
+
 
 
 ];

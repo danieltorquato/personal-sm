@@ -1,5 +1,5 @@
 export interface ApiResponse<T = any> {
-  success: ApiResponse<Workout>;
+  success: boolean;
   status: 'success' | 'error';
   message?: string;
   data?: T;

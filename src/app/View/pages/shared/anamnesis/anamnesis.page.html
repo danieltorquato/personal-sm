@@ -1,0 +1,135 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/personal/students" text=""></ion-back-button>
+    </ion-buttons>
+    <ion-title>Anamnese</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="toggleEdit()" *ngIf="!isEditing">
+        <ion-icon slot="icon-only" name="create-outline"></ion-icon>
+      </ion-button>
+      <ion-button (click)="saveAnamnesis()" *ngIf="isEditing" color="success">
+        <ion-icon slot="icon-only" name="save-outline"></ion-icon>
+      </ion-button>
+      <ion-button (click)="toggleEdit()" *ngIf="isEditing" color="danger">
+        <ion-icon slot="icon-only" name="close-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <ion-spinner *ngIf="loading" name="crescent" class="spinner-center"></ion-spinner>
+
+  <form [formGroup]="anamnesisForm" *ngIf="!loading">
+    <ion-accordion-group>
+      <!-- Informações Pessoais -->
+      <ion-accordion value="personal_info">
+        <ion-item slot="header" color="light">
+          <ion-icon name="person-outline" slot="start"></ion-icon>
+          <ion-label>Informações Pessoais</ion-label>
+        </ion-item>
+        <div class="ion-padding" slot="content" formGroupName="personal_info">
+          <ion-grid>
+            <ion-row>
+              <ion-col size="6">
+                <ion-item>
+                  <ion-label position="stacked">Peso (kg)</ion-label>
+                  <ion-input type="number" formControlName="weight" [readonly]="!isEditing"></ion-input>
+                </ion-item>
+              </ion-col>
+              <ion-col size="6">
+                <ion-item>
+                  <ion-label position="stacked">Altura (m)</ion-label>
+                  <ion-input type="number" formControlName="height" [readonly]="!isEditing"></ion-input>
+                </ion-item>
+              </ion-col>
+            </ion-row>
+            <ion-row>
+              <ion-col size="6">
+                <ion-item>
+                  <ion-label position="stacked">Idade</ion-label>
+                  <ion-input type="number" formControlName="age" [readonly]="!isEditing"></ion-input>
+                </ion-item>
+              </ion-col>
+              <ion-col size="6">
+                <ion-item>
+                  <ion-label position="stacked">Sexo</ion-label>
+                  <ion-select formControlName="sex" [disabled]="!isEditing">
+                    <ion-select-option value="male">Masculino</ion-select-option>
+                    <ion-select-option value="female">Feminino</ion-select-option>
+                    <ion-select-option value="other">Outro</ion-select-option>
+                  </ion-select>
+                </ion-item>
+              </ion-col>
+            </ion-row>
+          </ion-grid>
+        </div>
+      </ion-accordion>
+
+      <!-- Histórico Médico -->
+      <ion-accordion value="medical_history">
+        <ion-item slot="header" color="light">
+          <ion-icon name="medkit-outline" slot="start"></ion-icon>
+          <ion-label>Histórico Médico</ion-label>
+        </ion-item>
+        <div class="ion-padding" slot="content" formGroupName="medical_history">
+          <ion-item>
+            <ion-label position="stacked">Queixa Principal</ion-label>
+            <ion-textarea formControlName="main_complaint" [readonly]="!isEditing"></ion-textarea>
+          </ion-item>
+          <ion-item>
+            <ion-label position="stacked">Histórico Médico</ion-label>
+            <ion-textarea formControlName="medical_history" [readonly]="!isEditing"></ion-textarea>
+          </ion-item>
+          <ion-item>
+            <ion-label position="stacked">Medicamentos em uso</ion-label>
+            <ion-textarea formControlName="medications" [readonly]="!isEditing"></ion-textarea>
+          </ion-item>
+          <ion-item>
+            <ion-label position="stacked">Cirurgias realizadas</ion-label>
+            <ion-textarea formControlName="surgeries" [readonly]="!isEditing"></ion-textarea>
+          </ion-item>
+          <ion-item>
+            <ion-label position="stacked">Alergias</ion-label>
+            <ion-textarea formControlName="allergies" [readonly]="!isEditing"></ion-textarea>
+          </ion-item>
+          <ion-item>
+            <ion-label position="stacked">Histórico Familiar</ion-label>
+            <ion-textarea formControlName="family_history" [readonly]="!isEditing"></ion-textarea>
+          </ion-item>
+        </div>
+      </ion-accordion>
+
+      <!-- Estilo de Vida -->
+      <ion-accordion value="lifestyle">
+        <ion-item slot="header" color="light">
+          <ion-icon name="fitness-outline" slot="start"></ion-icon>
+          <ion-label>Estilo de Vida</ion-label>
+        </ion-item>
+        <div class="ion-padding" slot="content" formGroupName="lifestyle">
+          <ion-item>
+            <ion-label>Fumante</ion-label>
+            <ion-toggle formControlName="smoker" [disabled]="!isEditing"></ion-toggle>
+          </ion-item>
+          <ion-item>
+            <ion-label>Consome álcool</ion-label>
+            <ion-toggle formControlName="alcoholic" [disabled]="!isEditing"></ion-toggle>
+          </ion-item>
+          <ion-item>
+            <ion-label>Pratica atividade física</ion-label>
+            <ion-toggle formControlName="physical_activity" [disabled]="!isEditing"></ion-toggle>
+          </ion-item>
+          <ion-item>
+            <ion-label position="stacked">Horas de sono por noite</ion-label>
+            <ion-input type="number" formControlName="sleep_hours" [readonly]="!isEditing"></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label position="stacked">Estilo de vida e hábitos</ion-label>
+            <ion-textarea formControlName="lifestyle" [readonly]="!isEditing"></ion-textarea>
+          </ion-item>
+        </div>
+      </ion-accordion>
+    </ion-accordion-group>
+  </form>
+</ion-content>

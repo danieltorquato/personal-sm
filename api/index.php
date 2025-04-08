@@ -69,6 +69,7 @@ try {
                 case 'assign-trainer':
                     echo $controller->assignStudentToTrainer();
                     break;
+
                 default:
                     echo ApiResponse::notFound("Ação não encontrada");
             }
@@ -125,6 +126,9 @@ try {
                 case 'pupil':
                     echo $controller->getPupilDashboard();
                     break;
+                case 'pupil-details/:id':
+                    echo $controller->getPupilDashboard();
+                    break;
                 case 'stats':
                     echo $controller->getStats();
                     break;
@@ -147,11 +151,36 @@ try {
                 case 'pupils':
                     echo $controller->getPupils();
                     break;
+                case 'pupil-details':
+                    $id = $_GET['id'] ?? null;
+                    if (!$id) {
+                        echo ApiResponse::error("ID do aluno não fornecido", 400);
+                        break;
+                    }
+                    echo $controller->getPupilDetails($id);
+                    break;
                 default:
                     echo ApiResponse::notFound("Ação não encontrada");
             }
             break;
+        case "anamnesis":
+            require_once "controllers/AnamnesisController.php";
+            $controller = new AnamnesisController($db);
 
+            switch ($action) {
+                case 'get':
+                    echo $controller->getAnamnesis();
+                    break;
+                case 'create':
+                    echo $controller->create();
+                    break;
+                case 'update':
+                    echo $controller->update();
+                    break;
+                default:
+                    echo ApiResponse::notFound("Ação não encontrada");
+            }
+            break;
         default:
             echo ApiResponse::notFound("Endpoint não encontrado");
     }

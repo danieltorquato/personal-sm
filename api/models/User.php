@@ -420,5 +420,6 @@ class User {
 
         return false;
     }
+  
 }
 ?>
