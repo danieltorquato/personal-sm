@@ -1052,3 +1052,176 @@ ion-select-option {
     }
   }
 }
+
+// Estilos gerais
+.ion-padding {
+  --padding-bottom: 100px;
+}
+
+// Estilos para a informação do aluno
+.student-info-container {
+  margin-bottom: 16px;
+
+  .student-card-title {
+    display: flex;
+    align-items: center;
+
+    .small-avatar {
+      width: 32px;
+      height: 32px;
+      margin-right: 8px;
+    }
+  }
+}
+
+// Estilo para o formulário
+.workout-form {
+  margin-top: 16px;
+
+  .section-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 20px 0 10px 0;
+
+    h3 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 600;
+    }
+  }
+}
+
+// Estado vazio para exercícios
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  text-align: center;
+  border: 2px dashed var(--ion-color-medium);
+  border-radius: 8px;
+  margin: 20px 0;
+
+  ion-icon {
+    font-size: 48px;
+    color: var(--ion-color-medium);
+    margin-bottom: 16px;
+  }
+
+  p {
+    margin: 0 0 16px 0;
+    color: var(--ion-color-medium);
+  }
+}
+
+// Estilo para os cards de exercícios
+.exercise-card {
+  margin-bottom: 16px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+  ion-reorder {
+    margin-right: 8px;
+  }
+
+  ion-card-header {
+    padding-bottom: 0;
+  }
+
+  ion-card-content {
+    padding-top: 8px;
+  }
+}
+
+// Estilo para a lista de alunos
+.student-selection-container {
+  margin: 20px 0;
+
+  .students-list {
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid var(--ion-color-light);
+    border-radius: 8px;
+    margin-top: 8px;
+  }
+
+  .loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+
+    ion-spinner {
+      margin-bottom: 8px;
+    }
+  }
+}
+
+// Botão de salvar
+.save-button {
+  margin-top: 32px;
+  margin-bottom: 32px;
+}
+
+// Estilos específicos para a página de treino de natação
+.selected-students {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+ion-card {
+  margin-bottom: 16px;
+}
+
+ion-spinner {
+  display: block;
+  margin: 20px auto;
+}
+
+// Estilo para o avatar dentro do chip
+ion-chip ion-avatar {
+  width: 24px;
+  height: 24px;
+}
+
+// Ajuste para os inputs nas grids
+ion-grid ion-item {
+  --padding-start: 0;
+  --inner-padding-end: 0;
+}
+
+// Melhorar visualização em dispositivos pequenos
+@media (max-width: 576px) {
+  ion-col {
+    padding: 0 4px;
+  }
+
+  ion-label {
+    font-size: 14px;
+  }
+
+  ion-input, ion-select {
+    font-size: 14px;
+  }
+}
+
+// Estilo para o reordenamento
+ion-reorder {
+  margin-right: 10px;
+}
+
+// Animação suave para inserção/remoção de exercícios
+ion-item-sliding {
+  transition: all 0.3s ease-in-out;
+}
+
+// Estilo para o botão de adicionar exercício
+ion-card-title ion-button {
+  margin-left: 8px;
+  vertical-align: middle;
+}

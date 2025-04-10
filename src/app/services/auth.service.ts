@@ -141,16 +141,24 @@ export class AuthService {
 
     console.log('Tentando obter o usuário atual na API:', endpoint);
 
+    // Se já temos o usuário em memória, retornamos diretamente
+    if (this.currentUser) {
+      return of(this.currentUser);
+    }
+
     return this.http.get<LoginResponse>(endpoint).pipe(
       map(response => {
         if (response.success) {
-          return {
+          const user = {
             id: response.user.id,
             email: response.user.email,
             name: response.user.name,
             userType: response.user.userType,
             token: response.user.token
           } as User;
+
+          this.setCurrentUser(user);
+          return user;
         }
         return null;
       }),

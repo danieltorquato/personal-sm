@@ -1,105 +1,308 @@
-<ion-header class="ion-no-border">
-  <ion-toolbar color="dark" class="transparent-toolbar">
+<ion-header>
+  <ion-toolbar color="primary">
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="/personal/dashboard"></ion-back-button>
+      <ion-back-button defaultHref="/personal/manage-students"></ion-back-button>
     </ion-buttons>
-    <ion-title>Criar Treino</ion-title>
+    <ion-title>
+      <span *ngIf="studentName">Treino para {{studentName}}</span>
+      <span *ngIf="!studentName">Novo Treino de Musculação</span>
+    </ion-title>
     <ion-buttons slot="end">
-      <ion-button>
-        <ion-icon name="save-outline"></ion-icon>
+      <ion-button (click)="saveWorkout()">
+        <ion-icon slot="icon-only" name="save-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content fullscreen="true" class="ion-padding">
-  <div class="background-gradient"></div>
+<ion-content class="ion-padding">
+  <!-- Informações do aluno -->
+  <div class="student-info-card" *ngIf="studentId">
+    <ion-card>
+      <ion-card-header>
+        <ion-card-subtitle>Aluno ID: {{studentId}}</ion-card-subtitle>
+        <ion-card-title>
+          <img [src]="studentImage" alt="Foto do aluno" class="student-image">
+          {{studentName || 'Carregando dados...'}}
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <p>Tipo de treino: {{workoutType === 'musculacao' ? 'Musculação' : 'Outro'}}</p>
+      </ion-card-content>
+    </ion-card>
+  </div>
 
-  <!-- Formulário de Criação -->
-  <ion-card class="workout-form">
-    <ion-card-content>
-      <!-- Informações Básicas -->
-      <ion-item-group>
-        <ion-item-divider>
-          <ion-label>Informações Básicas</ion-label>
-        </ion-item-divider>
+  <!-- Formulário de treino -->
+  <div class="workout-form">
+    <ion-list lines="full">
+      <ion-list-header>
+        <ion-label>Informações do Treino</ion-label>
+      </ion-list-header>
 
-        <ion-item>
-          <ion-label position="stacked">Nome do Treino</ion-label>
-          <ion-input placeholder="Ex: Treino de Força A"></ion-input>
-        </ion-item>
+      <ion-item>
+        <ion-label position="floating">Nome do Treino</ion-label>
+        <ion-input [(ngModel)]="workout.name" type="text" required></ion-input>
+      </ion-item>
 
-        <ion-item>
-          <ion-label position="stacked">Nível</ion-label>
-          <ion-select placeholder="Selecione o nível">
-            <ion-select-option value="beginner">Iniciante</ion-select-option>
-            <ion-select-option value="intermediate">Intermediário</ion-select-option>
-            <ion-select-option value="advanced">Avançado</ion-select-option>
-          </ion-select>
-        </ion-item>
+      <ion-item>
+        <ion-label position="floating">Descrição</ion-label>
+        <ion-textarea [(ngModel)]="workout.description" rows="3"></ion-textarea>
+      </ion-item>
 
-        <ion-item>
-          <ion-label position="stacked">Duração Estimada</ion-label>
-          <ion-input type="number" placeholder="Minutos"></ion-input>
-        </ion-item>
-      </ion-item-group>
+      <ion-item>
+        <ion-label>Nível de Dificuldade</ion-label>
+        <ion-select [(ngModel)]="workout.level" interface="popover">
+          <ion-select-option value="iniciante">Iniciante</ion-select-option>
+          <ion-select-option value="intermediario">Intermediário</ion-select-option>
+          <ion-select-option value="avancado">Avançado</ion-select-option>
+        </ion-select>
+      </ion-item>
 
-      <!-- Exercícios -->
-      <ion-item-group class="ion-margin-top">
-        <ion-item-divider>
-          <ion-label>Exercícios</ion-label>
-          <ion-button slot="end" fill="clear" size="small">
-            <ion-icon name="add-circle-outline" slot="icon-only"></ion-icon>
-          </ion-button>
-        </ion-item-divider>
+      <ion-item>
+        <ion-label>Divisão do Treino</ion-label>
+        <ion-select [(ngModel)]="workout.workoutDivision" (ionChange)="updateWorkoutDivision()" interface="popover">
+          <ion-select-option value="unico">Único</ion-select-option>
+          <ion-select-option value="A-B">A-B</ion-select-option>
+          <ion-select-option value="A-B-C">A-B-C</ion-select-option>
+          <ion-select-option value="A-B-C-D">A-B-C-D</ion-select-option>
+          <ion-select-option value="A-B-C-D-E">A-B-C-D-E</ion-select-option>
+        </ion-select>
+      </ion-item>
+    </ion-list>
 
-        <ion-item>
+    <!-- Divisão de treino com Segment -->
+    <div class="workout-divisions" *ngIf="workout.workoutDivision !== 'unico'">
+      <ion-segment [(ngModel)]="currentWorkoutPart" (ionChange)="segmentChanged($event)">
+        <ion-segment-button value="A" *ngIf="workout.workoutDivision.includes('A')">
+          <ion-label> A</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="B" *ngIf="workout.workoutDivision.includes('B')">
+          <ion-label> B</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="C" *ngIf="workout.workoutDivision.includes('C')">
+          <ion-label> C</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="D" *ngIf="workout.workoutDivision.includes('D')">
+          <ion-label> D</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="E" *ngIf="workout.workoutDivision.includes('E')">
+          <ion-label> E</ion-label>
+        </ion-segment-button>
+      </ion-segment>
+    </div>
+
+    <!-- Exercícios -->
+    <ion-list lines="full">
+      <ion-list-header>
+        <ion-label>
+          Exercícios {{ workout.workoutDivision !== 'unico' ? 'do Treino ' + currentWorkoutPart : '' }}
+        </ion-label>
+        <ion-button fill="clear" size="small" (click)="openExerciseSelector()">
+          <ion-icon slot="icon-only" name="add-circle-outline"></ion-icon>
+        </ion-button>
+      </ion-list-header>
+
+      <!-- Lista de exercícios da parcela atual -->
+      <ng-container *ngIf="getExercisesForCurrentPart().length > 0; else noExercises">
+        <ion-item *ngFor="let exercise of getExercisesForCurrentPart(); let i = index" button detail (click)="showExerciseDetails(exercise)">
+          <ion-avatar slot="start">
+            <img [src]="exercise.image || 'assets/images/exercise-default.png'" alt="{{ exercise.name }}">
+          </ion-avatar>
           <ion-label>
-            <h2>Supino Reto</h2>
-            <p>3 séries x 12 repetições</p>
+            <h2>{{ exercise.name }}</h2>
+            <p>{{ exercise.sets }} séries x {{ exercise.reps }} repetições</p>
           </ion-label>
           <ion-buttons slot="end">
-            <ion-button>
-              <ion-icon name="create-outline"></ion-icon>
-            </ion-button>
-            <ion-button>
-              <ion-icon name="trash-outline"></ion-icon>
+            <ion-button (click)="removeExercise(i, $event)">
+              <ion-icon slot="icon-only" name="trash-outline" color="danger"></ion-icon>
             </ion-button>
           </ion-buttons>
         </ion-item>
+      </ng-container>
 
-        <ion-item>
-          <ion-label>
-            <h2>Puxada Frontal</h2>
-            <p>4 séries x 10 repetições</p>
+      <!-- Mensagem de nenhum exercício -->
+      <ng-template #noExercises>
+        <ion-item class="empty-exercises">
+          <ion-label class="ion-text-center">
+            <ion-icon name="barbell-outline" size="large"></ion-icon>
+            <p>Nenhum exercício adicionado</p>
+            <ion-button expand="block" fill="outline" size="small" (click)="openExerciseSelector()">
+              Adicionar Exercício
+            </ion-button>
           </ion-label>
-          <ion-buttons slot="end">
-            <ion-button>
-              <ion-icon name="create-outline"></ion-icon>
-            </ion-button>
-            <ion-button>
-              <ion-icon name="trash-outline"></ion-icon>
-            </ion-button>
-          </ion-buttons>
         </ion-item>
-      </ion-item-group>
+      </ng-template>
+    </ion-list>
+  </div>
 
-      <!-- Observações -->
-      <ion-item-group class="ion-margin-top">
-        <ion-item-divider>
-          <ion-label>Observações</ion-label>
-        </ion-item-divider>
-
-        <ion-item>
-          <ion-textarea placeholder="Adicione observações sobre o treino..." rows="4"></ion-textarea>
-        </ion-item>
-      </ion-item-group>
-    </ion-card-content>
-  </ion-card>
-
-  <!-- Botão Salvar -->
-  <ion-button expand="block" class="save-button ion-margin-top">
-    <ion-icon name="save-outline" slot="start"></ion-icon>
-    Salvar Treino
-  </ion-button>
+  <!-- Botão salvar fixo na parte inferior -->
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button (click)="saveWorkout()">
+      <ion-icon name="save-outline"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
 </ion-content>
+
+<!-- Modal para selecionar categorias de exercícios -->
+<ion-modal [isOpen]="showExerciseModal">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar color="primary">
+        <ion-title>Selecionar Categoria</ion-title>
+        <ion-buttons slot="end">
+          <ion-button (click)="closeExerciseModal()">
+            <ion-icon name="close"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content>
+      <div class="category-grid ion-padding">
+        <ion-grid>
+          <ion-row>
+            <ion-col size="6" size-md="4" *ngFor="let category of exerciseCategories">
+              <ion-card (click)="openCategoryExercises(category.id)" class="category-card">
+                <img [src]="category.image" [alt]="category.name">
+                <ion-card-header>
+                  <ion-card-title>{{ category.name }}</ion-card-title>
+                </ion-card-header>
+              </ion-card>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+      </div>
+    </ion-content>
+  </ng-template>
+</ion-modal>
+
+<!-- Modal para listar exercícios por categoria -->
+<ion-modal [isOpen]="showCategoryExercisesModal">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar color="primary">
+        <ion-buttons slot="start">
+          <ion-button (click)="backToCategorySelection()">
+            <ion-icon name="arrow-back"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+        <ion-title>{{ selectedCategoryName }}</ion-title>
+        <ion-buttons slot="end">
+          <ion-button (click)="closeCategoryExercisesModal()">
+            <ion-icon name="close"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+      <ion-toolbar>
+        <ion-searchbar placeholder="Buscar exercício" [(ngModel)]="exerciseSearchTerm" (ionInput)="filterExercises()"></ion-searchbar>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content>
+      <ion-list>
+        <ion-item *ngFor="let exercise of filteredExercises" button (click)="openExerciseInfo(exercise)">
+          <ion-avatar slot="start">
+            <img [src]="exercise.image || 'assets/images/exercise-default.png'" alt="{{ exercise.name }}">
+          </ion-avatar>
+          <ion-label>
+            <h2>{{ exercise.name }}</h2>
+            <p>{{ getCategoryName(exercise.category) }}</p>
+          </ion-label>
+          <ion-button slot="end" fill="clear" (click)="addExerciseDirectly(exercise, $event)">
+            <ion-icon slot="icon-only" name="add-circle"></ion-icon>
+          </ion-button>
+        </ion-item>
+      </ion-list>
+    </ion-content>
+  </ng-template>
+</ion-modal>
+
+<!-- Modal para detalhes do exercício -->
+<ion-modal [isOpen]="showExerciseInfoModal">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar color="primary">
+        <ion-title>Detalhes do Exercício</ion-title>
+        <ion-buttons slot="end">
+          <ion-button (click)="closeExerciseInfoModal()">
+            <ion-icon name="close"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content class="ion-padding">
+      <div *ngIf="selectedExercise" class="exercise-info">
+        <h1 class="ion-text-center">{{ selectedExercise.name }}</h1>
+
+        <div class="exercise-media ion-margin-vertical">
+          <img *ngIf="selectedExercise.image" [src]="selectedExercise.image" alt="{{ selectedExercise.name }}">
+          <video *ngIf="selectedExercise.video" controls>
+            <source [src]="selectedExercise.video" type="video/mp4">
+            Seu navegador não suporta a reprodução de vídeos.
+          </video>
+        </div>
+
+        <ion-list lines="full">
+          <ion-item>
+            <ion-label>
+              <h2>Categoria</h2>
+              <p>{{ getCategoryName(selectedExercise.category) }}</p>
+            </ion-label>
+          </ion-item>
+
+          <ion-item>
+            <ion-label class="ion-text-wrap">
+              <h2>Descrição</h2>
+              <p>{{ selectedExercise.description }}</p>
+            </ion-label>
+          </ion-item>
+
+          <ion-item>
+            <ion-label>
+              <h2>Músculos trabalhados</h2>
+              <p>{{ selectedExercise.muscles }}</p>
+            </ion-label>
+          </ion-item>
+
+          <ion-item>
+            <ion-label class="ion-text-wrap">
+              <h2>Instruções</h2>
+              <p>{{ selectedExercise.instructions }}</p>
+            </ion-label>
+          </ion-item>
+        </ion-list>
+
+        <div class="exercise-inputs ion-margin-top">
+          <ion-item>
+            <ion-label position="floating">Séries</ion-label>
+            <ion-input type="number" [(ngModel)]="exerciseToAdd.sets" min="1" max="10"></ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="floating">Repetições</ion-label>
+            <ion-input type="number" [(ngModel)]="exerciseToAdd.reps" min="1" max="100"></ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="floating">Carga (kg)</ion-label>
+            <ion-input type="number" [(ngModel)]="exerciseToAdd.weight" min="0" step="0.5"></ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="floating">Descanso (segundos)</ion-label>
+            <ion-input type="number" [(ngModel)]="exerciseToAdd.rest" min="0" step="15"></ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="floating">Observações</ion-label>
+            <ion-textarea [(ngModel)]="exerciseToAdd.notes" rows="2"></ion-textarea>
+          </ion-item>
+        </div>
+
+        <div class="ion-padding">
+          <ion-button expand="block" (click)="addExerciseToWorkout()">
+            Adicionar ao Treino {{ workout.workoutDivision !== 'unico' ? currentWorkoutPart : '' }}
+          </ion-button>
+        </div>
+      </div>
+    </ion-content>
+  </ng-template>
+</ion-modal>

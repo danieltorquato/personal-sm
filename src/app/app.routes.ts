@@ -65,8 +65,9 @@ export const routes: Routes = [
         path: 'manage-students',
         loadComponent: () => import('./View/pages/personal/manage-students/manage-students.page').then(m => m.ManageStudentsPage)
       },
+
       {
-        path: 'create-workout',
+        path: 'create-workout/:id',
         loadComponent: () => import('./View/pages/personal/create-workout/create-workout.page').then(m => m.CreateWorkoutPage)
       },
       {
@@ -77,8 +78,9 @@ export const routes: Routes = [
         path: 'dynamic-pool-workout',
         loadComponent: () => import('./View/pages/personal/dynamic-pool-workout/dynamic-pool-workout.page').then(m => m.DynamicPoolWorkoutPage)
       },
+
       {
-        path: 'create-pool-workout',
+        path: 'create-pool-workout/:id',
         loadComponent: () => import('./View/pages/personal/create-pool-workout/create-pool-workout.page').then(m => m.CreatePoolWorkoutPage)
       },
       {

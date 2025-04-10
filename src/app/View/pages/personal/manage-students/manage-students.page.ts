@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonicModule, ActionSheetController } from '@ionic/angular';
+import { IonicModule, ActionSheetController, AlertController } from '@ionic/angular';
 import { Router, RouterModule } from '@angular/router';
 
 import {
@@ -17,7 +17,9 @@ import {
   createOutline,
   calendarOutline,
   peopleOutline,
-  close
+  close,
+  barbellOutline,
+  waterOutline
 } from 'ionicons/icons';
 import { addIcons } from 'ionicons';
 import { PersonalService } from 'src/app/services/personal.service';
@@ -34,7 +36,7 @@ export class ManageStudentsPage implements OnInit {
   students: any[] = []; // Array original de alunos
   filteredStudents: any[] = []; // Array filtrado para exibição
   studentsLength: number = 0; // Total de alunos
-
+  studentId: number = 0;
   // Controles de interface
   selectedSegment: string = 'todos'; // Segmento selecionado (todos, ativos, inativos)
   searchTerm: string = ''; // Termo de busca
@@ -43,6 +45,7 @@ export class ManageStudentsPage implements OnInit {
 
   constructor(
     private actionSheetController: ActionSheetController,
+    private alertController: AlertController,
     private personalService: PersonalService,
     private router: Router
   ) {
@@ -59,7 +62,9 @@ export class ManageStudentsPage implements OnInit {
       createOutline,
       calendarOutline,
       peopleOutline,
-      close
+      close,
+      barbellOutline,
+      waterOutline
     });
   }
 
@@ -79,7 +84,7 @@ export class ManageStudentsPage implements OnInit {
           this.students = response.data.map((student: any) => {
             // Determinar se o aluno está ativo (exemplo: treinou nos últimos 30 dias)
             const isActive = student.active;
-
+            this.studentId = student.id;
             // student.last_training ?
             //   (new Date().getTime() - new Date(student.last_training).getTime()) / (1000 * 3600 * 24) < 30 :
             //   false;
@@ -193,12 +198,65 @@ export class ManageStudentsPage implements OnInit {
 
   /**
    * Função para adicionar treino para o aluno
+   * Exibe um alerta para escolher entre musculação ou natação
    */
-  adicionarTreino(studentId: number) {
-    console.log('Adicionar treino para aluno', studentId);
-    this.router.navigate(['/personal/create-pool-workout'], {
-      queryParams: { studentId: studentId }
+  async adicionarTreino(studentId: number) {
+    console.log('Adicionando treino para o aluno com ID:', studentId);
+
+    // Verificar se o ID do aluno é válido
+    if (!studentId) {
+      console.error('ID de aluno inválido');
+      return;
+    }
+
+    const alert = await this.alertController.create({
+      header: 'Escolha o tipo de treino',
+      cssClass: 'workout-type-alert',
+      buttons: [
+        {
+          text: 'Cancelar',
+          role: 'cancel'
+        }
+      ],
+      inputs: [
+        {
+          type: 'radio',
+          label: 'Musculação',
+          value: 'musculacao',
+          handler: () => {
+            alert.dismiss().then(() => {
+              this.router.navigate(['/personal/create-workout/', studentId], {
+                queryParams: {
+                  studentId: studentId.toString(),
+                  type: 'musculacao'
+                }
+              });
+              console.log('Navegando para criar treino de musculação para o aluno', studentId);
+            });
+            return false;
+          }
+        },
+        {
+          type: 'radio',
+          label: 'Natação',
+          value: 'natacao',
+          handler: () => {
+            alert.dismiss().then(() => {
+              this.router.navigate(['/personal/create-pool-workout'], {
+                queryParams: {
+                  studentId: studentId.toString(),
+                  type: 'natacao'
+                }
+              });
+              console.log('Navegando para criar treino de natação para o aluno', studentId);
+            });
+            return false;
+          }
+        }
+      ]
     });
+
+    await alert.present();
   }
 
   /**

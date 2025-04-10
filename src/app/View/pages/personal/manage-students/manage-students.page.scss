@@ -268,3 +268,70 @@ ion-fab-button {
     font-size: 0.75rem;
   }
 }
+
+/* Adicionar os estilos no final do arquivo */
+.workout-type-alert {
+  --backdrop-opacity: 0.8;
+
+  .alert-wrapper {
+    border-radius: 15px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  }
+
+  .alert-head {
+    text-align: center;
+    color: var(--ion-color-primary);
+    font-weight: bold;
+  }
+
+  .alert-radio-group {
+    padding: 10px 0;
+  }
+
+  .alert-radio-label {
+    font-size: 16px;
+    padding-left: 52px;
+    white-space: normal;
+  }
+
+  ion-radio::part(container) {
+    border-color: var(--ion-color-primary);
+    border-width: 2px;
+  }
+
+  .alert-button-group {
+    padding: 10px;
+  }
+
+  .alert-button {
+    color: var(--ion-color-primary);
+    font-weight: 600;
+  }
+}
+
+/* Estilos globais para customizar o alerta (adicionar no global.scss também se necessário) */
+::ng-deep .workout-type-alert {
+  .alert-radio-label {
+    display: flex;
+    align-items: center;
+
+    &:before {
+      content: '';
+      display: inline-block;
+      width: 24px;
+      height: 24px;
+      margin-right: 10px;
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+    }
+  }
+
+  .alert-radio-group .alert-radio-label:nth-child(1):before {
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M50.33 223.5h411.33c22.09 0 40-17.91 40-40s-17.91-40-40-40H232.33v-56.98c9.47-3.7 16-12.82 16-23.06s-6.53-19.36-16-23.06V24.5c0-13.25-10.75-24-24-24s-24 10.75-24 24v15.9c-9.47 3.7-16 12.82-16 23.06s6.53 19.36 16 23.06v56.98H50.33c-22.09 0-40 17.91-40 40s17.91 40 40 40zM80.33 343.5L70.5 392h41l-10-48.5h60.57l-10 48.5h41l-10-48.5h60.57l-10 48.5h41l-10-48.5h60.57l-10 48.5h41l-10-48.5h60.57l-10 48.5h41l-10-48.5H422c11.05 0 20-8.95 20-20s-8.95-20-20-20H90c-11.05 0-20 8.95-20 20s8.95 20 20 20h-9.67zM432 423.5H80c-13.25 0-24 10.75-24 24s10.75 24 24 24h352c13.25 0 24-10.75 24-24s-10.75-24-24-24z"/></svg>');
+  }
+
+  .alert-radio-group .alert-radio-label:nth-child(2):before {
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M50.34 67.66A175 175 0 0 1 256 50.34a175 175 0 1 1-205.66 17.32M368 437.48A176.1 176.1 0 0 1 255 462a176.1 176.1 0 0 1-113-24.52m-13-341.52s-47.24 37.34-55 80.5c-3.69 20.48 9.4 27.5 31.16 27.5H229v111.87c-7.05-3.14-13.69-3.84-19.44.17-10.19 7.13-7 21.52.78 30.63 2.82 3.32 13 12.29 13 12.29a51.28 51.28 0 0 0 4.1 23.47l15.08 30.17a31.54 31.54 0 0 0 27.48 17h-90c32.95 0 39-20.88 39-47.75v-178H368c21.76 0 34.86-7 31.16-27.5-7.71-43.16-55-80.5-55-80.5s-7.76-11.61-8-22.66c-1-47.36-21.84-55.9-21.84-55.9s-35.38-22.94-69.3-22.94-69.3 22.94-69.3 22.94-20.8 8.54-21.84 55.9c-.27 11.05-8 22.66-8 22.66z"/></svg>');
+  }
+}
