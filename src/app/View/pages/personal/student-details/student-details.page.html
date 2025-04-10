@@ -44,7 +44,7 @@
     <div class="profile-card">
       <div class="profile-header">
         <div class="avatar-container" *ngIf="student.photo">
-          <img [src]="student.photo" alt="Foto de perfil" class="profile-avatar">
+          <img [src]="studentImage" alt="Foto de perfil" class="profile-avatar">
           <span class="status-badge" [class.active]="active === 1">
             {{ active === 1 ? 'Ativo' : 'Inativo' }}
           </span>

@@ -14,7 +14,8 @@ import {
   closeOutline,
   addCircle,
   searchOutline,
-  arrowBack
+  arrowBack,
+  waterOutline
 } from 'ionicons/icons';
 import { addIcons } from 'ionicons';
 
@@ -64,6 +65,7 @@ interface WorkoutExercise extends Exercise {
   weight: number;
   rest: number;
   notes: string;
+  method?: string; // Método avançado: normal, drop-set, super-set, etc.
 }
 
 interface ExerciseCategory {
@@ -233,6 +235,11 @@ export class CreateWorkoutPage implements OnInit {
 
   filteredExercises: Exercise[] = [];
 
+  // Adicionar controle para modal de edição
+  showEditExerciseModal = false;
+  exerciseToEdit: WorkoutExercise | null = null;
+  exerciseIndexToEdit: number = -1;
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -249,7 +256,8 @@ export class CreateWorkoutPage implements OnInit {
       closeOutline,
       addCircle,
       searchOutline,
-      arrowBack
+      arrowBack,
+      waterOutline
     });
 
     // Inicializar exercícios filtrados
@@ -538,6 +546,88 @@ export class CreateWorkoutPage implements OnInit {
     }
 
     return true;
+  }
+
+  // Método para tratar erros de carregamento de imagem
+  handleImageError(event: any) {
+    event.target.src = 'assets/images/photo/default-user.png';
+  }
+
+  // Método para voltar à lista de exercícios
+  backToExerciseList() {
+    this.showExerciseInfoModal = false;
+    this.showCategoryExercisesModal = true;
+  }
+
+  // Método para fechar todos os modais
+  closeAllModals() {
+    this.showExerciseInfoModal = false;
+    this.showCategoryExercisesModal = false;
+    this.showExerciseModal = false;
+  }
+
+  // Método para abrir o modal de edição de exercício existente
+  editExistingExercise(exercise: WorkoutExercise, index: number) {
+    // Criar uma cópia do exercício para edição
+    this.exerciseToEdit = { ...exercise };
+
+    // Se o método não estiver definido, definir como 'normal'
+    if (!this.exerciseToEdit.method) {
+      this.exerciseToEdit.method = 'normal';
+    }
+
+    this.exerciseIndexToEdit = index;
+    this.showEditExerciseModal = true;
+  }
+
+  // Método para fechar o modal de edição
+  closeEditExerciseModal() {
+    this.showEditExerciseModal = false;
+    this.exerciseToEdit = null;
+    this.exerciseIndexToEdit = -1;
+  }
+
+  // Método para salvar as alterações do exercício
+  saveExerciseEdit() {
+    if (!this.exerciseToEdit || this.exerciseIndexToEdit < 0) {
+      return;
+    }
+
+    // Atualizar o exercício na lista
+    this.workout.exercises[this.currentWorkoutPart as keyof typeof this.workout.exercises][this.exerciseIndexToEdit] = { ...this.exerciseToEdit };
+
+    this.closeEditExerciseModal();
+    this.presentToast('Exercício atualizado com sucesso', 'success');
+  }
+
+  // Método para retornar o nome do método avançado formatado
+  getMethodName(method: string | undefined): string {
+    if (!method || method === 'normal') return 'Normal';
+
+    const methodNames: {[key: string]: string} = {
+      'drop-set': 'Drop Set',
+      'super-set': 'Super Set',
+      'rest-pause': 'Rest Pause',
+      'pyramid': 'Pirâmide',
+      'giant-set': 'Série Gigante'
+    };
+
+    return methodNames[method] || method;
+  }
+
+  // Método para retornar a descrição do método avançado
+  getMethodDescription(method: string | undefined): string {
+    if (!method) return '';
+
+    const methodDescriptions: {[key: string]: string} = {
+      'drop-set': 'Realize o exercício até a falha, reduza o peso e continue sem descanso. Excelente para hipertrofia.',
+      'super-set': 'Combine com outro exercício sem descanso entre eles. Ótimo para economia de tempo e intensidade.',
+      'rest-pause': 'Após falha, descanse 10-15 segundos e continue por mais repetições. Aumenta a intensidade da série.',
+      'pyramid': 'Aumente o peso e diminua as repetições a cada série (ou vice-versa). Trabalha diferentes tipos de fibras.',
+      'giant-set': 'Combine 3-4 exercícios para o mesmo grupo muscular, sem descanso entre eles.'
+    };
+
+    return methodDescriptions[method] || '';
   }
 }
 

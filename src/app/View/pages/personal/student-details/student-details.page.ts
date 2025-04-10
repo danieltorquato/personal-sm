@@ -103,7 +103,7 @@ export class StudentDetailsPage implements OnInit {
   students: any[] = []; // Array original de alunos
   loading = true;
   error = false;
-
+  studentImage: string = '';
   // Segmentos e seu conteúdo
   currentSegment = 'information';
   activeWorkouts: Workout[] = [];
@@ -198,6 +198,7 @@ active = 0; // Variável para controlar o status do aluno
           if (response && response.status) {
             this.student = response.data;
             this.active = response.data.active;
+            this.studentImage = response.data.photo;
             console.log('Detalhes do aluno:', this.student);
           } else {
             this.handleError('Erro ao obter detalhes do aluno');

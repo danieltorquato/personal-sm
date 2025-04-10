@@ -7,7 +7,9 @@
   background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
   z-index: -1;
 }
-
+ion-label{
+  color: var(--ion-color-light);
+}
 .transparent-toolbar {
   --background: transparent;
 }
@@ -148,4 +150,204 @@ ion-segment {
     color: var(--ion-color-medium);
     margin-bottom: 15px;
   }
+}
+
+.student-image {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+}
+
+.student-name {
+  font-size: 16px;
+  font-weight: bold;
+  color: var(--ion-color-light);
+}
+
+// Estilo para o cartão de informações do aluno
+.student-info-card {
+  margin-bottom: 20px;
+
+  ion-card {
+    margin: 10px 0;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    background: linear-gradient(135deg, #333333 0%, #222222 100%);
+
+    ion-card-content {
+      padding: 16px;
+    }
+  }
+
+  .student-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    .student-avatar {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid #DAA520; // Dourado
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .student-name {
+      flex: 1;
+      text-align: center;
+      font-size: 18px;
+      font-weight: 600;
+      color: #ffffff;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+      margin: 0 10px;
+    }
+
+    .workout-type-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      ion-icon {
+        font-size: 24px;
+        color: #DAA520; // Dourado
+      }
+    }
+  }
+}
+
+// Estilos para botões de fechamento nos modais
+ion-footer {
+  ion-toolbar {
+    --background: rgba(0, 0, 0, 0.05);
+
+    ion-button {
+      --color: #DAA520;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+
+      &[color="medium"] {
+        --color: var(--ion-color-medium);
+      }
+    }
+  }
+}
+
+// Estilos para os modais
+ion-modal {
+  --border-radius: 16px;
+  --box-shadow: 0 10px 15px rgba(0, 0, 0, 0.4);
+
+  ion-header ion-toolbar {
+    --background: #222222;
+    --color: #DAA520;
+
+    ion-title {
+      font-weight: 600;
+    }
+
+    ion-icon {
+      font-size: 22px;
+    }
+  }
+
+  ion-searchbar {
+    --background: rgba(255, 255, 255, 0.1);
+    --color: #ffffff;
+    --placeholder-color: rgba(255, 255, 255, 0.6);
+    --icon-color: #DAA520;
+    --border-radius: 8px;
+    padding: 4px 8px;
+  }
+}
+
+// Estilos para o modal de edição de exercícios
+.edit-exercise-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  .exercise-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 8px;
+    background: rgba(0, 0, 0, 0.03);
+    border-radius: 8px;
+    margin-bottom: 8px;
+
+    ion-avatar {
+      width: 60px;
+      height: 60px;
+      border: 2px solid #DAA520;
+    }
+
+    .exercise-title {
+      font-size: 20px;
+      font-weight: bold;
+      color: var(--ion-color-light);
+      margin: 0;
+    }
+  }
+
+  .exercise-controls {
+    color: var(--ion-color-light);
+    ion-item {
+      --padding-start: 0;
+      --border-color: rgba(0, 0, 0, 0.1);
+
+    }
+
+    ion-label {
+      font-weight: 500;
+      color: var(--ion-color-light);
+    }
+
+    ion-input, ion-textarea {
+      --padding-start: 8px;
+      background: rgba(0, 0, 0, 0.03);
+      border-radius: 4px;
+      margin-top: 4px;
+    }
+
+    .method-selection {
+      margin-top: 12px;
+
+      .method-note {
+        background: rgba(218, 165, 32, 0.1);
+        border-radius: 8px;
+        margin-top: 8px;
+
+        h3 {
+          color: #DAA520;
+          font-weight: 600;
+          margin-bottom: 4px;
+        }
+
+        p {
+          color: var(--ion-color-light);
+          font-size: 14px;
+          line-height: 1.4;
+        }
+      }
+    }
+  }
+
+  .submit-button {
+    margin-top: 16px;
+
+    ion-button {
+      --background: #DAA520;
+      --background-activated: #b88a1b;
+      --color: #ffffff;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      height: 48px;
+    }
+  }
+}
+.ion-text-center{
+  color: #fff !important;
 }
