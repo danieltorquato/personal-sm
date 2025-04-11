@@ -24,7 +24,7 @@
           <img [src]="studentImage || 'assets/images/photo/default-user.png'" alt="Foto do aluno" class="student-avatar" (error)="handleImageError($event)">
           <div class="student-name">{{studentName || 'Carregando dados...'}}</div>
           <div class="workout-type-icon">
-            <ion-icon [name]="workoutType === 'musculacao' ? 'barbell-outline' : 'water-outline'" [title]="workoutType === 'musculacao' ? 'Musculação' : 'Natação'"></ion-icon>
+            <ion-icon [name]="workoutType === 'gym' ? 'barbell-outline' : 'water-outline'" [title]="workoutType === 'musculacao' ? 'Musculação' : 'Natação'"></ion-icon>
           </div>
         </div>
       </ion-card-content>
@@ -45,7 +45,7 @@
 
       <ion-item>
         <ion-label position="floating">Descrição</ion-label>
-        <ion-textarea [(ngModel)]="workout.description" rows="3"></ion-textarea>
+        <ion-textarea [(ngModel)]="workout.notes" rows="3"></ion-textarea>
       </ion-item>
 
       <ion-item>
@@ -96,27 +96,45 @@
         <ion-label>
           Exercícios {{ workout.workoutDivision !== 'unico' ? 'do Treino ' + currentWorkoutPart : '' }}
         </ion-label>
-        <ion-button fill="clear" size="small" (click)="openExerciseSelector()">
-          <ion-icon slot="icon-only" name="add-circle-outline"></ion-icon>
-        </ion-button>
+        <div class="header-buttons">
+          <ion-button *ngIf="getExercisesForCurrentPart().length > 0" size="large" (click)="toggleReorderMode()" class="order-button" [class.active]="reorderMode">
+            <ion-icon [name]="reorderMode ? 'checkmark-outline' : 'reorder-three-outline'" [color]="reorderMode ? 'success' : 'medium'"></ion-icon>
+            <span>{{ reorderMode ? 'Confirmar' : 'Ordenar' }}</span>
+          </ion-button>
+          <ion-button (click)="openExerciseSelector()" class="add-exercise-button">
+            <ion-icon name="add-circle-outline"></ion-icon>
+            <span>Adicionar</span>
+          </ion-button>
+        </div>
       </ion-list-header>
 
       <!-- Lista de exercícios da parcela atual -->
       <ng-container *ngIf="getExercisesForCurrentPart().length > 0; else noExercises">
-        <ion-item *ngFor="let exercise of getExercisesForCurrentPart(); let i = index" button detail (click)="editExistingExercise(exercise, i)">
-          <ion-avatar slot="start">
-            <img [src]="exercise.image || 'assets/images/exercise-default.png'" alt="{{ exercise.name }}">
-          </ion-avatar>
-          <ion-label>
-            <h2>{{ exercise.name }}</h2>
-            <p>{{ exercise.sets }} séries x {{ exercise.reps }} repetições</p>
-          </ion-label>
-          <ion-buttons slot="end">
-            <ion-button (click)="removeExercise(i, $event)">
-              <ion-icon slot="icon-only" name="trash-outline" color="danger"></ion-icon>
-            </ion-button>
-          </ion-buttons>
-        </ion-item>
+        <ion-reorder-group [disabled]="!reorderMode" (ionItemReorder)="handleReorder($event)">
+          <ion-item-sliding *ngFor="let exercise of getExercisesForCurrentPart(); let i = index">
+            <ion-item button detail [attr.detail]="reorderMode ? false : true" (click)="editExistingExercise(exercise, i)" class="exercise-item" [class.reorder-mode]="reorderMode">
+              <ion-avatar slot="start">
+                <img [src]="exercise.image || 'assets/images/exercise-default.png'" alt="{{ exercise.name }}">
+              </ion-avatar>
+              <ion-label class="ion-text-wrap">
+                <h2>{{ exercise.name }}</h2>
+                <p>{{ exercise.sets }} séries x {{ exercise.reps }} repetições</p>
+                <p *ngIf="exercise.method && exercise.method !== 'normal'" class="exercise-method">
+                  <ion-icon name="flash-outline" color="warning"></ion-icon>
+                  {{ getMethodName(exercise.method) }}
+                </p>
+              </ion-label>
+              <ion-buttons slot="end" *ngIf="!reorderMode">
+                <ion-button (click)="removeExercise(i, $event)">
+                  <ion-icon slot="icon-only" name="trash-outline" color="danger"></ion-icon>
+                </ion-button>
+              </ion-buttons>
+              <ion-reorder slot="end" *ngIf="reorderMode">
+                <ion-icon name="menu-outline"></ion-icon>
+              </ion-reorder>
+            </ion-item>
+          </ion-item-sliding>
+        </ion-reorder-group>
       </ng-container>
 
       <!-- Mensagem de nenhum exercício -->
@@ -162,7 +180,7 @@
             <ion-col size="6" size-md="4" *ngFor="let category of exerciseCategories">
               <ion-card (click)="openCategoryExercises(category.id)" class="category-card">
                 <img [src]="category.image" [alt]="category.name">
-                <ion-card-header>
+                 <ion-card-header>
                   <ion-card-title>{{ category.name }}</ion-card-title>
                 </ion-card-header>
               </ion-card>
@@ -181,59 +199,72 @@
   </ng-template>
 </ion-modal>
 
-<!-- Modal para listar exercícios por categoria -->
-<ion-modal [isOpen]="showCategoryExercisesModal">
+<!-- Modal de Categorias de Exercícios -->
+<ion-modal [isOpen]="showCategoryExercisesModal" class="exercise-category-modal">
   <ng-template>
-    <ion-header>
-      <ion-toolbar color="primary">
+    <ion-header class="ion-no-border">
+      <ion-toolbar color="light">
         <ion-buttons slot="start">
-          <ion-button (click)="backToCategorySelection()">
-            <ion-icon name="arrow-back-outline"></ion-icon>
+          <ion-button fill="clear" (click)="backToCategorySelection()" color="primary">
+            <ion-icon slot="icon-only" name="arrow-back-outline"></ion-icon>
           </ion-button>
         </ion-buttons>
         <ion-title>{{ selectedCategoryName }}</ion-title>
         <ion-buttons slot="end">
-          <ion-button (click)="closeCategoryExercisesModal()">
-            <ion-icon name="close-outline"></ion-icon>
+          <ion-button fill="clear" (click)="closeCategoryExercisesModal()" color="primary">
+            <ion-icon slot="icon-only" name="close-outline"></ion-icon>
           </ion-button>
         </ion-buttons>
       </ion-toolbar>
-      <ion-toolbar>
-        <ion-searchbar placeholder="Buscar exercício" [(ngModel)]="exerciseSearchTerm" (ionInput)="filterExercises()"></ion-searchbar>
-      </ion-toolbar>
+      <div class="search-container">
+        <ion-searchbar [(ngModel)]="exerciseSearchTerm"
+                      (ionInput)="filterExercises()"
+                      placeholder="Buscar exercícios"
+                      animated
+                      color="light"
+                      class="custom-searchbar"
+                      [class.focused]="isFocused"
+                      (ionFocus)="isFocused = true"
+                      (ionBlur)="isFocused = false">
+        </ion-searchbar>
+      </div>
     </ion-header>
+
     <ion-content>
-      <ion-list>
-        <ion-item *ngFor="let exercise of filteredExercises" button (click)="openExerciseInfo(exercise)">
-          <ion-avatar slot="start">
-            <img [src]="exercise.image || 'assets/images/exercise-default.png'" alt="{{ exercise.name }}">
-          </ion-avatar>
-          <ion-label>
-            <h2>{{ exercise.name }}</h2>
-            <p>{{ getCategoryName(exercise.category) }}</p>
-          </ion-label>
-          <ion-button slot="end" fill="clear" (click)="addExerciseDirectly(exercise, $event)">
-            <ion-icon slot="icon-only" name="add-circle-outline"></ion-icon>
+      <div class="exercises-container">
+        <ion-list lines="full">
+          <ion-item *ngFor="let exercise of filteredExercises; let i = index"
+                    class="exercise-item"
+                    detail="false"
+                    button
+                    [style.--animation-order]="i"
+                    (click)="openExerciseInfo(exercise)">
+            <div class="exercise-content">
+              <div class="exercise-details">
+                <h3>{{ exercise.name }}</h3>
+                <p class="muscle-groups">{{ exercise.muscles }}</p>
+              </div>
+              <ion-button fill="solid"
+                          (click)="addExerciseDirectly(exercise, $event)"
+                          class="add-button"
+                          color="success"
+                          size="small">
+                <ion-icon name="add-circle" slot="start"></ion-icon>
+                Adicionar ao treino
+              </ion-button>
+            </div>
+          </ion-item>
+        </ion-list>
+
+        <div *ngIf="filteredExercises.length === 0" class="no-exercises">
+          <ion-icon name="fitness-outline" size="large"></ion-icon>
+          <p>Nenhum exercício encontrado</p>
+          <ion-button fill="outline" size="small" (click)="exerciseSearchTerm = ''; filterExercises()">
+            Limpar busca
           </ion-button>
-        </ion-item>
-      </ion-list>
+        </div>
+      </div>
     </ion-content>
-    <ion-footer>
-      <ion-toolbar>
-        <ion-row>
-          <ion-col>
-            <ion-button expand="block" fill="clear" color="medium" (click)="backToCategorySelection()">
-              Voltar
-            </ion-button>
-          </ion-col>
-          <ion-col>
-            <ion-button expand="block" fill="clear" color="medium" (click)="closeCategoryExercisesModal()">
-              Fechar
-            </ion-button>
-          </ion-col>
-        </ion-row>
-      </ion-toolbar>
-    </ion-footer>
   </ng-template>
 </ion-modal>
 
@@ -321,6 +352,27 @@
           <ion-item>
             <ion-label position="floating">Observações</ion-label>
             <ion-textarea [(ngModel)]="exerciseToAdd.notes" rows="2"></ion-textarea>
+          </ion-item>
+
+          <!-- Seleção de método avançado -->
+          <ion-item>
+            <ion-label>Método Avançado</ion-label>
+            <ion-select [(ngModel)]="exerciseToAdd.method" interface="popover">
+              <ion-select-option value="normal">Normal</ion-select-option>
+              <ion-select-option value="drop-set">Drop Set</ion-select-option>
+              <ion-select-option value="super-set">Super Set</ion-select-option>
+              <ion-select-option value="rest-pause">Rest Pause</ion-select-option>
+              <ion-select-option value="pyramid">Pirâmide</ion-select-option>
+              <ion-select-option value="giant-set">Série Gigante</ion-select-option>
+            </ion-select>
+          </ion-item>
+
+          <!-- Dica do método selecionado -->
+          <ion-item *ngIf="exerciseToAdd.method != 'normal'" class="method-note">
+            <ion-label class="ion-text-wrap">
+              <h3>Dica para {{ getMethodName(exerciseToAdd.method) }}:</h3>
+              <p>{{ getMethodDescription(exerciseToAdd.method) }}</p>
+            </ion-label>
           </ion-item>
         </div>
 
@@ -422,7 +474,152 @@
               </ion-select>
             </ion-item>
 
-            <ion-item *ngIf="exerciseToEdit.method != 'normal'" class="method-note">
+            <!-- Configuração de Pirâmide -->
+            <div *ngIf="exerciseToEdit.method === 'pyramid'" class="method-config">
+              <ion-item-divider>
+                <ion-label>Configuração de Pirâmide</ion-label>
+              </ion-item-divider>
+
+              <ion-segment [(ngModel)]="pyramidType" (ionChange)="selectPyramidType(pyramidType)">
+                <ion-segment-button value="crescente">
+                  <ion-label>Crescente</ion-label>
+                </ion-segment-button>
+                <ion-segment-button value="decrescente">
+                  <ion-label>Decrescente</ion-label>
+                </ion-segment-button>
+                <ion-segment-button value="completa">
+                  <ion-label>Completa</ion-label>
+                </ion-segment-button>
+              </ion-segment>
+
+              <div class="pyramid-sets">
+                <ion-list>
+                  <ion-item-divider color="light">
+                    <ion-label>Séries da Pirâmide</ion-label>
+                    <ion-button slot="end" size="small" fill="clear" (click)="addPyramidSet()">
+                      <ion-icon name="add-circle-outline"></ion-icon>
+                    </ion-button>
+                  </ion-item-divider>
+
+                  <ion-item *ngFor="let set of tempMethodConfig.pyramidSets; let i = index">
+                    <ion-grid class="no-padding">
+                      <ion-row>
+                        <ion-col size="2" class="ion-align-self-center">
+                          <ion-label>{{ set.setNumber }}ª</ion-label>
+                        </ion-col>
+                        <ion-col size="4">
+                          <ion-input type="number" label="Peso" labelPlacement="stacked" [(ngModel)]="set.weight" min="0" step="1"></ion-input>
+                        </ion-col>
+                        <ion-col size="4">
+                          <ion-input type="number" label="Reps" labelPlacement="stacked" [(ngModel)]="set.reps" min="1" step="1"></ion-input>
+                        </ion-col>
+                        <ion-col size="2" class="ion-align-self-center">
+                          <ion-button fill="clear" color="danger" (click)="removePyramidSet(i)" *ngIf="tempMethodConfig.pyramidSets && tempMethodConfig.pyramidSets.length > 1">
+                            <ion-icon name="trash-outline"></ion-icon>
+                          </ion-button>
+                        </ion-col>
+                      </ion-row>
+                    </ion-grid>
+                  </ion-item>
+                </ion-list>
+              </div>
+
+              <ion-note class="method-tip">
+                <ion-icon name="information-circle-outline"></ion-icon>
+                <span *ngIf="pyramidType === 'crescente'">
+                  Na pirâmide crescente, você aumenta o peso e diminui as repetições a cada série.
+                </span>
+                <span *ngIf="pyramidType === 'decrescente'">
+                  Na pirâmide decrescente, você começa com o peso máximo e vai diminuindo, aumentando as repetições.
+                </span>
+                <span *ngIf="pyramidType === 'completa'">
+                  Na pirâmide completa, você aumenta o peso até o meio, depois diminui até o final.
+                </span>
+              </ion-note>
+            </div>
+
+            <!-- Configuração de Drop Set -->
+            <div *ngIf="exerciseToEdit.method === 'drop-set'" class="method-config">
+              <ion-item-divider>
+                <ion-label>Configuração de Drop Set</ion-label>
+              </ion-item-divider>
+
+              <div class="drop-sets">
+                <ion-list>
+                  <ion-item-divider color="light">
+                    <ion-label>Séries do Drop Set</ion-label>
+                    <ion-button slot="end" size="small" fill="clear" (click)="addDropSet()">
+                      <ion-icon name="add-circle-outline"></ion-icon>
+                    </ion-button>
+                  </ion-item-divider>
+
+                  <ion-item *ngFor="let set of tempMethodConfig.dropSets; let i = index">
+                    <ion-grid class="no-padding">
+                      <ion-row>
+                        <ion-col size="2" class="ion-align-self-center">
+                          <ion-label>{{ set.setNumber }}º</ion-label>
+                        </ion-col>
+                        <ion-col size="4">
+                          <ion-input type="number" label="Peso" labelPlacement="stacked" [(ngModel)]="set.weight" min="0" step="1"></ion-input>
+                        </ion-col>
+                        <ion-col size="4">
+                          <ion-input type="number" label="Reps" labelPlacement="stacked" [(ngModel)]="set.reps" min="1" step="1"></ion-input>
+                        </ion-col>
+                        <ion-col size="2" class="ion-align-self-center">
+                          <ion-button fill="clear" color="danger" (click)="removeDropSet(i)" *ngIf="tempMethodConfig.dropSets && tempMethodConfig.dropSets.length > 1">
+                            <ion-icon name="trash-outline"></ion-icon>
+                          </ion-button>
+                        </ion-col>
+                      </ion-row>
+                    </ion-grid>
+                  </ion-item>
+                </ion-list>
+              </div>
+
+              <ion-note class="method-tip">
+                <ion-icon name="information-circle-outline"></ion-icon>
+                <span>
+                  No Drop Set, você realiza o exercício até a falha, depois reduz o peso imediatamente sem descanso e continua.
+                </span>
+              </ion-note>
+            </div>
+
+            <!-- Configuração de Rest Pause -->
+            <div *ngIf="exerciseToEdit.method === 'rest-pause'" class="method-config">
+              <ion-item-divider>
+                <ion-label>Configuração de Rest Pause</ion-label>
+              </ion-item-divider>
+
+              <ion-list>
+                <ion-item *ngFor="let set of tempMethodConfig.restPauseSets; let i = index">
+                  <ion-grid class="no-padding">
+                    <ion-row>
+                      <ion-col size="2" class="ion-align-self-center">
+                        <ion-label>{{ set.setNumber }}ª</ion-label>
+                      </ion-col>
+                      <ion-col size="3">
+                        <ion-input type="number" label="Peso" labelPlacement="stacked" [(ngModel)]="set.weight" min="0" step="1"></ion-input>
+                      </ion-col>
+                      <ion-col size="3">
+                        <ion-input type="number" label="Reps" labelPlacement="stacked" [(ngModel)]="set.reps" min="1" step="1"></ion-input>
+                      </ion-col>
+                      <ion-col size="3">
+                        <ion-input type="number" label="Pausa(s)" labelPlacement="stacked" [(ngModel)]="set.pauseTime" min="5" step="5"></ion-input>
+                      </ion-col>
+                    </ion-row>
+                  </ion-grid>
+                </ion-item>
+              </ion-list>
+
+              <ion-note class="method-tip">
+                <ion-icon name="information-circle-outline"></ion-icon>
+                <span>
+                  No Rest Pause, você faz repetições até a falha, descansa brevemente (10-15s) e continua com o mesmo peso.
+                </span>
+              </ion-note>
+            </div>
+
+            <ion-item *ngIf="exerciseToEdit.method != 'normal' && exerciseToEdit.method && !['pyramid', 'drop-set', 'rest-pause'].includes(exerciseToEdit.method)" class="method-note">
               <ion-label class="ion-text-wrap">
                 <h3>Dica para {{ getMethodName(exerciseToEdit.method) }}:</h3>
                 <p>{{ getMethodDescription(exerciseToEdit.method) }}</p>

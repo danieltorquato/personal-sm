@@ -33,6 +33,16 @@ class AuthHelper {
             }
         }
 
+        // Forma alternativa de obter o cabeçalho
+        if (!$headers && function_exists('getallheaders')) {
+            $allHeaders = getallheaders();
+            if (isset($allHeaders['Authorization'])) {
+                $headers = trim($allHeaders['Authorization']);
+            } else if (isset($allHeaders['authorization'])) {
+                $headers = trim($allHeaders['authorization']);
+            }
+        }
+
         if (!empty($headers) && preg_match('/Bearer\s+(.*)$/i', $headers, $matches)) {
             return $matches[1];
         }
@@ -72,7 +82,8 @@ class AuthHelper {
                 'id' => $payload['user_id'] ?? null,
                 'email' => $payload['email'] ?? null,
                 'name' => $payload['name'] ?? null,
-                'role' => $payload['role'] ?? null
+                'role' => $payload['role'] ?? null,
+                'type_name' => $payload['role'] ?? null // Adicionado type_name como alias para role
             ];
 
         } catch (Exception $e) {

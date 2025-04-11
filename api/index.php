@@ -110,6 +110,31 @@ try {
                 case 'session':
                     echo $controller->getWorkoutSession();
                     break;
+                case 'delete':
+                    echo $controller->deleteWorkout();
+                    break;
+                case 'add-exercise':
+                    echo $controller->addExercise();
+                    break;
+                case 'update-exercise':
+                    echo $controller->updateExercise();
+                    break;
+                case 'remove-exercise':
+                    echo $controller->removeExercise();
+                    break;
+                default:
+                    echo ApiResponse::notFound("Ação não encontrada");
+            }
+            break;
+
+        case 'exercises':
+            require_once "controllers/WorkoutController.php";
+            $controller = new WorkoutController($db);
+
+            switch ($action) {
+                case 'list':
+                    echo $controller->getAllExercises();
+                    break;
                 default:
                     echo ApiResponse::notFound("Ação não encontrada");
             }

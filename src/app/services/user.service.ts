@@ -3,12 +3,23 @@ import { ApiService } from './api.service';
 import { Observable } from 'rxjs';
 import { User } from '../Models/user.model';
 import { ApiResponse } from '../Models/workout.model';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { environment } from '../../environments/environment';
+import { AuthService } from './auth.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class UserService {
-  constructor(private apiService: ApiService) { }
+  private apiUrl = environment.apiUrl;
+
+  constructor(
+    private apiService: ApiService,
+    private http: HttpClient,
+    private authService: AuthService
+  ) { }
+
+
 
   /**
    * Lista todos os personais disponíveis
@@ -82,4 +93,6 @@ export class UserService {
   deleteStudent(studentId: number): Observable<ApiResponse<any>> {
     return this.apiService.delete<ApiResponse<any>>(`students/${studentId}`);
   }
+
+
 }
