@@ -851,7 +851,7 @@ export class CreateWorkoutPage implements OnInit {
     // Verificar se há exercícios antes de ativar o modo de reordenação
     const exercisesCount = this.getExercisesForCurrentPart().length;
     if (exercisesCount === 0 && !this.reorderMode) {
-      this.presentToast('Adicione exercícios para poder reordená-los', 'warning');
+      this.presentToast('Adicione exercícios para reordená-los', 'warning');
       return;
     }
 
