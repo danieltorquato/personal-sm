@@ -34,7 +34,9 @@ class WorkoutController {
         $this->workout->type = $data->type;
         $this->workout->notes = $data->notes ?? '';
 
-        echo json_encode($data);
+        // Adicionar dados de duração
+        $this->workout->duration = $data->duration ?? null;
+        $this->workout->durationUnit = $data->durationUnit ?? null;
 
         // Tentar criar treino
         $workout_id = $this->workout->create();
@@ -94,6 +96,10 @@ class WorkoutController {
         $this->workout->type = $data->type ?? $this->workout->type;
         $this->workout->notes = $data->notes ?? $this->workout->notes;
 
+        // Atualizar dados de duração
+        $this->workout->duration = $data->duration ?? $this->workout->duration;
+        $this->workout->durationUnit = $data->durationUnit ?? $this->workout->durationUnit;
+
         // Tentar atualizar treino
         if($this->workout->update()) {
             return ApiResponse::success("Treino atualizado com sucesso");
@@ -119,6 +125,13 @@ class WorkoutController {
             return ApiResponse::unauthorized("Token inválido ou expirado");
         }
 
+        // Obter ID do treino da URL
+        $id = isset($_GET['id']) ? $_GET['id'] : null;
+
+        if(!$id) {
+            return ApiResponse::error("ID do treino não fornecido");
+        }
+
         // Obter treino
         $this->workout->id = $id;
         if($this->workout->readOne()) {
@@ -139,10 +152,6 @@ class WorkoutController {
             ];
 
             return ApiResponse::success("Exercício obtido com sucesso", $workout_data);
-
-
-
-
         } else {
             return ApiResponse::notFound("Exercícios não encontrado");
         }
@@ -451,6 +460,33 @@ class WorkoutController {
             return ApiResponse::success("Sessão de treino iniciada com sucesso", ["session_id" => $session_id]);
         } else {
             return ApiResponse::serverError("Erro ao iniciar sessão de treino");
+        }
+    }
+
+    // Verificar se um aluno possui treinos ativos
+    public function checkActiveWorkouts() {
+        // Verificar autenticação
+        $user_data = $this->authHelper->getUserFromToken();
+
+        if(!$user_data) {
+            return ApiResponse::unauthorized("Token inválido ou expirado");
+        }
+
+        // Obter ID do aluno da URL
+        $student_id = isset($_GET['student_id']) ? $_GET['student_id'] : null;
+
+        if(!$student_id) {
+            return ApiResponse::error("ID do aluno é obrigatório");
+        }
+
+        try {
+            // Verificar se há treinos ativos para o aluno
+            $stmt = $this->workout->getAssignedWorkouts($student_id, null, 'ativo');
+            $hasActiveWorkout = $stmt->rowCount() > 0;
+
+            return ApiResponse::success("Verificação concluída", ["hasActiveWorkout" => $hasActiveWorkout]);
+        } catch (Exception $e) {
+            return ApiResponse::serverError("Erro ao verificar treinos ativos: " . $e->getMessage());
         }
     }
 

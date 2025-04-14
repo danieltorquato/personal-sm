@@ -181,6 +181,11 @@ export class WorkoutService {
     return this.http.get(url);
   }
 
+  // Verificar se um aluno tem treinos ativos
+  checkActiveWorkouts(studentId: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/workouts/check-active?student_id=${studentId}`);
+  }
+
   // Excluir um treino
   deleteWorkout(id: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/workouts/delete?id=${id}`);

@@ -133,6 +133,9 @@ export class CreateWorkoutPage implements OnInit {
   showExerciseInfoModal = false;
   showEditExerciseModal = false;
 
+  // Para manter referência ao índice do exercício sendo editado
+  selectedExerciseIndex: number | null = null;
+
   // Controle de reordenação de exercícios
   reorderMode: boolean = false;
 
@@ -157,7 +160,6 @@ export class CreateWorkoutPage implements OnInit {
 
   // Adicionar controle para modal de edição
   exerciseToEdit: WorkoutExercise | null = null;
-  exerciseIndexToEdit: number = -1;
 
   pyramidType: string = 'crescente'; // crescente, decrescente, completa
 
@@ -172,6 +174,8 @@ export class CreateWorkoutPage implements OnInit {
     notes: '',
     workoutDivision: 'unico',
     level: 'intermediario',
+    duration: 4,
+    durationUnit: 'semanas',
     exercises: {
       A: [] as WorkoutExercise[],
       B: [] as WorkoutExercise[],
@@ -182,6 +186,7 @@ export class CreateWorkoutPage implements OnInit {
   };
 
   currentWorkoutPart: string = 'A';
+  isEditMode: boolean = false;
 
   // Propriedade para controle de foco da searchbar
   isFocused: boolean = false;
@@ -223,6 +228,7 @@ export class CreateWorkoutPage implements OnInit {
       if (params['studentId']) {
         this.studentId = +params['studentId'];
         this.loadStudentDetails();
+        this.checkForActiveWorkouts(); // Verificar se já existe treino ativo
       }
     });
 
@@ -259,6 +265,51 @@ export class CreateWorkoutPage implements OnInit {
       this.handleError('Erro ao carregar detalhes do aluno');
     }
   }
+
+  // Método para verificar se o aluno já possui um treino ativo
+  async checkForActiveWorkouts() {
+    if (!this.studentId) return;
+
+    try {
+      const response = await this.workoutService.checkActiveWorkouts(this.studentId).toPromise();
+
+      if (response && response.status === 'success' && response.data && response.data.hasActiveWorkout) {
+        // Aluno tem treino ativo, mostrar alerta
+        this.showActiveWorkoutAlert();
+      }
+    } catch (error) {
+      console.error('Erro ao verificar treinos ativos:', error);
+      // Não bloqueamos a criação em caso de erro, apenas logamos
+    }
+  }
+
+  // Exibir alerta sobre treino ativo existente
+  async showActiveWorkoutAlert() {
+    const alert = await this.alertCtrl.create({
+      header: 'Treino Ativo Existente',
+      message: 'Este aluno já possui um treino ativo. Deseja realmente criar um novo treino?',
+      buttons: [
+        {
+          text: 'Não',
+          role: 'cancel',
+          handler: () => {
+            // Voltar para a página de gerenciamento de alunos
+            this.router.navigate(['/personal/manage-students']);
+          }
+        },
+        {
+          text: 'Sim',
+          handler: () => {
+            // Continuar com a criação do treino
+            console.log('Continuando com a criação do novo treino');
+          }
+        }
+      ]
+    });
+
+    await alert.present();
+  }
+
   handleError(message: string) {
     this.error = true;
     this.loading = false;
@@ -274,6 +325,7 @@ export class CreateWorkoutPage implements OnInit {
   }
 
   async loadExercises() {
+    console.log('Iniciando carregamento de exercícios');
     const loading = await this.loadingCtrl.create({
       message: 'Carregando exercícios...'
     });
@@ -287,6 +339,7 @@ export class CreateWorkoutPage implements OnInit {
           image: exercise.image_path,
           video: exercise.video_path
         }));
+        this.filterExercisesByCategory(this.selectedCategory);
       }
     } catch (error) {
       console.error('Erro ao carregar exercícios:', error);
@@ -331,13 +384,16 @@ export class CreateWorkoutPage implements OnInit {
 
   // Filtrar exercícios por categoria
   filterExercisesByCategory(categoryId: string) {
+    console.log('Filtrando exercícios por categoria:', categoryId);
     this.filteredExercises = this.exercises.filter(exercise =>
       exercise.category.toLowerCase() === categoryId.toLowerCase()
     );
+    console.log('Exercícios filtrados:', this.filteredExercises);
   }
 
   // Filtrar exercícios por termo de busca
   filterExercises() {
+    console.log('Termo de busca:', this.exerciseSearchTerm);
     if (this.exerciseSearchTerm.trim() === '') {
       this.filterExercisesByCategory(this.selectedCategory);
     } else {
@@ -348,6 +404,7 @@ export class CreateWorkoutPage implements OnInit {
          exercise.muscles?.toLowerCase().includes(searchTerm) ||
          exercise.description?.toLowerCase().includes(searchTerm))
       );
+      console.log('Resultados da busca:', this.filteredExercises);
     }
   }
 
@@ -422,32 +479,49 @@ export class CreateWorkoutPage implements OnInit {
     this.presentToast(`Exercício "${exercise.name}" adicionado ao treino ${this.currentWorkoutPart}`, 'success');
   }
 
-  // Adicionar exercício ao treino com detalhes personalizados
+  // Adicionar exercício ao treino
   addExerciseToWorkout() {
-    if (!this.selectedExercise) return;
+    console.log('Adicionando exercício ao treino:', this.selectedExercise);
+    console.log('Configuração do exercício:', this.exerciseToAdd);
+    console.log('Parte atual do treino:', this.currentWorkoutPart);
 
-    const newExercise: WorkoutExercise = {
-      ...this.selectedExercise,
-      sets: this.exerciseToAdd.sets || 3,
-      reps: this.exerciseToAdd.reps || 12,
-      weight: this.exerciseToAdd.weight || 0,
-      rest: this.exerciseToAdd.rest || 60,
-      notes: this.exerciseToAdd.notes || '',
-      method: this.exerciseToAdd.method || 'normal'
-    };
+    if (this.selectedExercise) {
+      const exerciseToAdd: WorkoutExercise = {
+        ...this.selectedExercise,
+        sets: this.exerciseToAdd.sets || 3,
+        reps: this.exerciseToAdd.reps || 12,
+        weight: this.exerciseToAdd.weight || 0,
+        rest: this.exerciseToAdd.rest || 60,
+        notes: this.exerciseToAdd.notes || '',
+        method: this.exerciseToAdd.method || 'normal',
+        methodConfig: this.exerciseToAdd.method !== 'normal' ? this.tempMethodConfig : undefined
+      };
 
-    this.workout.exercises[this.currentWorkoutPart as keyof typeof this.workout.exercises].push(newExercise);
-    this.showExerciseInfoModal = false;
-    this.showExerciseModal = false;
-    this.presentToast(`Exercício "${newExercise.name}" adicionado ao treino ${this.currentWorkoutPart}`, 'success');
+      // Adicionar à parte atual do treino
+      this.workout.exercises[this.currentWorkoutPart as keyof typeof this.workout.exercises].push(exerciseToAdd);
+
+      console.log('Exercício adicionado com sucesso');
+      console.log('Estado atual do treino:', this.workout);
+
+      // Fechar modal e resetar form
+      this.showExerciseModal = false;
+      this.resetExerciseForm();
+      this.exerciseSearchTerm = '';
+      this.presentToast(`Exercício "${this.selectedExercise.name}" adicionado ao treino ${this.currentWorkoutPart}`, 'success');
+      this.selectedExercise = null;
+    }
   }
 
   // Remover exercício do treino
-  removeExercise(index: number, event: Event) {
-    event.stopPropagation();
-    this.alertCtrl.create({
+  async removeExercise(index: number) {
+    console.log('Removendo exercício no índice:', index);
+    console.log('Parte atual do treino:', this.currentWorkoutPart);
+
+    const exerciseToRemove = this.workout.exercises[this.currentWorkoutPart as keyof typeof this.workout.exercises][index];
+
+    const alert = await this.alertCtrl.create({
       header: 'Confirmar remoção',
-      message: 'Tem certeza que deseja remover este exercício?',
+      message: `Deseja remover o exercício "${exerciseToRemove.name}" do treino?`,
       buttons: [
         {
           text: 'Cancelar',
@@ -457,17 +531,25 @@ export class CreateWorkoutPage implements OnInit {
           text: 'Remover',
           handler: () => {
             this.workout.exercises[this.currentWorkoutPart as keyof typeof this.workout.exercises].splice(index, 1);
-            this.presentToast('Exercício removido com sucesso', 'success');
+            console.log('Exercício removido. Estado atual do treino:', this.workout);
+            this.presentToast(`Exercício "${exerciseToRemove.name}" removido do treino`, 'success');
           }
         }
       ]
-    }).then(alert => alert.present());
+    });
+
+    await alert.present();
   }
 
   // Método para abrir o modal de edição de exercício existente
   editExistingExercise(exercise: WorkoutExercise, index: number) {
+    console.log('Editando exercício:', exercise);
+    console.log('Índice do exercício:', index);
+    console.log('Parte atual do treino:', this.currentWorkoutPart);
+
     // Criar uma cópia do exercício para edição
     this.exerciseToEdit = { ...exercise };
+    this.selectedExerciseIndex = index;
 
     // Se o método não estiver definido, definir como 'normal'
     if (!this.exerciseToEdit.method) {
@@ -485,7 +567,19 @@ export class CreateWorkoutPage implements OnInit {
     // Inicializar configurações para métodos específicos se necessário
     this.initializeMethodConfig(this.exerciseToEdit.method);
 
-    this.exerciseIndexToEdit = index;
+    // Configurar o exercício para edição
+    this.exerciseToAdd = {
+      sets: exercise.sets,
+      reps: exercise.reps,
+      weight: exercise.weight,
+      rest: exercise.rest,
+      notes: exercise.notes,
+      method: exercise.method || 'normal'
+    };
+
+    console.log('Configurações para edição:', this.exerciseToAdd);
+
+    // Mostrar o modal de edição
     this.showEditExerciseModal = true;
   }
 
@@ -657,24 +751,40 @@ export class CreateWorkoutPage implements OnInit {
   // Método para fechar o modal de edição
   closeEditExerciseModal() {
     this.showEditExerciseModal = false;
+    this.selectedExerciseIndex = null;
     this.exerciseToEdit = null;
-    this.exerciseIndexToEdit = -1;
+    this.resetExerciseForm();
   }
 
-  // Método para salvar as alterações do exercício
+  // Método para salvar a edição de um exercício
   saveExerciseEdit() {
-    if (!this.exerciseToEdit || this.exerciseIndexToEdit < 0) {
-      return;
+    console.log('Salvando edição de exercício no índice:', this.selectedExerciseIndex);
+
+    if (this.selectedExerciseIndex !== null && this.exerciseToEdit) {
+      // Atualizar o exercício com os valores editados
+      const updatedExercise: WorkoutExercise = {
+        ...this.exerciseToEdit,
+        sets: Number(this.exerciseToAdd.sets || 3),
+        reps: Number(this.exerciseToAdd.reps || 12),
+        weight: Number(this.exerciseToAdd.weight || 0),
+        rest: Number(this.exerciseToAdd.rest || 60),
+        notes: this.exerciseToAdd.notes || '',
+        method: this.exerciseToAdd.method || 'normal',
+        methodConfig: this.exerciseToAdd.method !== 'normal' ? this.tempMethodConfig : undefined
+      };
+
+      console.log('Exercício atualizado:', updatedExercise);
+
+      // Atualizar o exercício na lista
+      this.workout.exercises[this.currentWorkoutPart as keyof typeof this.workout.exercises][this.selectedExerciseIndex] = updatedExercise;
+
+      // Fechar o modal e mostrar mensagem
+      this.showEditExerciseModal = false;
+      this.selectedExerciseIndex = null;
+      this.exerciseToEdit = null;
+      this.resetExerciseForm();
+      this.presentToast('Exercício atualizado com sucesso', 'success');
     }
-
-    // Salvar a configuração do método
-    this.saveMethodConfig();
-
-    // Atualizar o exercício na lista
-    this.workout.exercises[this.currentWorkoutPart as keyof typeof this.workout.exercises][this.exerciseIndexToEdit] = { ...this.exerciseToEdit };
-
-    this.closeEditExerciseModal();
-    this.presentToast('Exercício atualizado com sucesso', 'success');
   }
 
   // Atualizar divisão de treino
@@ -752,14 +862,19 @@ export class CreateWorkoutPage implements OnInit {
     event.target.src = 'assets/images/photo/default-user.png';
   }
 
-  // Salvar o treino completo
+  // Método para salvar o treino
   async saveWorkout() {
+    console.log('Iniciando salvamento do treino');
+    console.log('Dados do treino a serem salvos:', this.workout);
+
     // Validação básica
     if (!this.workout.name) {
+      console.error('Validação falhou: Nome do treino não definido');
       return this.presentToast('Por favor, defina um nome para o treino.', 'warning');
     }
 
     if (this.getExercisesForCurrentPart().length === 0 && this.workout.workoutDivision === 'unico') {
+      console.error('Validação falhou: Treino não tem exercícios');
       return this.presentToast('Adicione pelo menos um exercício ao treino.', 'warning');
     }
 
@@ -768,6 +883,7 @@ export class CreateWorkoutPage implements OnInit {
       const parts = this.workout.workoutDivision.split('-');
       for (const part of parts) {
         if (this.workout.exercises[part as keyof typeof this.workout.exercises].length === 0) {
+          console.error(`Validação falhou: Parte ${part} não tem exercícios`);
           return this.presentToast(`Adicione pelo menos um exercício ao Treino ${part}.`, 'warning');
         }
       }
@@ -785,8 +901,12 @@ export class CreateWorkoutPage implements OnInit {
         name: this.workout.name,
         type: this.workout.type,
         notes: this.workout.notes,
+        duration: this.workout.duration,
+        durationUnit: this.workout.durationUnit,
         exercises: []
       };
+
+      console.log('Dados preparados para API:', workoutData);
 
       // Adicionar todos os exercícios de todas as partes relevantes
       const parts = this.workout.workoutDivision === 'unico'
@@ -795,6 +915,8 @@ export class CreateWorkoutPage implements OnInit {
 
       for (const part of parts) {
         const exercises = this.workout.exercises[part as keyof typeof this.workout.exercises];
+        console.log(`Processando exercícios da parte ${part}:`, exercises.length);
+
         for (const exercise of exercises) {
           workoutData.exercises.push({
             exercise_id: exercise.id,
@@ -809,6 +931,7 @@ export class CreateWorkoutPage implements OnInit {
       }
 
       // Enviar para a API - O serviço agora lida com o problema de formatação JSON
+      console.log('Enviando dados para a API:', workoutData);
       const response = await this.workoutService.createWorkout(workoutData).toPromise();
 
       console.log('Resposta processada:', response);
@@ -825,6 +948,7 @@ export class CreateWorkoutPage implements OnInit {
           }
         }, 1500);
       } else {
+        console.error('Erro ao salvar treino: Resposta inválida do servidor');
         this.presentToast('Erro ao salvar o treino. Resposta inválida do servidor.', 'danger');
       }
     } catch (error) {
@@ -883,6 +1007,41 @@ export class CreateWorkoutPage implements OnInit {
 
     // Exibir mensagem de confirmação
     this.presentToast('Ordem dos exercícios atualizada', 'success');
+  }
+
+  // Resetar formulário de exercício
+  resetExerciseForm() {
+    this.exerciseToAdd = {
+      sets: 3,
+      reps: 12,
+      weight: 0,
+      rest: 60,
+      notes: '',
+      method: 'normal'
+    };
+    this.tempMethodConfig = {};
+    this.selectedExercise = null;
+  }
+
+  // Verificar se o treino tem exercícios
+  hasExercises(): boolean {
+    if (this.workout.workoutDivision === 'unico') {
+      return this.workout.exercises.A.length > 0;
+    } else {
+      const parts = this.workout.workoutDivision.split('-');
+      for (const part of parts) {
+        if (this.workout.exercises[part as keyof typeof this.workout.exercises].length === 0) {
+          return false;
+        }
+      }
+      return true;
+    }
+  }
+
+  // Verificar se o treino de ciclo tem exercícios configurados
+  hasCycleSets(): boolean {
+    // Implementação simplificada - ajuste conforme necessário
+    return true;
   }
 }
 

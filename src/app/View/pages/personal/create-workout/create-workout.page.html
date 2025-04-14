@@ -49,6 +49,22 @@
       </ion-item>
 
       <ion-item>
+        <ion-label>Duração do Treino</ion-label>
+        <ion-row class="duration-container">
+          <ion-col size="6">
+            <ion-input type="number" [(ngModel)]="workout.duration" placeholder="Duração" min="1" class="duration-input" inputmode="numeric"></ion-input>
+          </ion-col>
+          <ion-col size="6">
+            <ion-select [(ngModel)]="workout.durationUnit" interface="popover" class="duration-select">
+              <ion-select-option value="dias">Dias</ion-select-option>
+              <ion-select-option value="semanas">Semanas</ion-select-option>
+              <ion-select-option value="meses">Meses</ion-select-option>
+            </ion-select>
+          </ion-col>
+        </ion-row>
+      </ion-item>
+
+      <ion-item>
         <ion-label>Nível de Dificuldade</ion-label>
         <ion-select [(ngModel)]="workout.level" interface="popover">
           <ion-select-option value="iniciante">Iniciante</ion-select-option>
@@ -125,7 +141,7 @@
                 </p>
               </ion-label>
               <ion-buttons slot="end" *ngIf="!reorderMode">
-                <ion-button (click)="removeExercise(i, $event)">
+                <ion-button (click)="removeExercise(i)">
                   <ion-icon slot="icon-only" name="trash-outline" color="danger"></ion-icon>
                 </ion-button>
               </ion-buttons>
@@ -637,3 +653,16 @@
     </ion-content>
   </ng-template>
 </ion-modal>
+
+<!-- Botão de salvar e editar treino -->
+<ion-button
+  expand="block"
+  (click)="saveWorkout()"
+  [disabled]="workout?.name?.length == 0 ||
+              (workout?.type != 'cycle' && !hasExercises()) ||
+              (workout?.type === 'cycle' && !hasCycleSets())"
+  class="submit-button"
+  #saveButton>
+    <ion-icon name="save-outline" slot="start"></ion-icon>
+    {{ isEditMode ? 'Salvar alterações' : 'Criar treino' }}
+</ion-button>

@@ -12,6 +12,9 @@ class Workout {
     public $name;
     public $type;
     public $notes;
+    public $duration;
+    public $durationUnit;
+    public $validate_to;
     public $created_at;
 
     // Construtor
@@ -21,11 +24,17 @@ class Workout {
 
     // Criar um novo treino
     public function create() {
+        // Calcular a data de validade (validate_to) baseada na duração
+        $validate_to = null;
+        if ($this->duration && $this->durationUnit) {
+            $validate_to = $this->calculateValidateToDate($this->duration, $this->durationUnit);
+        }
+
         // Query para inserir
         $query = "INSERT INTO " . $this->table_name . "
-                 (user_id, name, type, notes)
+                 (user_id, name, type, notes, duration, duration_unit, validate_to)
                  VALUES
-                 (:user_id, :name, :type, :notes)";
+                 (:user_id, :name, :type, :notes, :duration, :duration_unit, :validate_to)";
 
         // Preparar a query
         $stmt = $this->conn->prepare($query);
@@ -35,12 +44,17 @@ class Workout {
         $this->name = htmlspecialchars(strip_tags($this->name));
         $this->type = htmlspecialchars(strip_tags($this->type));
         $this->notes = htmlspecialchars(strip_tags($this->notes));
+        $this->duration = $this->duration ? htmlspecialchars(strip_tags($this->duration)) : null;
+        $this->durationUnit = $this->durationUnit ? htmlspecialchars(strip_tags($this->durationUnit)) : null;
 
         // Vincular
         $stmt->bindParam(":user_id", $this->user_id);
         $stmt->bindParam(":name", $this->name);
         $stmt->bindParam(":type", $this->type);
         $stmt->bindParam(":notes", $this->notes);
+        $stmt->bindParam(":duration", $this->duration);
+        $stmt->bindParam(":duration_unit", $this->durationUnit);
+        $stmt->bindParam(":validate_to", $validate_to);
 
         // Executar
         if($stmt->execute()) {
@@ -50,11 +64,40 @@ class Workout {
         return false;
     }
 
+    // Método auxiliar para calcular a data de validade
+    private function calculateValidateToDate($duration, $durationUnit) {
+        $today = new \DateTime();
+
+        switch ($durationUnit) {
+            case 'dias':
+                $today->add(new \DateInterval("P{$duration}D"));
+                break;
+            case 'semanas':
+                $today->add(new \DateInterval("P{$duration}W"));
+                break;
+            case 'meses':
+                $today->add(new \DateInterval("P{$duration}M"));
+                break;
+            default:
+                // Padrão: adicionar dias
+                $today->add(new \DateInterval("P{$duration}D"));
+        }
+
+        return $today->format('Y-m-d H:i:s');
+    }
+
     // Atualizar um treino
     public function update() {
+        // Calcular a data de validade (validate_to) baseada na duração, se fornecida
+        $validate_to = null;
+        if ($this->duration && $this->durationUnit) {
+            $validate_to = $this->calculateValidateToDate($this->duration, $this->durationUnit);
+        }
+
         // Query para atualizar
         $query = "UPDATE " . $this->table_name . "
-                 SET user_id = :user_id, name = :name, type = :type, notes = :notes
+                 SET user_id = :user_id, name = :name, type = :type, notes = :notes,
+                 duration = :duration, duration_unit = :duration_unit, validate_to = :validate_to
                  WHERE id = :id";
 
         // Preparar a query
@@ -66,6 +109,8 @@ class Workout {
         $this->name = htmlspecialchars(strip_tags($this->name));
         $this->type = htmlspecialchars(strip_tags($this->type));
         $this->notes = htmlspecialchars(strip_tags($this->notes));
+        $this->duration = $this->duration ? htmlspecialchars(strip_tags($this->duration)) : null;
+        $this->durationUnit = $this->durationUnit ? htmlspecialchars(strip_tags($this->durationUnit)) : null;
 
         // Vincular
         $stmt->bindParam(":id", $this->id);
@@ -73,6 +118,9 @@ class Workout {
         $stmt->bindParam(":name", $this->name);
         $stmt->bindParam(":type", $this->type);
         $stmt->bindParam(":notes", $this->notes);
+        $stmt->bindParam(":duration", $this->duration);
+        $stmt->bindParam(":duration_unit", $this->durationUnit);
+        $stmt->bindParam(":validate_to", $validate_to);
 
         // Executar
         if($stmt->execute()) {
