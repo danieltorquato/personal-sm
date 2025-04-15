@@ -1,0 +1,86 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar color="dark" class="transparent-toolbar">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/exercises" text=""></ion-back-button>
+    </ion-buttons>
+    <ion-title class="animate__animated animate__fadeInDown">Detalhes do Exercício</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div *ngIf="selectedExercise" class="exercise-info">
+    <h1 class="ion-text-center animate__animated animate__fadeIn">{{ selectedExercise.name }}</h1>
+
+    <div class="exercise-media ion-margin-vertical animate__animated animate__fadeIn animate__delay-1s">
+      <img *ngIf="selectedExercise.image" [src]="selectedExercise.image" alt="{{ selectedExercise.name }}">
+      <video *ngIf="selectedExercise.video" controls>
+        <source [src]="selectedExercise.video" type="video/mp4">
+        Seu navegador não suporta a reprodução de vídeos.
+      </video>
+      <div *ngIf="!selectedExercise.image && !selectedExercise.video" class="no-media">
+        <ion-icon name="fitness-outline" color="medium"></ion-icon>
+      </div>
+    </div>
+
+    <ion-list lines="full" class="animate__animated animate__fadeIn animate__delay-2s">
+      <ion-item class="category-item">
+        <ion-label>
+          <h2>Categoria</h2>
+          <p>{{ getCategoryName(selectedExercise.category) }}</p>
+        </ion-label>
+        <ion-icon name="barbell-outline" slot="start" color="primary"></ion-icon>
+      </ion-item>
+
+      <ion-item>
+        <ion-label class="ion-text-wrap">
+          <h2>Descrição</h2>
+          <p>{{ selectedExercise.description || 'Sem descrição disponível' }}</p>
+        </ion-label>
+        <ion-icon name="information-circle-outline" slot="start" color="primary"></ion-icon>
+      </ion-item>
+
+      <ion-item>
+        <ion-label>
+          <h2>Músculos trabalhados</h2>
+          <p>{{ selectedExercise.muscles || 'Informação não disponível' }}</p>
+        </ion-label>
+        <ion-icon name="body-outline" slot="start" color="primary"></ion-icon>
+      </ion-item>
+
+      <ion-item>
+        <ion-label class="ion-text-wrap">
+          <h2>Instruções</h2>
+          <p>{{ selectedExercise.instructions || 'Sem instruções detalhadas' }}</p>
+        </ion-label>
+        <ion-icon name="list-outline" slot="start" color="primary"></ion-icon>
+      </ion-item>
+
+      <ion-item *ngIf="selectedExercise.sets">
+        <ion-label>
+          <h2>Séries</h2>
+          <p>{{ selectedExercise.sets }}</p>
+        </ion-label>
+        <ion-icon name="repeat-outline" slot="start" color="primary"></ion-icon>
+      </ion-item>
+
+      <ion-item *ngIf="selectedExercise.reps">
+        <ion-label>
+          <h2>Repetições</h2>
+          <p>{{ selectedExercise.reps }}</p>
+        </ion-label>
+        <ion-icon name="sync-outline" slot="start" color="primary"></ion-icon>
+      </ion-item>
+    </ion-list>
+  </div>
+
+  <div *ngIf="!selectedExercise && loading" class="loading-container animate__animated animate__fadeIn">
+    <ion-spinner name="crescent" color="primary"></ion-spinner>
+    <p>Carregando informações do exercício...</p>
+  </div>
+
+  <div *ngIf="!selectedExercise && !loading" class="error-container animate__animated animate__fadeIn">
+    <ion-icon name="alert-circle-outline" color="danger"></ion-icon>
+    <h2>Exercício não encontrado</h2>
+    <p>Não foi possível carregar as informações deste exercício.</p>
+  </div>
+</ion-content>

@@ -86,6 +86,10 @@ export const routes: Routes = [
       {
         path: 'student-details/:id',
         loadComponent: () => import('./View/pages/personal/student-details/student-details.page').then( m => m.StudentDetailsPage)
+      },
+      {
+        path: 'view-training-student/:id',
+        loadComponent: () => import('./View/pages/personal/view-training-student/view-training-student.page').then( m => m.ViewTrainingStudentPage)
       }
     ]
   },
@@ -130,10 +134,12 @@ export const routes: Routes = [
     loadComponent: () => import('./View/pages/shared/anamnesis/anamnesis.page').then( m => m.AnamnesisPage)
   },
   {
+    path: 'exercise-info/:id',
+    loadComponent: () => import('./View/pages/shared/exercise-info/exercise-info.page').then( m => m.ExerciseInfoPage)
+  },
+  {
     path: '**',
     redirectTo: 'login'
   },
-
-
 
 ];

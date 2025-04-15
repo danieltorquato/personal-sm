@@ -228,7 +228,6 @@ export class CreateWorkoutPage implements OnInit {
       if (params['studentId']) {
         this.studentId = +params['studentId'];
         this.loadStudentDetails();
-        this.checkForActiveWorkouts(); // Verificar se já existe treino ativo
       }
     });
 
@@ -265,51 +264,6 @@ export class CreateWorkoutPage implements OnInit {
       this.handleError('Erro ao carregar detalhes do aluno');
     }
   }
-
-  // Método para verificar se o aluno já possui um treino ativo
-  async checkForActiveWorkouts() {
-    if (!this.studentId) return;
-
-    try {
-      const response = await this.workoutService.checkActiveWorkouts(this.studentId).toPromise();
-
-      if (response && response.status === 'success' && response.data && response.data.hasActiveWorkout) {
-        // Aluno tem treino ativo, mostrar alerta
-        this.showActiveWorkoutAlert();
-      }
-    } catch (error) {
-      console.error('Erro ao verificar treinos ativos:', error);
-      // Não bloqueamos a criação em caso de erro, apenas logamos
-    }
-  }
-
-  // Exibir alerta sobre treino ativo existente
-  async showActiveWorkoutAlert() {
-    const alert = await this.alertCtrl.create({
-      header: 'Treino Ativo Existente',
-      message: 'Este aluno já possui um treino ativo. Deseja realmente criar um novo treino?',
-      buttons: [
-        {
-          text: 'Não',
-          role: 'cancel',
-          handler: () => {
-            // Voltar para a página de gerenciamento de alunos
-            this.router.navigate(['/personal/manage-students']);
-          }
-        },
-        {
-          text: 'Sim',
-          handler: () => {
-            // Continuar com a criação do treino
-            console.log('Continuando com a criação do novo treino');
-          }
-        }
-      ]
-    });
-
-    await alert.present();
-  }
-
   handleError(message: string) {
     this.error = true;
     this.loading = false;

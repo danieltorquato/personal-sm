@@ -1,0 +1,147 @@
+// Estilos para o container de carregamento
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+
+  ion-spinner {
+    margin-bottom: 16px;
+  }
+
+  p {
+    color: var(--ion-color-medium);
+  }
+}
+
+// Estilo para a informação de data
+.date-info {
+  display: flex;
+  align-items: center;
+  padding: 8px 0;
+  color: #aaa;
+  font-size: 14px;
+  margin-bottom: 8px;
+
+  ion-icon {
+    margin-right: 8px;
+    color: #9D7B3A;
+  }
+
+  span {
+    color: #aaa;
+  }
+}
+
+// Estilos para o estado vazio
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 32px 16px;
+  margin-top: 32px;
+
+  .empty-icon {
+    font-size: 64px;
+    color: var(--ion-color-medium);
+    margin-bottom: 16px;
+  }
+
+  h3 {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: white;
+  }
+
+  p {
+    color: var(--ion-color-medium);
+    margin-bottom: 24px;
+  }
+
+  ion-button {
+    margin-top: 16px;
+  }
+}
+
+// Estilos para a página inteira
+ion-content {
+  --background: #1a1a1a;
+}
+
+ion-toolbar {
+  --background: #9D7B3A;
+  --color: white;
+}
+
+// Estilos para os cards de exercícios
+ion-card {
+  margin-bottom: 16px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  background: #2a2a2a;
+
+  ion-card-header {
+    padding-bottom: 8px;
+  }
+
+  ion-card-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: white;
+  }
+
+  ion-card-subtitle {
+    font-size: 14px;
+    opacity: 0.8;
+    color: #aaa;
+  }
+
+  ion-item {
+    --background: transparent;
+    --padding-start: 0;
+    --color: #ccc;
+
+    ion-icon {
+      color: #9D7B3A;
+      margin-right: 8px;
+    }
+  }
+}
+
+// Estilos para a seção de instruções
+ion-label.ion-text-wrap {
+  h3 {
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: white;
+  }
+
+  p {
+    white-space: pre-line;
+    color: #aaa;
+    line-height: 1.5;
+  }
+}
+
+// Estilos para botões de vídeo
+ion-button {
+  margin-top: 8px;
+  --background: #9D7B3A;
+}
+
+// Estilos para o cabeçalho da lista
+ion-list-header {
+  font-size: 18px;
+  font-weight: 600;
+  padding-top: 16px;
+  color: white;
+}
+
+// Estilo para a data de criação
+ion-label {
+  color: #ccc;
+}

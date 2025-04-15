@@ -111,19 +111,6 @@ class WorkoutController {
     // Obter detalhes de um treino
     public function getWorkout() {
         // Verificar autenticação
-        $headers = getallheaders();
-        $token = $headers['Authorization'] ?? '';
-
-        if(empty($token)) {
-            return ApiResponse::unauthorized("Token não fornecido");
-        }
-
-        $token = str_replace("Bearer ", "", $token);
-        $user_data = $this->user->validateToken($token);
-
-        if(!$user_data) {
-            return ApiResponse::unauthorized("Token inválido ou expirado");
-        }
 
         // Obter ID do treino da URL
         $id = isset($_GET['id']) ? $_GET['id'] : null;
@@ -460,33 +447,6 @@ class WorkoutController {
             return ApiResponse::success("Sessão de treino iniciada com sucesso", ["session_id" => $session_id]);
         } else {
             return ApiResponse::serverError("Erro ao iniciar sessão de treino");
-        }
-    }
-
-    // Verificar se um aluno possui treinos ativos
-    public function checkActiveWorkouts() {
-        // Verificar autenticação
-        $user_data = $this->authHelper->getUserFromToken();
-
-        if(!$user_data) {
-            return ApiResponse::unauthorized("Token inválido ou expirado");
-        }
-
-        // Obter ID do aluno da URL
-        $student_id = isset($_GET['student_id']) ? $_GET['student_id'] : null;
-
-        if(!$student_id) {
-            return ApiResponse::error("ID do aluno é obrigatório");
-        }
-
-        try {
-            // Verificar se há treinos ativos para o aluno
-            $stmt = $this->workout->getAssignedWorkouts($student_id, null, 'ativo');
-            $hasActiveWorkout = $stmt->rowCount() > 0;
-
-            return ApiResponse::success("Verificação concluída", ["hasActiveWorkout" => $hasActiveWorkout]);
-        } catch (Exception $e) {
-            return ApiResponse::serverError("Erro ao verificar treinos ativos: " . $e->getMessage());
         }
     }
 

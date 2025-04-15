@@ -1,0 +1,169 @@
+// Cores e variáveis
+:host {
+  --background-dark: #0a0a0a;
+  --background-card: #1c1c1c;
+  --text-primary: #ffffff;
+  --text-secondary: #bbbbbb;
+  --accent-color: #9D7B3A;
+  --accent-color-light: #c49c52;
+  --border-color: #333333;
+  --shadow-color: rgba(0, 0, 0, 0.8);
+}
+
+// Estilos gerais
+ion-content {
+  --background: linear-gradient(180deg, var(--background-dark) 0%, #000000 100%);
+  --color: var(--text-primary);
+  --padding-start: 0;
+  --padding-end: 0;
+  font-family: 'Roboto', sans-serif;
+}
+
+// Toolbar transparente
+.transparent-toolbar {
+  --background: transparent;
+  --border-color: transparent;
+}
+
+ion-toolbar {
+  --background: linear-gradient(90deg, #866223 0%, var(--accent-color) 50%, #866223 100%);
+  --color: var(--text-primary);
+
+  ion-title {
+    font-weight: 500;
+    letter-spacing: 0.5px;
+  }
+}
+
+ion-back-button {
+  --color: var(--text-primary);
+}
+
+// Estilo do título principal
+h1 {
+  color: var(--text-primary);
+  font-size: 22px;
+  font-weight: 500;
+  margin: 16px 0;
+  letter-spacing: 0.5px;
+  text-shadow: 2px 2px 4px var(--shadow-color);
+}
+
+// Container da página
+.exercise-info {
+  animation: fadeIn 0.6s ease-in-out;
+}
+
+// Container de mídia
+.exercise-media {
+  position: relative;
+  margin: 15px 0;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 50px;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 100%);
+    pointer-events: none;
+  }
+
+  img, video {
+    width: 100%;
+    height: 220px;
+    object-fit: contain;
+    background: #000;
+    display: block;
+  }
+}
+
+// Lista e itens
+ion-list {
+  background: transparent;
+  padding: 0;
+  margin: 16px 0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+ion-item {
+  --background: rgba(28, 28, 28, 0.8);
+  --color: var(--text-primary);
+  --border-color: var(--border-color);
+  margin-bottom: 8px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s, box-shadow 0.2s;
+
+  &:active {
+    transform: scale(0.98);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  }
+
+  h2 {
+    color: var(--accent-color-light);
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+  }
+
+  p {
+    color: var(--text-primary);
+    font-size: 15px;
+    line-height: 1.5;
+    margin: 0;
+  }
+}
+
+// Animações
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+// Efeito de brilho para borda da imagem/vídeo
+.exercise-media::before {
+  content: '';
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent-color), transparent);
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+// Detalhes e customizações adicionais
+ion-list-header {
+  --background: transparent;
+  --color: var(--text-primary);
+  font-weight: bold;
+  letter-spacing: 1px;
+  padding-top: 16px;
+}
+
+// Estilizando os controles de vídeo
+video::-webkit-media-controls {
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+video::-webkit-media-controls-play-button,
+video::-webkit-media-controls-volume-slider-container,
+video::-webkit-media-controls-mute-button,
+video::-webkit-media-controls-timeline,
+video::-webkit-media-controls-fullscreen-button {
+  filter: brightness(1.5);
+}

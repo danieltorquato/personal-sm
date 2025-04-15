@@ -1,0 +1,132 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/students"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Detalhes do Treino</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div *ngIf="isLoading" class="loading-container">
+    <ion-spinner></ion-spinner>
+    <p>Carregando informações do treino...</p>
+  </div>
+
+  <div *ngIf="!isLoading && workout">
+    <div class="date-info">
+      <ion-icon name="calendar-outline"></ion-icon>
+      <span>Criado em: {{ (workout.created_at || workout.data?.created_at) | date: 'dd/MM/yyyy' }}</span>
+    </div>
+
+    <ion-list-header>
+      <ion-label>Exercícios</ion-label>
+    </ion-list-header>
+
+    <!-- Se tivermos um array de exercícios -->
+    <ng-container *ngIf="isWorkoutExercisesArray()">
+      <ion-card *ngFor="let exercise of getWorkoutExercises(); let i = index">
+        <ion-card-header>
+          <ion-card-title>{{ i + 1 }}. {{ exercise.exercise_name }}</ion-card-title>
+          <ion-card-subtitle>{{ exercise.description }}</ion-card-subtitle>
+        </ion-card-header>
+
+        <ion-card-content>
+          <ion-grid>
+            <ion-row>
+              <ion-col size="6">
+                <ion-item lines="none">
+                  <ion-icon name="repeat-outline" slot="start"></ion-icon>
+                  <ion-label>Séries: {{ exercise.sets }}</ion-label>
+                </ion-item>
+              </ion-col>
+              <ion-col size="6">
+                <ion-item lines="none">
+                  <ion-icon name="fitness-outline" slot="start"></ion-icon>
+                  <ion-label>Repetições: {{ exercise.reps }}</ion-label>
+                </ion-item>
+              </ion-col>
+            </ion-row>
+            <ion-row>
+              <ion-col size="6">
+                <ion-item lines="none">
+                  <ion-icon name="timer-outline" slot="start"></ion-icon>
+                  <ion-label>Descanso: {{ exercise.rest_seconds }}s</ion-label>
+                </ion-item>
+              </ion-col>
+              <ion-col size="6" *ngIf="exercise.duration_seconds">
+                <ion-item lines="none">
+                  <ion-icon name="hourglass-outline" slot="start"></ion-icon>
+                  <ion-label>Duração: {{ formatTime(exercise.duration_seconds) }}</ion-label>
+                </ion-item>
+              </ion-col>
+            </ion-row>
+          </ion-grid>
+
+          <ion-item lines="none" *ngIf="exercise.exercise?.instructions">
+            <ion-icon name="information-circle-outline" slot="start"></ion-icon>
+            <ion-label class="ion-text-wrap">
+              <h3>Instruções:</h3>
+              <p>{{ exercise.exercise?.instructions }}</p>
+            </ion-label>
+          </ion-item>
+
+          <ion-item lines="none" *ngIf="exercise.exercise?.video_url">
+            <ion-button expand="block" fill="outline" (click)="openVideo(exercise.exercise.video_url)">
+              <ion-icon name="videocam-outline" slot="start"></ion-icon>
+              Ver vídeo do exercício
+            </ion-button>
+          </ion-item>
+        </ion-card-content>
+      </ion-card>
+    </ng-container>
+
+    <!-- Exibição alternativa para quando temos um objeto em vez de um array -->
+    <ng-container *ngIf="!isWorkoutExercisesArray() && workout.data">
+      <ion-card>
+        <ion-card-header>
+          <ion-card-title>{{ workout.data.name || 'Exercício' }}</ion-card-title>
+          <ion-card-subtitle>{{ workout.data.description || 'Detalhes do exercício' }}</ion-card-subtitle>
+        </ion-card-header>
+
+        <ion-card-content>
+          <ion-item lines="none" *ngIf="workout.data.type">
+            <ion-icon name="barbell-outline" slot="start"></ion-icon>
+            <ion-label>Tipo: {{ workout.data.type }}</ion-label>
+          </ion-item>
+
+          <ion-item lines="none" *ngIf="workout.data.instructions">
+            <ion-icon name="information-circle-outline" slot="start"></ion-icon>
+            <ion-label class="ion-text-wrap">
+              <h3>Instruções:</h3>
+              <p>{{ workout.data.instructions }}</p>
+            </ion-label>
+          </ion-item>
+
+          <ion-item lines="none" *ngIf="workout.data.video_url">
+            <ion-button expand="block" fill="outline" (click)="openVideo(workout.data.video_url)">
+              <ion-icon name="videocam-outline" slot="start"></ion-icon>
+              Ver vídeo do exercício
+            </ion-button>
+          </ion-item>
+        </ion-card-content>
+      </ion-card>
+    </ng-container>
+
+    <!-- Estado vazio -->
+    <div *ngIf="isEmptyWorkout()" class="empty-state">
+      <ion-icon name="fitness-outline" class="empty-icon"></ion-icon>
+      <h3>Nenhum exercício encontrado</h3>
+      <p>Este treino não possui exercícios cadastrados.</p>
+    </div>
+  </div>
+
+  <div *ngIf="!isLoading && !workout" class="empty-state">
+    <ion-icon name="alert-circle-outline" class="empty-icon"></ion-icon>
+    <h3>Treino não encontrado</h3>
+    <p>Não foi possível carregar as informações deste treino.</p>
+    <ion-button expand="block" routerLink="/tabs/workouts">
+      Ver todos os treinos
+    </ion-button>
+  </div>
+</ion-content>
