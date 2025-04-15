@@ -40,8 +40,6 @@ import {
 } from 'ionicons/icons';
 import { WorkoutService } from 'src/app/services/workout.service';
 
-// Importar o CSS das animações (animate.css)
-import 'animate.css';
 
 interface Exercise {
   id?: number;

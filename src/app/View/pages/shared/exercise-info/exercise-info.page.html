@@ -26,7 +26,7 @@
       <ion-item class="category-item">
         <ion-label>
           <h2>Categoria</h2>
-          <p>{{ getCategoryName(selectedExercise.category) }}</p>
+          <p>{{ getCategoryName(selectedExercise.category || '') }}</p>
         </ion-label>
         <ion-icon name="barbell-outline" slot="start" color="primary"></ion-icon>
       </ion-item>
@@ -83,4 +83,8 @@
     <h2>Exercício não encontrado</h2>
     <p>Não foi possível carregar as informações deste exercício.</p>
   </div>
+
+  <ion-footer>
+    <ion-button expand="full" color="primary" (click)="voltar()">Voltar</ion-button>
+  </ion-footer>
 </ion-content>
