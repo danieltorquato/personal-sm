@@ -1,0 +1,75 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Biblioteca de Exercícios</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <!-- Barra de Pesquisa -->
+  <div class="search-container">
+    <ion-searchbar
+      placeholder="Buscar exercícios"
+      [(ngModel)]="searchTerm"
+      (ionInput)="onSearchChange($event)"
+      animated>
+    </ion-searchbar>
+  </div>
+
+  <!-- Filtros de Categoria -->
+  <div class="category-filters">
+    <div class="scrollable-chips">
+      <ion-chip
+        *ngFor="let category of categories"
+        [color]="selectedCategory === category ? 'primary' : 'medium'"
+        [outline]="selectedCategory !== category"
+        (click)="selectCategory(category)">
+        <ion-icon name="barbell-outline" *ngIf="selectedCategory === category"></ion-icon>
+        <ion-label>{{category}}</ion-label>
+      </ion-chip>
+    </div>
+  </div>
+
+  <!-- Estado de Carregando -->
+  <div class="loading-container" *ngIf="isLoading">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p>Carregando exercícios...</p>
+  </div>
+
+  <!-- Mensagem de Erro -->
+  <div class="error-container" *ngIf="error && !isLoading">
+    <ion-icon name="alert-circle-outline" color="danger"></ion-icon>
+    <h2>Erro ao carregar exercícios</h2>
+    <p>{{error}}</p>
+    <ion-button (click)="loadExercises()" expand="block" color="primary">
+      Tentar Novamente
+    </ion-button>
+  </div>
+
+  <!-- Lista de Exercícios -->
+  <div class="exercise-list-container" *ngIf="!isLoading && !error">
+    <ion-list lines="full">
+      <ion-item
+        *ngFor="let exercise of filteredExercises"
+        (click)="viewExerciseDetails(exercise.id)"
+        detail="true"
+        class="exercise-item">
+        <ion-thumbnail slot="start">
+          <img [src]="getImagePath(exercise)" alt="{{exercise.name}}" />
+        </ion-thumbnail>
+        <ion-label>
+          <h2>{{exercise.name}}</h2>
+          <p>Categoria: {{formatCategoryName(exercise.category)}}</p>
+          <p *ngIf="exercise.muscles">{{exercise.muscles}}</p>
+        </ion-label>
+
+      </ion-item>
+    </ion-list>
+
+    <!-- Mensagem quando não há resultados -->
+    <div class="empty-state" *ngIf="filteredExercises.length === 0">
+      <ion-icon name="barbell-outline" color="medium"></ion-icon>
+      <h3>Nenhum exercício encontrado</h3>
+      <p>Tente ajustar seus filtros de busca</p>
+    </div>
+  </div>
+</ion-content>

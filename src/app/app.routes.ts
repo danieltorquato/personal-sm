@@ -137,9 +137,15 @@ export const routes: Routes = [
     path: 'exercise-info/:id',
     loadComponent: () => import('./View/pages/shared/exercise-info/exercise-info.page').then( m => m.ExerciseInfoPage)
   },
+
+    {
+      path: 'exercise-lib',
+      loadComponent: () => import('./View/pages/shared/exercise-lib/exercise-lib.page').then( m => m.ExerciseLibPage)
+    },
   {
     path: '**',
     redirectTo: 'login'
   },
+
 
 ];
