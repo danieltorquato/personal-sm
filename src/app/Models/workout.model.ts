@@ -36,6 +36,8 @@ export interface Workout {
   id?: number;
   name: string;
   description?: string;
+  type?: string;
+  notes?: string;
   trainer_id: number;
   trainer_name?: string;
   duration?: number;
@@ -46,6 +48,7 @@ export interface Workout {
   created_at?: string;
   updated_at?: string;
   sets?: WorkoutSet[];
+  exercises?: any[];
 }
 
 export interface AssignedWorkout {

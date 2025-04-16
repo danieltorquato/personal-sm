@@ -29,6 +29,21 @@ import {
 import { addIcons } from 'ionicons';
 import { PersonalService } from 'src/app/services/personal.service';
 
+// Definição de tipo local para o objeto workout usado nesta página
+interface LocalWorkout {
+  user_id: number;
+  name: string;
+  type: string;
+  notes: string;
+  workoutDivision: string;
+  level: string;
+  duration: number;
+  durationUnit: string;
+  exercises: {
+    [key: string]: WorkoutExercise[];
+  };
+}
+
 interface Student {
   id: number;
   name: string;
@@ -167,7 +182,7 @@ export class CreateWorkoutPage implements OnInit {
   tempMethodConfig: MethodConfig = {};
 
   // Dados do treino
-  workout = {
+  workout: LocalWorkout = {
     user_id: 0,
     name: '',
     type: 'gym',
@@ -758,7 +773,8 @@ export class CreateWorkoutPage implements OnInit {
       }
 
       // Adicionar todos ao A
-      this.workout.exercises.A = allExercises;
+      // Adicionar todos ao A
+      this.workout.exercises['A'] = allExercises;
       this.currentWorkoutPart = 'A';
     } else {
       // Manter selecionado o A ao mudar para divisão
@@ -873,14 +889,159 @@ export class CreateWorkoutPage implements OnInit {
         {
           text: 'Continuar',
           handler: () => {
-            // Continuar criando o novo treino
-            console.log('Continuando com a criação de novo treino');
+            // Perguntar se deseja importar o treino anterior ou começar do zero
+            this.showImportWorkoutOption(activeWorkout);
           }
         }
       ]
     });
 
     await alert.present();
+  }
+
+  // Perguntar se deseja importar treino anterior ou começar do zero
+  async showImportWorkoutOption(activeWorkout: any) {
+    const alert = await this.alertCtrl.create({
+      header: 'Importar Treino Anterior?',
+      message: `Deseja importar os exercícios do treino anterior "${activeWorkout.name}" ou iniciar um novo treino do zero?`,
+      buttons: [
+        {
+          text: 'Iniciar do Zero',
+          handler: () => {
+            console.log('Iniciando novo treino do zero');
+            // Continua com o fluxo normal, mantendo o treino vazio
+          }
+        },
+        {
+          text: 'Importar Treino',
+          handler: () => {
+            // Importar o treino anterior
+            this.importWorkout(activeWorkout.id);
+          }
+        }
+      ]
+    });
+
+    await alert.present();
+  }
+
+  // Método para importar treino anterior
+  async importWorkout(workoutId: number) {
+    const loading = await this.loadingCtrl.create({
+      message: 'Importando treino anterior...'
+    });
+    await loading.present();
+
+    try {
+      // Obter detalhes do treino anterior
+      const response = await this.workoutService.getWorkout(workoutId).toPromise();
+
+      if (response && response.status === 'success' && response.data) {
+        const workoutData = response.data;
+        console.log('Treino anterior:', workoutData);
+        // Copiar informações básicas do treino para nosso formato local
+        this.workout.name = `${workoutData.name} (Cópia)`;
+        // Garantir valores padrão para propriedades obrigatórias
+        if (workoutData.type) {
+          this.workout.type = workoutData.type;
+        }
+        if (workoutData.notes) {
+          this.workout.notes = workoutData.notes;
+        }
+        // Se houver exercícios no treino anterior, importá-los
+        if (workoutData.exercises && workoutData.exercises.length > 0) {
+          // Limpar exercícios atuais de todas as partes
+          Object.keys(this.workout.exercises).forEach(part => {
+            this.workout.exercises[part as keyof typeof this.workout.exercises] = [];
+          });
+
+          // Adicionar exercícios do treino anterior
+          const importedExercises = workoutData.exercises.map((ex: any) => {
+            // Extrair parte e método das notas, se disponível
+            let part = 'A';
+            let method = 'normal';
+            let weight = 0;
+            let methodConfig = undefined;
+
+            if (ex.notes) {
+              const partMatch = ex.notes.match(/\| Parte: ([A-E]) \|/);
+              if (partMatch && partMatch[1]) {
+                part = partMatch[1];
+              }
+
+              const methodMatch = ex.notes.match(/\| Método: ([a-z-]+) \|/);
+              if (methodMatch && methodMatch[1]) {
+                method = methodMatch[1];
+              }
+
+              const weightMatch = ex.notes.match(/\| Peso: ([0-9.]+)kg/);
+              if (weightMatch && weightMatch[1]) {
+                weight = parseFloat(weightMatch[1]);
+              }
+            }
+
+            // Criar objeto de exercício para importar
+            return {
+              id: ex.exercise_id,
+              name: ex.exercise_name,
+              category: ex.category || '',
+              type: 'musculacao',
+              description: ex.description || '',
+              muscles: ex.muscles || '',
+              instructions: ex.instructions || '',
+              image: ex.image_path || '',
+              video: ex.video_path || '',
+              sets: ex.sets || 3,
+              reps: ex.reps || 12,
+              weight: weight,
+              rest: ex.rest_seconds || 60,
+              notes: ex.notes ? ex.notes.replace(/\| Parte: [A-E] \|.*$/, '') : '',
+              method: method,
+              methodConfig: methodConfig,
+              part: part // Adicionamos a parte ao objeto para uso na distribuição
+            };
+          });
+
+          // Distribuir exercícios de acordo com as partes identificadas
+          importedExercises.forEach((exercise: any) => {
+            const part = exercise.part;
+            // Remover propriedade auxiliar antes de adicionar
+            delete exercise.part;
+
+            // Limpar as notas de informações de partes e métodos
+            if (exercise.notes) {
+              exercise.notes = exercise.notes.replace(/\| Parte: [A-E] \|.*$/, '').trim();
+            }
+
+            // Adicionar exercício à parte correspondente
+            this.workout.exercises[part as keyof typeof this.workout.exercises].push(exercise);
+          });
+
+          // Determinar o tipo de divisão com base nos exercícios importados
+          const partsWithExercises = Object.keys(this.workout.exercises)
+            .filter(p => this.workout.exercises[p as keyof typeof this.workout.exercises].length > 0)
+            .sort();
+
+          if (partsWithExercises.length > 1) {
+            this.workout.workoutDivision = partsWithExercises.join('-');
+          } else {
+            this.workout.workoutDivision = 'unico';
+          }
+
+          this.presentToast('Treino importado com sucesso!', 'success');
+        } else {
+          this.presentToast('O treino não contém exercícios para importar.', 'warning');
+        }
+      } else {
+        console.error('Falha ao importar treino:', response);
+        this.presentToast('Erro ao importar treino anterior.', 'danger');
+      }
+    } catch (error) {
+      console.error('Erro ao importar treino:', error);
+      this.presentToast('Erro ao importar treino anterior.', 'danger');
+    } finally {
+      loading.dismiss();
+    }
   }
 
   // Método para salvar o treino
@@ -1058,7 +1219,7 @@ export class CreateWorkoutPage implements OnInit {
   // Verificar se o treino tem exercícios
   hasExercises(): boolean {
     if (this.workout.workoutDivision === 'unico') {
-      return this.workout.exercises.A.length > 0;
+      return this.workout.exercises['A'].length > 0;
     } else {
       const parts = this.workout.workoutDivision.split('-');
       for (const part of parts) {
