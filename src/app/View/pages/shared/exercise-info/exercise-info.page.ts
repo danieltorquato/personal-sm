@@ -17,7 +17,8 @@ import {
   IonRow,
   IonCol,
   IonSpinner,
-  IonRange
+  IonRange,
+  ToastController
 } from '@ionic/angular/standalone';
 import { ActivatedRoute, Router } from '@angular/router';
 import { addIcons } from 'ionicons';
@@ -36,7 +37,10 @@ import {
   bodyOutline,
   listOutline,
   repeatOutline,
-  syncOutline
+  syncOutline,
+  imageOutline,
+  videocamOutline,
+  saveOutline
 } from 'ionicons/icons';
 import { WorkoutService } from 'src/app/services/workout.service';
 
@@ -53,6 +57,8 @@ interface Exercise {
   image?: string;
   sets?: number;
   reps?: number;
+  imagePreview?: string;
+  videoPreview?: string;
 }
 
 @Component({
@@ -83,6 +89,9 @@ interface Exercise {
 })
 export class ExerciseInfoPage implements OnInit {
   @ViewChild('videoPlayer') videoPlayer: ElementRef | undefined;
+  @ViewChild('imageInput') imageInput!: ElementRef;
+  @ViewChild('videoInput') videoInput!: ElementRef;
+
   exercise: Exercise | undefined;
   selectedExercise: Exercise | null = null;
   loading: boolean = true;
@@ -91,7 +100,8 @@ export class ExerciseInfoPage implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private workoutService: WorkoutService
+    private workoutService: WorkoutService,
+    private toastController: ToastController
   ) {
     addIcons({
       closeOutline,
@@ -104,7 +114,10 @@ export class ExerciseInfoPage implements OnInit {
       listOutline,
       repeatOutline,
       syncOutline,
-      chevronBackOutline
+      chevronBackOutline,
+      imageOutline,
+      videocamOutline,
+      saveOutline
     });
   }
 
@@ -203,5 +216,179 @@ export class ExerciseInfoPage implements OnInit {
   fechar() {
     // Pode ser o mesmo que voltar para navegação normal
     this.voltar();
+  }
+
+  // Métodos para upload de mídia
+  triggerImageUpload() {
+    this.imageInput.nativeElement.click();
+  }
+
+  triggerVideoUpload() {
+    this.videoInput.nativeElement.click();
+  }
+
+  onImageSelected(event: Event) {
+    const fileInput = event.target as HTMLInputElement;
+
+    if (fileInput.files && fileInput.files.length > 0) {
+      const file = fileInput.files[0];
+
+      // Verificar tamanho (limitar a 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        this.showToast('A imagem não pode ter mais de 5MB');
+        return;
+      }
+
+      // Verificar tipo
+      if (!file.type.includes('image/')) {
+        this.showToast('O arquivo selecionado não é uma imagem válida');
+        return;
+      }
+
+      // Usar o caminho da imagem diretamente
+      if (this.selectedExercise) {
+        // Salvar caminho do arquivo
+        const filePath = file.name;
+
+        // Atualizar o exercício com o caminho da imagem
+        this.selectedExercise.image = filePath;
+
+        // Para exibição na interface, criar URL temporária
+        const imageUrl = URL.createObjectURL(file);
+        this.selectedExercise.imagePreview = imageUrl;
+
+        this.showToast('Imagem adicionada com sucesso');
+      }
+    }
+  }
+
+  onVideoSelected(event: Event) {
+    const fileInput = event.target as HTMLInputElement;
+
+    if (fileInput.files && fileInput.files.length > 0) {
+      const file = fileInput.files[0];
+
+      // Verificar tamanho (limitar a 50MB)
+      if (file.size > 50 * 1024 * 1024) {
+        this.showToast('O vídeo não pode ter mais de 50MB');
+        return;
+      }
+
+      // Verificar tipo
+      if (!file.type.includes('video/')) {
+        this.showToast('O arquivo selecionado não é um vídeo válido');
+        return;
+      }
+
+      // Usar o caminho do vídeo diretamente
+      if (this.selectedExercise) {
+        // Salvar caminho do arquivo
+        const filePath = file.name;
+
+        // Atualizar o exercício com o caminho do vídeo
+        this.selectedExercise.video = filePath;
+
+        // Para exibição na interface, criar URL temporária
+        const videoUrl = URL.createObjectURL(file);
+        this.selectedExercise.videoPreview = videoUrl;
+
+        this.showToast('Vídeo adicionado com sucesso');
+      }
+    }
+  }
+
+  // Salvar o exercício com as novas mídias
+  saveExerciseMedia() {
+    if (!this.selectedExercise || !this.selectedExercise.id) {
+      this.showToast('Erro: Exercício não encontrado');
+      return;
+    }
+
+    this.loading = true;
+    this.showToast('Enviando mídia para o servidor...');
+
+    // Criar FormData com os arquivos
+    const formData = new FormData();
+
+    // Adicionar exercise_id com o nome correto
+    formData.append('exercise_id', this.selectedExercise.id.toString());
+    console.log('ID do exercício:', this.selectedExercise.id);
+
+    // Adicionar arquivos reais
+    let hasFiles = false;
+
+    if (this.imageInput && this.imageInput.nativeElement.files && this.imageInput.nativeElement.files.length > 0) {
+      const imageFile = this.imageInput.nativeElement.files[0];
+      formData.append('image', imageFile, imageFile.name);
+      console.log('Imagem selecionada:', imageFile.name, imageFile.type, imageFile.size);
+      hasFiles = true;
+    }
+
+    if (this.videoInput && this.videoInput.nativeElement.files && this.videoInput.nativeElement.files.length > 0) {
+      const videoFile = this.videoInput.nativeElement.files[0];
+      formData.append('video', videoFile, videoFile.name);
+      console.log('Vídeo selecionado:', videoFile.name, videoFile.type, videoFile.size);
+      hasFiles = true;
+    }
+
+    // Verificar se há arquivos para enviar
+    if (!hasFiles) {
+      this.loading = false;
+      this.showToast('Nenhum arquivo selecionado para upload');
+      return;
+    }
+
+    // Enviar para o servidor usando formData
+    this.workoutService.updateExerciseMedia(this.selectedExercise.id, formData)
+      .subscribe({
+        next: (response) => {
+          this.loading = false;
+          console.log('Mídia salva com sucesso:', response);
+          if (response && response.status) {
+            this.showToast('Mídia salva com sucesso!');
+
+            // Atualize os caminhos com os retornados pelo servidor, se disponíveis
+            if (response.data) {
+              if (response.data.image_path) {
+                // Caminho para assets/images/exercises
+                this.selectedExercise!.image = response.data.image_path;
+                console.log('Novo caminho de imagem:', this.selectedExercise!.image);
+                // Limpar a prévia
+                this.selectedExercise!.imagePreview = undefined;
+              }
+              if (response.data.video_path) {
+                // Caminho para assets/images/exercises
+                this.selectedExercise!.video = response.data.video_path;
+                console.log('Novo caminho de vídeo:', this.selectedExercise!.video);
+                // Limpar a prévia
+                this.selectedExercise!.videoPreview = undefined;
+              }
+            }
+          } else {
+            this.showToast('Erro ao salvar mídia. Por favor, tente novamente.');
+          }
+        },
+        error: (error) => {
+          this.loading = false;
+          console.error('Erro ao salvar mídia:', error);
+          if (error.error && error.error.message) {
+            this.showToast(`Erro: ${error.error.message}`);
+          } else {
+            this.showToast('Erro ao salvar mídia no servidor');
+          }
+        }
+      });
+  }
+
+  // Exibir toast de notificação
+  async showToast(message: string) {
+    const toast = await this.toastController.create({
+      message: message,
+      duration: 2000,
+      position: 'bottom',
+      color: 'dark'
+    });
+
+    await toast.present();
   }
 }

@@ -510,5 +510,139 @@ class WorkoutController {
             return ApiResponse::serverError("Erro ao desativar treinos anteriores");
         }
     }
+
+    // Upload de mídia (imagem e vídeo) para exercícios
+    public function uploadExerciseMedia() {
+        // Headers para API RESTful
+        header("Access-Control-Allow-Origin: *");
+        header("Content-Type: application/json; charset=UTF-8");
+        header("Access-Control-Allow-Methods: POST");
+        header("Access-Control-Max-Age: 3600");
+        header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
+
+        // Verificar se a requisição é POST
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            http_response_code(405);
+            echo json_encode(array("message" => "Método não permitido. Use POST."));
+            return;
+        }
+
+        try {
+            // Log de todos os dados recebidos
+            error_log("Dados POST recebidos: " . print_r($_POST, true));
+            error_log("Arquivos recebidos: " . print_r($_FILES, true));
+
+            // Obter ID do exercício
+            if (!isset($_POST['exercise_id']) || empty($_POST['exercise_id'])) {
+                throw new Exception("ID do exercício é obrigatório");
+            }
+
+            $exercise_id = $_POST['exercise_id'];
+            error_log("ID do exercício: " . $exercise_id);
+
+            // Instanciar banco de dados
+            $database = new Database();
+            $db = $database->getConnection();
+
+            // Instanciar exercício
+            $exercise = new Exercise($db);
+            $exercise->id = $exercise_id;
+
+            // Verificar se o exercício existe
+            if (!$exercise->readOne()) {
+                throw new Exception("Exercício não encontrado");
+            }
+
+            // Diretório para salvar as mídias
+            $upload_dir = __DIR__ . "/../../src/assets/images/exercises/";
+
+            // Criar diretório se não existir
+            if (!file_exists($upload_dir)) {
+                mkdir($upload_dir, 0777, true);
+            }
+
+            $response_data = [];
+
+            // Processar imagem
+            if (isset($_FILES['image']) && $_FILES['image']['error'] == 0) {
+                $image_info = getimagesize($_FILES['image']['tmp_name']);
+
+                // Verificar se é uma imagem válida
+                if ($image_info === false) {
+                    throw new Exception("Arquivo de imagem inválido");
+                }
+
+                // Extensão do arquivo
+                $image_ext = pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION);
+
+                // Nome único para o arquivo
+                $image_filename = "exercise_" . $exercise_id . "_" . time() . "." . $image_ext;
+                $image_path = $upload_dir . $image_filename;
+
+                error_log("Caminho da imagem: " . $image_path);
+
+                // Mover a imagem
+                if (!move_uploaded_file($_FILES['image']['tmp_name'], $image_path)) {
+                    throw new Exception("Erro ao salvar a imagem: " . error_get_last()['message']);
+                }
+
+                // Atualizar caminho da imagem no banco (usar o caminho relativo assets/images/exercises)
+                $exercise->image_path = "assets/images/exercises/" . $image_filename;
+                $response_data['image_path'] = $exercise->image_path;
+            }
+
+            // Processar vídeo
+            if (isset($_FILES['video']) && $_FILES['video']['error'] == 0) {
+                // Verificar tipo de arquivo
+                $allowed_video_types = ['video/mp4', 'video/webm', 'video/ogg'];
+                if (!in_array($_FILES['video']['type'], $allowed_video_types)) {
+                    throw new Exception("Tipo de vídeo não suportado. Use MP4, WebM ou OGG");
+                }
+
+                // Extensão do arquivo
+                $video_ext = pathinfo($_FILES['video']['name'], PATHINFO_EXTENSION);
+
+                // Nome único para o arquivo
+                $video_filename = "exercise_" . $exercise_id . "_" . time() . "." . $video_ext;
+                $video_path = $upload_dir . $video_filename;
+
+                error_log("Caminho do vídeo: " . $video_path);
+
+                // Mover o vídeo
+                if (!move_uploaded_file($_FILES['video']['tmp_name'], $video_path)) {
+                    throw new Exception("Erro ao salvar o vídeo: " . error_get_last()['message']);
+                }
+
+                // Atualizar caminho do vídeo no banco (usar o caminho relativo assets/images/exercises)
+                $exercise->video_path = "assets/images/exercises/" . $video_filename;
+                $response_data['video_path'] = $exercise->video_path;
+            }
+
+            // Atualizar o exercício se alguma mídia foi processada
+            if (!empty($response_data)) {
+                if (!$exercise->update()) {
+                    throw new Exception("Erro ao atualizar informações de mídia no banco de dados");
+                }
+
+                // Resposta de sucesso
+                http_response_code(200);
+                echo json_encode([
+                    "status" => true,
+                    "message" => "Mídia carregada com sucesso",
+                    "data" => $response_data
+                ]);
+            } else {
+                throw new Exception("Nenhuma mídia enviada ou processada");
+            }
+
+        } catch (Exception $e) {
+            http_response_code(400);
+            error_log("Erro no upload de mídia: " . $e->getMessage());
+            echo json_encode([
+                "status" => false,
+                "message" => $e->getMessage()
+            ]);
+        }
+    }
 }
-?>
+

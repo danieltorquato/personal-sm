@@ -243,5 +243,26 @@ class Exercise {
 
         return false;
     }
+
+    // Salvar a mídia
+    public function saveMedia() {
+        $query = "UPDATE " . $this->table_name . " SET image_path = :image_path, video_path = :video_path WHERE id = :id";
+
+        // Preparar a query
+        $stmt = $this->conn->prepare($query);
+
+        // Vincular
+        $stmt->bindParam(":image_path", $this->image_path);
+        $stmt->bindParam(":video_path", $this->video_path);
+        $stmt->bindParam(":id", $this->id);
+
+        // Executar
+        if($stmt->execute()) {
+            return true;
+        }
+
+        return false;
+
+    }
 }
 ?>

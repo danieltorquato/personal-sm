@@ -12,14 +12,37 @@
     <h1 class="ion-text-center animate__animated animate__fadeIn">{{ selectedExercise.name }}</h1>
 
     <div class="exercise-media ion-margin-vertical animate__animated animate__fadeIn animate__delay-1s">
-      <img *ngIf="selectedExercise.image" [src]="selectedExercise.image" alt="{{ selectedExercise.name }}">
-      <video *ngIf="selectedExercise.video" controls>
-        <source [src]="selectedExercise.video" type="video/mp4">
-        Seu navegador não suporta a reprodução de vídeos.
-      </video>
-      <div *ngIf="!selectedExercise.image && !selectedExercise.video" class="no-media">
+      <!-- Exibe a imagem como prévia se estiver disponível -->
+      <img *ngIf="selectedExercise.imagePreview" [src]="selectedExercise.imagePreview" alt="{{ selectedExercise.name }}">
+
+      <!-- Imagem do servidor se não tiver prévia local mas tiver caminho da imagem -->
+      <img *ngIf="!selectedExercise.imagePreview && selectedExercise.image && !selectedExercise.image.startsWith('blob:')"
+           [src]="selectedExercise.image" alt="{{ selectedExercise.name }}">
+
+      <div *ngIf="!selectedExercise.image && !selectedExercise.video && !selectedExercise.imagePreview && !selectedExercise.videoPreview" class="no-media">
         <ion-icon name="fitness-outline" color="medium"></ion-icon>
       </div>
+
+      <!-- Botões de Upload de Mídia -->
+      <div class="upload-buttons">
+        <ion-button fill="outline" size="small" (click)="triggerImageUpload()">
+          <ion-icon name="image-outline" slot="start"></ion-icon>
+          Adicionar Imagem
+        </ion-button>
+        <ion-button fill="outline" size="small" (click)="triggerVideoUpload()">
+          <ion-icon name="videocam-outline" slot="start"></ion-icon>
+          Adicionar Vídeo
+        </ion-button>
+        <ion-button fill="solid" color="success" size="small" (click)="saveExerciseMedia()"
+                  *ngIf="selectedExercise?.image || selectedExercise?.video || selectedExercise?.imagePreview || selectedExercise?.videoPreview">
+          <ion-icon name="save-outline" slot="start"></ion-icon>
+          Salvar Mídia
+        </ion-button>
+      </div>
+
+      <!-- Input files ocultos -->
+      <input type="file" #imageInput accept="image/*" style="display: none" (change)="onImageSelected($event)">
+      <input type="file" #videoInput accept="video/*" style="display: none" (change)="onVideoSelected($event)">
     </div>
 
     <ion-list lines="full" class="animate__animated animate__fadeIn animate__delay-2s">

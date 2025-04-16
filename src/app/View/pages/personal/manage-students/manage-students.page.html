@@ -46,7 +46,7 @@
 
   <!-- Barra de pesquisa -->
   <div class="search-container">
-    <ion-searchbar placeholder="Buscar aluno" [(ngModel)]="searchTerm" (ionChange)="filterStudents()" animated></ion-searchbar>
+    <ion-searchbar placeholder="Buscar aluno (Digite pelo menos 3 letras)" [(ngModel)]="searchTerm" (ionInput)="filterStudents()" debounce="300" animated></ion-searchbar>
   </div>
 
   <!-- Lista de Alunos em Cards -->

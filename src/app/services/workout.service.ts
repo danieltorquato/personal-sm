@@ -233,4 +233,64 @@ export class WorkoutService {
 
     return this.http.post(`${this.apiUrl}/workouts/remove-exercise`, payload);
   }
+
+  // Método para fazer upload de mídia para um exercício
+  updateExerciseMedia(exerciseId: number, formData: FormData): Observable<any> {
+    // Certificar que o exercise_id está no FormData com o nome correto
+    if (!formData.has('exercise_id')) {
+      formData.append('exercise_id', exerciseId.toString());
+    }
+    console.log('enviando mídia para o exercício', formData);
+    console.log('exercise_id:', exerciseId);
+
+    // Verifica se formData tem os dados necessários
+    console.log('FormData contém exercise_id:', formData.has('exercise_id'));
+    console.log('FormData contém image:', formData.has('image'));
+    console.log('FormData contém video:', formData.has('video'));
+
+    // Atualizar URL para apontar para o endpoint correto
+    return this.http.post(`${this.apiUrl}/workouts/upload-exercise-media`, formData);
+  }
+
+  // Converte URL de dados Blob para Blob
+  dataURLtoBlob(dataURL: string): Observable<Blob> {
+    return new Observable<Blob>((observer) => {
+      try {
+        // Extrair o tipo e os dados da URL do blob
+        if (dataURL.startsWith('blob:')) {
+          // Se é uma URL blob real, precisamos buscar o blob
+          fetch(dataURL)
+            .then(response => response.blob())
+            .then(blob => {
+              observer.next(blob);
+              observer.complete();
+            })
+            .catch(error => observer.error(error));
+        } else if (dataURL.startsWith('data:')) {
+          // Se é uma URL de dados, podemos convertê-la diretamente
+          const arr = dataURL.split(',');
+          const mimeMatch = arr[0].match(/:(.*?);/);
+          if (!mimeMatch || !mimeMatch[1]) {
+            observer.error(new Error('MIME type não encontrado na URL de dados'));
+            return;
+          }
+          const mime = mimeMatch[1];
+          const bstr = atob(arr[1]);
+          let n = bstr.length;
+          const u8arr = new Uint8Array(n);
+
+          while(n--) {
+            u8arr[n] = bstr.charCodeAt(n);
+          }
+
+          observer.next(new Blob([u8arr], {type: mime}));
+          observer.complete();
+        } else {
+          observer.error(new Error('URL de dados inválida'));
+        }
+      } catch (error) {
+        observer.error(error);
+      }
+    });
+  }
 }

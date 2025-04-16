@@ -128,6 +128,9 @@ try {
                 case 'deactivate-previous':
                     echo $controller->deactivatePreviousWorkouts();
                     break;
+                case 'upload-exercise-media':
+                    echo $controller->uploadExerciseMedia();
+                    break;
                 default:
                     echo ApiResponse::notFound("Ação não encontrada");
             }
@@ -140,6 +143,9 @@ try {
             switch ($action) {
                 case 'list':
                     echo $controller->getAllExercises();
+                    break;
+                case 'upload-media':
+                    echo $controller->uploadExerciseMedia();
                     break;
                 default:
                     echo ApiResponse::notFound("Ação não encontrada");

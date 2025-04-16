@@ -155,7 +155,30 @@ export class ManageStudentsPage implements OnInit {
    * Filtra alunos baseado no termo de busca
    */
   filterStudents() {
-    this.applyFilters();
+    console.log('Filtrando alunos com termo:', this.searchTerm);
+    // Primeiro filtrar por segmento
+    let result = [...this.students];
+
+    if (this.selectedSegment === 'ativos') {
+      result = result.filter(student => student.isActive);
+    } else if (this.selectedSegment === 'inativos') {
+      result = result.filter(student => !student.isActive);
+    }
+
+    // Depois filtrar por termo de busca
+    if (this.searchTerm && this.searchTerm.trim() !== '') {
+      const term = this.searchTerm.toLowerCase().trim();
+
+      // Somente filtra se o termo tiver pelo menos 3 caracteres
+      if (term.length >= 3) {
+        result = result.filter(student =>
+          student.name.toLowerCase().includes(term)
+        );
+      }
+    }
+
+    this.filteredStudents = result;
+    console.log('Alunos filtrados:', this.filteredStudents);
   }
 
   /**
