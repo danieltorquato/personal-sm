@@ -65,17 +65,6 @@ class WorkoutController {
 
     // Atualizar um treino
     public function updateWorkout() {
-        // Verificar autenticação
-        $user_data = $this->authHelper->getUserFromToken();
-
-        if(!$user_data) {
-            return ApiResponse::unauthorized("Token inválido ou expirado");
-        }
-
-        // Verificar tipo de usuário
-        if($user_data['type_name'] != 'admin' && $user_data['type_name'] != 'trainer') {
-            return ApiResponse::unauthorized("Acesso não autorizado");
-        }
 
         // Verificar se os dados foram enviados
         $data = json_decode(file_get_contents("php://input"));
@@ -211,17 +200,7 @@ class WorkoutController {
 
     // Remover exercício de um treino
     public function removeExercise() {
-        // Verificar autenticação
-        $user_data = $this->authHelper->getUserFromToken();
 
-        if(!$user_data) {
-            return ApiResponse::unauthorized("Token inválido ou expirado");
-        }
-
-        // Verificar tipo de usuário
-        if($user_data['type_name'] != 'admin' && $user_data['type_name'] != 'trainer') {
-            return ApiResponse::unauthorized("Acesso não autorizado");
-        }
 
         // Verificar se os dados foram enviados
         $data = json_decode(file_get_contents("php://input"));
@@ -240,17 +219,7 @@ class WorkoutController {
 
     // Atualizar exercício de um treino
     public function updateExercise() {
-        // Verificar autenticação
-        $user_data = $this->authHelper->getUserFromToken();
 
-        if(!$user_data) {
-            return ApiResponse::unauthorized("Token inválido ou expirado");
-        }
-
-        // Verificar tipo de usuário
-        if($user_data['type_name'] != 'admin' && $user_data['type_name'] != 'trainer') {
-            return ApiResponse::unauthorized("Acesso não autorizado");
-        }
 
         // Verificar se os dados foram enviados
         $data = json_decode(file_get_contents("php://input"));
@@ -298,17 +267,8 @@ class WorkoutController {
 
     // Excluir um treino e todos os seus exercícios
     public function deleteWorkout() {
-        // Verificar autenticação
-          $user_data = $this->authHelper->getUserFromToken();
 
-        if(!$user_data) {
-            return ApiResponse::unauthorized("Token inválido ou expirado");
-        }
 
-        // Verificar tipo de usuário
-        if($user_data['type_name'] != 'admin' && $user_data['type_name'] != 'trainer') {
-            return ApiResponse::unauthorized("Acesso não autorizado");
-        }
 
         // Verificar se o ID foi fornecido
         $id = isset($_GET['id']) ? $_GET['id'] : null;
@@ -333,12 +293,6 @@ class WorkoutController {
 
     // Finalizar uma sessão de treino
     public function finishWorkoutSession() {
-        // Verificar autenticação
-        $user_data = $this->authHelper->getUserFromToken();
-
-        if(!$user_data) {
-            return ApiResponse::unauthorized("Token inválido ou expirado");
-        }
 
         // Verificar se os dados foram enviados
         $data = json_decode(file_get_contents("php://input"));
@@ -362,17 +316,9 @@ class WorkoutController {
 
     // Atribuir um treino a um aluno
     public function assignWorkout() {
-        // Verificar autenticação
-        $user_data = $this->authHelper->getUserFromToken();
 
-        if(!$user_data) {
-            return ApiResponse::unauthorized("Token inválido ou expirado");
-        }
 
-        // Verificar tipo de usuário
-        if($user_data['type_name'] != 'admin' && $user_data['type_name'] != 'trainer') {
-            return ApiResponse::unauthorized("Acesso não autorizado");
-        }
+
 
         // Verificar se os dados foram enviados
         $data = json_decode(file_get_contents("php://input"));
@@ -398,12 +344,7 @@ class WorkoutController {
 
     // Listar treinos atribuídos
     public function listAssignedWorkouts() {
-        // Verificar autenticação
-        $user_data = $this->authHelper->getUserFromToken();
 
-        if(!$user_data) {
-            return ApiResponse::unauthorized("Token inválido ou expirado");
-        }
 
         // Verificar se há filtro por aluno ou personal
         $student_id = isset($_GET['student_id']) ? $_GET['student_id'] : null;
@@ -423,12 +364,7 @@ class WorkoutController {
 
     // Iniciar uma sessão de treino
     public function startWorkoutSession() {
-        // Verificar autenticação
-        $user_data = $this->authHelper->getUserFromToken();
 
-        if(!$user_data) {
-            return ApiResponse::unauthorized("Token inválido ou expirado");
-        }
 
         // Verificar se os dados foram enviados
         $data = json_decode(file_get_contents("php://input"));
@@ -440,7 +376,7 @@ class WorkoutController {
         // Iniciar sessão de treino
         $session_id = $this->workout->startWorkoutSession(
             $data->assigned_workout_id,
-            $user_data['id']
+            $data->user_id
         );
 
         if($session_id) {
@@ -452,12 +388,6 @@ class WorkoutController {
 
     // Registrar uma volta/repetição de exercício
     public function recordLap() {
-        // Verificar autenticação
-        $user_data = $this->authHelper->getUserFromToken();
-
-        if(!$user_data) {
-            return ApiResponse::unauthorized("Token inválido ou expirado");
-        }
 
         // Verificar se os dados foram enviados
         $data = json_decode(file_get_contents("php://input"));
@@ -482,12 +412,7 @@ class WorkoutController {
 
     // Obter detalhes de uma sessão de treino
     public function getWorkoutSession() {
-        // Verificar autenticação
-        $user_data = $this->authHelper->getUserFromToken();
 
-        if(!$user_data) {
-            return ApiResponse::unauthorized("Token inválido ou expirado");
-        }
 
         // Verificar se o ID foi fornecido
         $id = isset($_GET['id']) ? $_GET['id'] : null;
@@ -503,6 +428,87 @@ class WorkoutController {
             return ApiResponse::success("Sessão de treino obtida com sucesso", $session);
         } else {
             return ApiResponse::notFound("Sessão de treino não encontrada");
+        }
+    }
+
+    // Verificar se um aluno tem treinos ativos
+    public function checkActiveWorkouts() {
+       
+        // Obter ID do aluno da query string
+        $student_id = isset($_GET['student_id']) ? $_GET['student_id'] : null;
+
+        if(!$student_id) {
+            return ApiResponse::error("ID do aluno é obrigatório");
+        }
+
+        // Query para buscar treinos ativos
+        $query = "SELECT * FROM workouts
+                 WHERE user_id = :student_id
+                 AND validate_to >= NOW()
+                 ORDER BY created_at DESC
+                 LIMIT 1";
+
+        // Preparar a query
+        $stmt = $this->db->prepare($query);
+
+        // Sanitizar
+        $student_id = htmlspecialchars(strip_tags($student_id));
+
+        // Vincular
+        $stmt->bindParam(":student_id", $student_id);
+
+        // Executar
+        $stmt->execute();
+
+        if($stmt->rowCount() > 0) {
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            return ApiResponse::success("Aluno tem treino ativo", [
+                "hasActiveWorkout" => true,
+                "workout" => $row
+            ]);
+        } else {
+            return ApiResponse::success("Aluno não tem treinos ativos", [
+                "hasActiveWorkout" => false
+            ]);
+        }
+    }
+
+    // Desativar treinos anteriores do aluno
+    public function deactivatePreviousWorkouts() {
+
+        // Verificar se os dados foram enviados
+        $data = json_decode(file_get_contents("php://input"));
+
+        if(!$data || !isset($data->student_id)) {
+            return ApiResponse::error("ID do aluno é obrigatório");
+        }
+
+        // Sanitizar
+        $student_id = htmlspecialchars(strip_tags($data->student_id));
+
+        // Data de ontem para desativar treinos
+        $yesterday = date('Y-m-d H:i:s', strtotime('-1 day'));
+
+        // Query para atualizar todos os treinos ativos do aluno para expirados
+        $query = "UPDATE workouts
+                 SET validate_to = :yesterday
+                 WHERE user_id = :student_id
+                 AND validate_to >= NOW()";
+
+        // Preparar a query
+        $stmt = $this->db->prepare($query);
+
+        // Vincular
+        $stmt->bindParam(":yesterday", $yesterday);
+        $stmt->bindParam(":student_id", $student_id);
+
+        // Executar
+        if($stmt->execute()) {
+            return ApiResponse::success("Treinos anteriores desativados com sucesso", [
+                "affected_rows" => $stmt->rowCount()
+            ]);
+        } else {
+            return ApiResponse::serverError("Erro ao desativar treinos anteriores");
         }
     }
 }

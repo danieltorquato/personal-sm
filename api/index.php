@@ -122,6 +122,12 @@ try {
                 case 'remove-exercise':
                     echo $controller->removeExercise();
                     break;
+                case 'check-active':
+                    echo $controller->checkActiveWorkouts();
+                    break;
+                case 'deactivate-previous':
+                    echo $controller->deactivatePreviousWorkouts();
+                    break;
                 default:
                     echo ApiResponse::notFound("Ação não encontrada");
             }

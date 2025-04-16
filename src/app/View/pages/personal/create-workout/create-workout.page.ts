@@ -228,6 +228,7 @@ export class CreateWorkoutPage implements OnInit {
       if (params['studentId']) {
         this.studentId = +params['studentId'];
         this.loadStudentDetails();
+        this.checkActiveWorkouts(); // Nova chamada para verificar treinos ativos
       }
     });
 
@@ -816,6 +817,72 @@ export class CreateWorkoutPage implements OnInit {
     event.target.src = 'assets/images/photo/default-user.png';
   }
 
+  // Novo método para verificar treinos ativos
+  async checkActiveWorkouts() {
+    try {
+      const loading = await this.loadingCtrl.create({
+        message: 'Verificando treinos ativos...'
+      });
+      await loading.present();
+
+      const response = await this.workoutService.checkActiveWorkouts(this.studentId).toPromise();
+
+      loading.dismiss();
+
+      if (response && response.status === 'success') {
+        if (response.data && response.data.hasActiveWorkout) {
+          // Se o aluno tem um treino ativo, mostrar alerta para confirmação
+          const activeWorkout = response.data.workout;
+          const today = new Date();
+          const validateToDate = new Date(activeWorkout.validate_to);
+
+          // Verificar se a data validate_to é superior a hoje (está ativo)
+          if (validateToDate > today) {
+            this.showActiveWorkoutConfirmation(activeWorkout);
+          }
+        }
+      } else {
+        console.error('Resposta inválida ao verificar treinos ativos:', response);
+        this.presentToast('Erro ao verificar treinos ativos', 'danger');
+      }
+    } catch (error) {
+      console.error('Erro ao verificar treinos ativos:', error);
+      this.presentToast('Erro ao verificar treinos ativos', 'danger');
+    }
+  }
+
+  // Mostrar confirmação se já existe treino ativo
+  async showActiveWorkoutConfirmation(activeWorkout: any) {
+    const formatDate = (dateString: string) => {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('pt-BR');
+    };
+
+    const alert = await this.alertCtrl.create({
+      header: 'Treino Ativo Encontrado',
+      message: `O aluno já possui um treino ativo: "${activeWorkout.name}" com validade até ${formatDate(activeWorkout.validate_to)}. Deseja criar um novo treino mesmo assim? O treino ativo atual será desativado.`,
+      buttons: [
+        {
+          text: 'Cancelar',
+          role: 'cancel',
+          handler: () => {
+            // Voltar para a página anterior
+            this.router.navigate(['/personal/student-profile'], { queryParams: { id: this.studentId } });
+          }
+        },
+        {
+          text: 'Continuar',
+          handler: () => {
+            // Continuar criando o novo treino
+            console.log('Continuando com a criação de novo treino');
+          }
+        }
+      ]
+    });
+
+    await alert.present();
+  }
+
   // Método para salvar o treino
   async saveWorkout() {
     console.log('Iniciando salvamento do treino');
@@ -849,6 +916,17 @@ export class CreateWorkoutPage implements OnInit {
     await loading.present();
 
     try {
+      // Primeiro, desativar treinos anteriores para este aluno
+      if (this.studentId) {
+        try {
+          await this.workoutService.deactivatePreviousWorkouts(this.studentId).toPromise();
+          console.log('Treinos anteriores desativados com sucesso');
+        } catch (error) {
+          console.error('Erro ao desativar treinos anteriores:', error);
+          // Continuamos mesmo se houver erro na desativação dos treinos anteriores
+        }
+      }
+
       // Preparar os dados para API
       const workoutData: any = {
         user_id: this.studentId || 0, // Usar o ID do aluno se estiver criando para um aluno específico

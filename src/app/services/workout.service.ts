@@ -186,6 +186,11 @@ export class WorkoutService {
     return this.http.get(`${this.apiUrl}/workouts/check-active?student_id=${studentId}`);
   }
 
+  // Desativar treinos anteriores do aluno
+  deactivatePreviousWorkouts(studentId: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/workouts/deactivate-previous`, { student_id: studentId });
+  }
+
   // Excluir um treino
   deleteWorkout(id: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/workouts/delete?id=${id}`);
