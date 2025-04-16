@@ -433,7 +433,7 @@ class WorkoutController {
 
     // Verificar se um aluno tem treinos ativos
     public function checkActiveWorkouts() {
-       
+
         // Obter ID do aluno da query string
         $student_id = isset($_GET['student_id']) ? $_GET['student_id'] : null;
 
@@ -475,7 +475,6 @@ class WorkoutController {
 
     // Desativar treinos anteriores do aluno
     public function deactivatePreviousWorkouts() {
-
         // Verificar se os dados foram enviados
         $data = json_decode(file_get_contents("php://input"));
 
@@ -486,8 +485,8 @@ class WorkoutController {
         // Sanitizar
         $student_id = htmlspecialchars(strip_tags($data->student_id));
 
-        // Data de ontem para desativar treinos
-        $yesterday = date('Y-m-d H:i:s', strtotime('-1 day'));
+        // Data de ontem com hora 23:59:59 para desativar treinos
+        $yesterday = date('Y-m-d 23:59:59', strtotime('-1 day'));
 
         // Query para atualizar todos os treinos ativos do aluno para expirados
         $query = "UPDATE workouts

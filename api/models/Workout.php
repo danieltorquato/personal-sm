@@ -83,6 +83,9 @@ class Workout {
                 $today->add(new \DateInterval("P{$duration}D"));
         }
 
+        // Definir o horário para 23:59:59
+        $today->setTime(23, 59, 59);
+
         return $today->format('Y-m-d H:i:s');
     }
 
