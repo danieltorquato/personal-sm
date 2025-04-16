@@ -25,16 +25,15 @@
 
       <!-- Botões de Upload de Mídia -->
       <div class="upload-buttons">
-        <ion-button fill="outline" size="small" (click)="triggerImageUpload()">
+        <!-- Botão de adicionar imagem apenas visível para admin -->
+        <ion-button *ngIf="isAdmin" fill="outline" size="small" (click)="triggerImageUpload()">
           <ion-icon name="image-outline" slot="start"></ion-icon>
           Adicionar Imagem
         </ion-button>
-        <ion-button fill="outline" size="small" (click)="triggerVideoUpload()">
-          <ion-icon name="videocam-outline" slot="start"></ion-icon>
-          Adicionar Vídeo
-        </ion-button>
-        <ion-button fill="solid" color="success" size="small" (click)="saveExerciseMedia()"
-                  *ngIf="selectedExercise?.image || selectedExercise?.video || selectedExercise?.imagePreview || selectedExercise?.videoPreview">
+
+        <!-- Botão para salvar mídia (só aparece se houver mídia para salvar e se for admin) -->
+        <ion-button *ngIf="isAdmin && (selectedExercise?.image || selectedExercise?.video || selectedExercise?.imagePreview || selectedExercise?.videoPreview)"
+                  fill="solid" color="success" size="small" (click)="saveExerciseMedia()">
           <ion-icon name="save-outline" slot="start"></ion-icon>
           Salvar Mídia
         </ion-button>

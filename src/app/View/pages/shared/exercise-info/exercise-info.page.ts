@@ -43,8 +43,7 @@ import {
   saveOutline
 } from 'ionicons/icons';
 import { WorkoutService } from 'src/app/services/workout.service';
-
-
+import { AuthService } from 'src/app/services/auth.service';
 interface Exercise {
   id?: number;
   name: string;
@@ -96,12 +95,14 @@ export class ExerciseInfoPage implements OnInit {
   selectedExercise: Exercise | null = null;
   loading: boolean = true;
   error: string | null = null;
-
+  isAdmin: boolean = false;
+  userData: any;
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private workoutService: WorkoutService,
-    private toastController: ToastController
+    private toastController: ToastController,
+    private authService: AuthService
   ) {
     addIcons({
       closeOutline,
@@ -119,9 +120,12 @@ export class ExerciseInfoPage implements OnInit {
       videocamOutline,
       saveOutline
     });
+    this.getUserData();
+    this.checkIfUserIsAdmin();
   }
 
   ngOnInit() {
+
     this.route.paramMap.subscribe(params => {
       const id = params.get('id');
       if (id) {
@@ -132,7 +136,20 @@ export class ExerciseInfoPage implements OnInit {
         this.loading = false;
       }
     });
+
+    // Verificar se há um parâmetro na URL indicando modo admin
+    this.route.queryParams.subscribe(params => {
+      if (params['admin'] === 'true') {
+        this.setAdminMode(true);
+      }
+    });
+
   }
+      getUserData() {
+        this.authService.getCurrentUser().subscribe(userData => {
+          this.userData = userData;
+        });
+      }
 
   loadExercise(id: number) {
     this.loading = true;
@@ -390,5 +407,45 @@ export class ExerciseInfoPage implements OnInit {
     });
 
     await toast.present();
+  }
+
+  // Método para verificar se o usuário é admin
+  private checkIfUserIsAdmin() {
+    // Implementação de exemplo - substitua com a lógica real de autenticação
+    // Verificar no localStorage ou em algum serviço de autenticação
+    // Obter dados do usuário armazenados
+    console.log('User Data:', this.userData);
+    if (this.userData.userType === 'admin') {
+      this.isAdmin = true;
+      console.log('Usuário é admin:', this.isAdmin);
+      console.log('User Data:', this.userData);
+      console.log('User Type:', this.userData.userType);
+
+    } else {
+      this.isAdmin = false;
+    }
+
+    console.log('Usuário é admin:', this.isAdmin);
+  }
+
+  // Método para ativar ou desativar o modo admin (para testes)
+  setAdminMode(isAdmin: boolean) {
+    this.isAdmin = isAdmin;
+    console.log('Modo admin ' + (isAdmin ? 'ativado' : 'desativado'));
+
+    // Armazenar no localStorage para persistir
+    try {
+      const userData = localStorage.getItem('userData');
+      if (userData) {
+        const user = JSON.parse(userData);
+        user.isAdmin = isAdmin;
+        localStorage.setItem('userData', JSON.stringify(user));
+      } else {
+        // Se não existe, criar um usuario básico
+        localStorage.setItem('userData', JSON.stringify({ isAdmin: isAdmin }));
+      }
+    } catch (e) {
+      console.error('Erro ao salvar status de admin:', e);
+    }
   }
 }
