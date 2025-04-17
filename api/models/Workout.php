@@ -693,7 +693,12 @@ class Workout {
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
     public function getSetsWorkout($workoutId) {
-        $query = "SELECT * FROM workout_sets WHERE workout_id = :workout_id ORDER BY order_index ASC";
+        $query = "SELECT ws.*, e.name as exercise_name, e.description, e.category,
+                 e.image_path as imageUrl, e.video_path as videoUrl, e.instructions
+                 FROM workout_sets ws
+                 JOIN exercises e ON ws.exercise_id = e.id
+                 WHERE ws.workout_id = :workout_id
+                 ORDER BY ws.order_index ASC";
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(":workout_id", $workoutId);
         $stmt->execute();

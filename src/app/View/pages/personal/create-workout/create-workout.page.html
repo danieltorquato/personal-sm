@@ -140,6 +140,9 @@
                   {{ getMethodName(exercise.method) }}
                 </p>
               </ion-label>
+              <div slot="end" class="exercise-part-badge" *ngIf="workout.workoutDivision !== 'unico'">
+                <ion-badge color="primary">{{ currentWorkoutPart }}</ion-badge>
+              </div>
               <ion-buttons slot="end" *ngIf="!reorderMode">
                 <ion-button (click)="removeExercise(i)">
                   <ion-icon slot="icon-only" name="trash-outline" color="danger"></ion-icon>

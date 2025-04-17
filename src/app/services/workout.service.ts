@@ -494,7 +494,145 @@ export class WorkoutService {
       });
     });
   }
-  getSetsWorkout(workoutId: number): Observable<ApiResponse<Workout>> {
-    return this.http.get<ApiResponse<Workout>>(`${this.apiUrl}/workouts/sets?workout_id=${workoutId}`);
+  getSetsWorkout(workoutId: number): Observable<ApiResponse<any[]>> {
+    const url = `${this.apiUrl}/pupil/sets?workout_id=${workoutId}`;
+    console.log('Chamando getSetsWorkout URL:', url);
+
+    return new Observable<ApiResponse<any[]>>(observer => {
+      this.http.get(url).subscribe({
+        next: (response: any) => {
+          console.log('Resposta bruta getSetsWorkout:', response);
+
+          try {
+            // Verificar se a resposta foi bem-sucedida
+            const isSuccess = response.success === true || response.status === 'success';
+
+            if (isSuccess && response.data) {
+              // Converter para formato padrão da API
+              const normalizedResponse = {
+                success: true,
+                status: 'success',
+                message: response.message || 'Sets do treino obtidos com sucesso',
+                data: response.data
+              } as ApiResponse<any[]>;
+
+              observer.next(normalizedResponse);
+              observer.complete();
+            } else if (Array.isArray(response)) {
+              // Em alguns casos, a API pode retornar diretamente um array
+              const normalizedResponse = {
+                success: true,
+                status: 'success',
+                message: 'Sets do treino obtidos com sucesso',
+                data: response
+              } as ApiResponse<any[]>;
+
+              observer.next(normalizedResponse);
+              observer.complete();
+            } else {
+              console.warn('Resposta inesperada:', response);
+              observer.error(new Error('Formato de resposta inesperado'));
+            }
+          } catch (error) {
+            console.error('Erro ao processar resposta:', error);
+            observer.error(new Error('Erro ao processar resposta do servidor'));
+          }
+        },
+        error: (err) => {
+          console.error('Erro na requisição getSetsWorkout:', err);
+          observer.error(err);
+        }
+      });
+    });
+  }
+
+  /**
+   * Atualiza o status de um treino
+   * @param workoutId ID do treino
+   * @param status Novo status (concluido, ativo, inativo, etc.)
+   */
+  updateWorkoutStatus(workoutId: number, status: string): Observable<ApiResponse<null>> {
+    const payload = {
+      id: workoutId,
+      situation: status
+    };
+
+    // Como não temos um endpoint específico para atualizar apenas o status,
+    // usamos o endpoint de atualização geral de treino
+    return this.http.put<ApiResponse<null>>(`${this.apiUrl}/workouts/update`, payload);
+  }
+
+  /**
+   * Marca os treinos anteriores do aluno como concluídos
+   * @param studentId ID do aluno
+   */
+  completePreviousWorkouts(studentId: number): Observable<any> {
+    // Como não temos um endpoint específico para marcar como concluído,
+    // primeiro buscamos os treinos ativos e depois atualizamos cada um individualmente
+    return new Observable(observer => {
+      this.getAllWorkouts(studentId).subscribe({
+        next: (response) => {
+          if (response && response.success && response.data && response.data.length > 0) {
+            const activeWorkouts = response.data;
+            const totalWorkouts = activeWorkouts.length;
+            let completedCount = 0;
+            let errorCount = 0;
+
+            // Para cada treino ativo, marcar como concluído
+            activeWorkouts.forEach((workout) => {
+              const payload = {
+                id: workout.id,
+                situation: 'concluido'
+              };
+
+              this.http.put<ApiResponse<null>>(`${this.apiUrl}/workouts/update`, payload).subscribe({
+                next: () => {
+                  completedCount++;
+                  if (completedCount + errorCount === totalWorkouts) {
+                    observer.next({
+                      success: true,
+                      message: `${completedCount} treinos marcados como concluídos, ${errorCount} falhas`,
+                      completedCount,
+                      errorCount
+                    });
+                    observer.complete();
+                  }
+                },
+                error: (err) => {
+                  console.error(`Erro ao marcar treino ${workout.id} como concluído:`, err);
+                  errorCount++;
+                  if (completedCount + errorCount === totalWorkouts) {
+                    if (errorCount === totalWorkouts) {
+                      observer.error(new Error('Falha ao marcar treinos como concluídos'));
+                    } else {
+                      observer.next({
+                        success: true,
+                        message: `${completedCount} treinos marcados como concluídos, ${errorCount} falhas`,
+                        completedCount,
+                        errorCount
+                      });
+                      observer.complete();
+                    }
+                  }
+                }
+              });
+            });
+          } else {
+            // Nenhum treino ativo para marcar como concluído
+            observer.next({
+              success: true,
+              message: 'Nenhum treino ativo encontrado para marcar como concluído',
+              completedCount: 0,
+              errorCount: 0
+            });
+            observer.complete();
+          }
+        },
+        error: (error) => {
+          console.error('Erro ao buscar treinos ativos:', error);
+          observer.error(error);
+        }
+      });
+    });
   }
 }

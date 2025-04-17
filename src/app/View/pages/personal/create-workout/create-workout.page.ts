@@ -1077,14 +1077,18 @@ export class CreateWorkoutPage implements OnInit {
     await loading.present();
 
     try {
-      // Primeiro, desativar treinos anteriores para este aluno
+      // Primeiro, marcar treinos anteriores como concluídos para este aluno
       if (this.studentId) {
         try {
-          await this.workoutService.deactivatePreviousWorkouts(this.studentId).toPromise();
-          console.log('Treinos anteriores desativados com sucesso');
+          const result = await this.workoutService.completePreviousWorkouts(this.studentId).toPromise();
+          console.log('Resultado de marcar treinos anteriores como concluídos:', result);
+
+          if (result && result.completedCount > 0) {
+            this.presentToast(`${result.completedCount} treinos anteriores marcados como concluídos`, 'success');
+          }
         } catch (error) {
-          console.error('Erro ao desativar treinos anteriores:', error);
-          // Continuamos mesmo se houver erro na desativação dos treinos anteriores
+          console.error('Erro ao marcar treinos anteriores como concluídos:', error);
+          // Continuamos mesmo se houver erro na conclusão dos treinos anteriores
         }
       }
 
