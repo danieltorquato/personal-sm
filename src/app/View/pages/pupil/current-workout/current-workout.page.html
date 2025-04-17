@@ -3,216 +3,74 @@
     <ion-buttons slot="start">
       <ion-back-button defaultHref="/"></ion-back-button>
     </ion-buttons>
-    <ion-title>Treino de Hoje</ion-title>
-    <ion-buttons slot="end">
-      <ion-button class="notification-button animate__animated animate__fadeInDown">
-        <ion-icon name="timer-outline"></ion-icon>
-        <ion-badge color="warning" style="--background: #9e7b3b;">45:00</ion-badge>
-      </ion-button>
-    </ion-buttons>
+    <ion-title>Meu Treino</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content fullscreen="true" class="ion-padding">
-  <div class="background-gradient"></div>
+<ion-content class="ion-padding">
+  <!-- Estado de carregamento -->
+  <div class="loading-container" *ngIf="isLoading">
+    <ion-spinner name="crescent" color="warning"></ion-spinner>
+    <p>Carregando seu treino...</p>
+  </div>
 
-  <!-- Workout Header -->
-  <ion-row class="animate__animated animate__fadeInUp">
-    <ion-col size="12">
-      <ion-card class="welcome-card glass-card">
-        <div class="card-blur-bg"></div>
-        <ion-card-content>
-          <h1 class="workout-title">Treino de Membros Superiores</h1>
-          <p class="workout-subtitle">Foco em Força e Hipertrofia</p>
-          <div class="workout-info">
-            <span class="workout-tag">
-              <ion-icon name="fitness-outline"></ion-icon> Avançado
-            </span>
-            <span class="workout-tag">
-              <ion-icon name="time-outline"></ion-icon> 45 min
-            </span>
-            <span class="workout-tag">
-              <ion-icon name="flame-outline"></ion-icon> 350 cal
-            </span>
-          </div>
-        </ion-card-content>
+  <!-- Mensagem de erro -->
+  <div class="error-container" *ngIf="!isLoading && error">
+    <ion-icon name="alert-circle-outline" color="danger"></ion-icon>
+    <p>{{ error }}</p>
+    <ion-button (click)="loadActiveWorkout()" fill="outline" color="warning" size="small">
+      Tentar novamente
+    </ion-button>
+  </div>
+
+  <!-- Card do treino (clicável) -->
+  <ng-container *ngIf="!isLoading && !error && workout">
+    <div class="card-container">
+      <ion-card class="workout-card" [routerLink]="['/pupil/starting-training', workoutId]">
+        <div class="card-content">
+          <ion-card-title class="workout-title">{{ workout.title }}</ion-card-title>
+          <ion-card-subtitle class="workout-date">Válido até: {{ workout.validate_to | date:'dd/MM/yyyy' }}</ion-card-subtitle>
+          <ion-icon name="chevron-forward-outline" class="arrow-icon"></ion-icon>
+        </div>
+        <div class="instructions">
+          <p>Ir ao treino</p>
+        </div>
       </ion-card>
-    </ion-col>
-  </ion-row>
+    </div>
 
-  <!-- Progress Bar -->
-  <ion-row class="animate__animated animate__fadeInUp animate__delay-1s">
-    <ion-col size="12">
-      <ion-card class="progress-card">
-        <ion-card-content>
-          <div class="progress-header">
-            <h2>Progresso</h2>
-            <span class="progress-text">3/8 Exercícios</span>
+    <!-- Informações adicionais -->
+    <div class="info-section">
+      <h2 class="info-title">Detalhes do Treino</h2>
+
+      <div class="info-card">
+        <div class="info-item">
+          <ion-icon name="barbell-outline"></ion-icon>
+          <div class="info-text">
+            <span class="info-label">Nível</span>
+            <span class="info-value">{{ workout.level || 'Intermediário' }}</span>
           </div>
-          <div class="progress-bar">
-            <div class="progress-fill" style="width: 37%;"></div>
+        </div>
+
+
+        <div class="info-item">
+          <ion-icon name="calendar-outline"></ion-icon>
+          <div class="info-text">
+            <span class="info-label">Criado em</span>
+            <span class="info-value">{{ workout.created_at | date:'dd/MM/yyyy' }}</span>
           </div>
-        </ion-card-content>
-      </ion-card>
-    </ion-col>
-  </ion-row>
 
-  <!-- Exercise List -->
-  <ion-row class="animate__animated animate__fadeInUp animate__delay-1s">
-    <ion-col size="12">
-      <ion-card class="exercise-card">
-        <ion-card-header>
-          <ion-card-title class="gold-text">
-            <ion-icon name="barbell-outline" class="header-icon"></ion-icon>
-            Lista de Exercícios
-          </ion-card-title>
-        </ion-card-header>
-        <ion-card-content>
-          <ion-list lines="none">
-            <!-- Completed Exercises -->
-            <ion-item class="exercise-item completed">
-              <ion-icon name="checkmark-circle" slot="start" class="complete-icon"></ion-icon>
-              <ion-label>
-                <h2>Supino Reto</h2>
-                <p>
-                  <ion-icon name="repeat-outline" class="small-icon"></ion-icon> 4 séries
-                  <ion-icon name="fitness-outline" class="small-icon ion-margin-start"></ion-icon> 12 reps
-                  <ion-icon name="barbell-outline" class="small-icon ion-margin-start"></ion-icon> 70kg
-                </p>
-              </ion-label>
-              <ion-button fill="clear" slot="end" class="view-button">
-                <ion-icon slot="icon-only" name="information-circle-outline"></ion-icon>
-              </ion-button>
-            </ion-item>
+        </div>
+        <div class="info-item">
+          <ion-icon name="calendar-outline"></ion-icon>
+          <div class="info-text">
+            <span class="info-label">Descrição</span>
+            <span class="info-value">{{ workout.notes}}</span>
+          </div>
 
-            <ion-item class="exercise-item completed">
-              <ion-icon name="checkmark-circle" slot="start" class="complete-icon"></ion-icon>
-              <ion-label>
-                <h2>Supino Inclinado</h2>
-                <p>
-                  <ion-icon name="repeat-outline" class="small-icon"></ion-icon> 3 séries
-                  <ion-icon name="fitness-outline" class="small-icon ion-margin-start"></ion-icon> 10 reps
-                  <ion-icon name="barbell-outline" class="small-icon ion-margin-start"></ion-icon> 22kg
-                </p>
-              </ion-label>
-              <ion-button fill="clear" slot="end" class="view-button">
-                <ion-icon slot="icon-only" name="information-circle-outline"></ion-icon>
-              </ion-button>
-            </ion-item>
+        </div>
+      </div>
 
-            <ion-item class="exercise-item completed">
-              <ion-icon name="checkmark-circle" slot="start" class="complete-icon"></ion-icon>
-              <ion-label>
-                <h2>Crucifixo</h2>
-                <p>
-                  <ion-icon name="repeat-outline" class="small-icon"></ion-icon> 3 séries
-                  <ion-icon name="fitness-outline" class="small-icon ion-margin-start"></ion-icon> 15 reps
-                  <ion-icon name="barbell-outline" class="small-icon ion-margin-start"></ion-icon> 15kg
-                </p>
-              </ion-label>
-              <ion-button fill="clear" slot="end" class="view-button">
-                <ion-icon slot="icon-only" name="information-circle-outline"></ion-icon>
-              </ion-button>
-            </ion-item>
 
-            <!-- Current Exercise -->
-            <ion-item class="exercise-item current">
-              <div class="pulse-indicator"></div>
-              <ion-label>
-                <h2>Puxada Frontal</h2>
-                <p>
-                  <ion-icon name="repeat-outline" class="small-icon"></ion-icon> 4 séries
-                  <ion-icon name="fitness-outline" class="small-icon ion-margin-start"></ion-icon> 12 reps
-                  <ion-icon name="barbell-outline" class="small-icon ion-margin-start"></ion-icon> 65kg
-                </p>
-              </ion-label>
-              <ion-button fill="clear" slot="end" class="start-button">
-                <ion-icon slot="icon-only" name="play"></ion-icon>
-              </ion-button>
-            </ion-item>
-
-            <!-- Upcoming Exercises -->
-            <ion-item class="exercise-item">
-              <ion-icon name="ellipse-outline" slot="start" class="incomplete-icon"></ion-icon>
-              <ion-label>
-                <h2>Remada Sentada</h2>
-                <p>
-                  <ion-icon name="repeat-outline" class="small-icon"></ion-icon> 3 séries
-                  <ion-icon name="fitness-outline" class="small-icon ion-margin-start"></ion-icon> 12 reps
-                  <ion-icon name="barbell-outline" class="small-icon ion-margin-start"></ion-icon> 60kg
-                </p>
-              </ion-label>
-              <ion-button fill="clear" slot="end" class="view-button">
-                <ion-icon slot="icon-only" name="information-circle-outline"></ion-icon>
-              </ion-button>
-            </ion-item>
-
-            <ion-item class="exercise-item">
-              <ion-icon name="ellipse-outline" slot="start" class="incomplete-icon"></ion-icon>
-              <ion-label>
-                <h2>Rosca Direta</h2>
-                <p>
-                  <ion-icon name="repeat-outline" class="small-icon"></ion-icon> 3 séries
-                  <ion-icon name="fitness-outline" class="small-icon ion-margin-start"></ion-icon> 12 reps
-                  <ion-icon name="barbell-outline" class="small-icon ion-margin-start"></ion-icon> 15kg
-                </p>
-              </ion-label>
-              <ion-button fill="clear" slot="end" class="view-button">
-                <ion-icon slot="icon-only" name="information-circle-outline"></ion-icon>
-              </ion-button>
-            </ion-item>
-
-            <ion-item class="exercise-item">
-              <ion-icon name="ellipse-outline" slot="start" class="incomplete-icon"></ion-icon>
-              <ion-label>
-                <h2>Tríceps Corda</h2>
-                <p>
-                  <ion-icon name="repeat-outline" class="small-icon"></ion-icon> 3 séries
-                  <ion-icon name="fitness-outline" class="small-icon ion-margin-start"></ion-icon> 15 reps
-                  <ion-icon name="barbell-outline" class="small-icon ion-margin-start"></ion-icon> 25kg
-                </p>
-              </ion-label>
-              <ion-button fill="clear" slot="end" class="view-button">
-                <ion-icon slot="icon-only" name="information-circle-outline"></ion-icon>
-              </ion-button>
-            </ion-item>
-
-            <ion-item class="exercise-item">
-              <ion-icon name="ellipse-outline" slot="start" class="incomplete-icon"></ion-icon>
-              <ion-label>
-                <h2>Desenvolvimento</h2>
-                <p>
-                  <ion-icon name="repeat-outline" class="small-icon"></ion-icon> 3 séries
-                  <ion-icon name="fitness-outline" class="small-icon ion-margin-start"></ion-icon> 10 reps
-                  <ion-icon name="barbell-outline" class="small-icon ion-margin-start"></ion-icon> 18kg
-                </p>
-              </ion-label>
-              <ion-button fill="clear" slot="end" class="view-button">
-                <ion-icon slot="icon-only" name="information-circle-outline"></ion-icon>
-              </ion-button>
-            </ion-item>
-          </ion-list>
-        </ion-card-content>
-      </ion-card>
-    </ion-col>
-  </ion-row>
+    </div>
+  </ng-container>
 </ion-content>
-
-<ion-footer class="ion-no-border animate__animated animate__fadeInUp">
-  <ion-toolbar color="dark" class="footer-toolbar">
-    <ion-row>
-      <ion-col>
-        <ion-button expand="block" shape="round" color="medium" fill="clear">
-          <ion-icon slot="start" name="pause-circle-outline"></ion-icon>
-          Pausar
-        </ion-button>
-      </ion-col>
-      <ion-col>
-        <ion-button expand="block" shape="round" color="success">
-          <ion-icon slot="start" name="checkmark-circle-outline"></ion-icon>
-          Completar Treino
-        </ion-button>
-      </ion-col>
-    </ion-row>
-  </ion-toolbar>
-</ion-footer>

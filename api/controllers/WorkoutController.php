@@ -644,5 +644,16 @@ class WorkoutController {
             ]);
         }
     }
+    public function getWorkoutActive($type) {
+
+
+        $workout = $this->workout->getActiveWorkout($type);
+
+        return ApiResponse::success("Treino ativo obtido com sucesso", $workout);
+    }
+    public function getSetsWorkout($workoutId) {
+        $sets = $this->workout->getSetsWorkout($workoutId);
+        return ApiResponse::success("Sets do treino obtidos com sucesso", $sets);
+    }
 }
 

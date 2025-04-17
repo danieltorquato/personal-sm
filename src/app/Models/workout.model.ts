@@ -49,6 +49,8 @@ export interface Workout {
   updated_at?: string;
   sets?: WorkoutSet[];
   exercises?: any[];
+  level?: string;
+  validate_to?: string;
 }
 
 export interface AssignedWorkout {
@@ -62,11 +64,15 @@ export interface AssignedWorkout {
   trainer_name?: string;
   assigned_date: string;
   due_date?: string;
-  status: 'pendente' | 'em_andamento' | 'concluido' | 'cancelado';
+  status: 'ativo' | 'inativo' | 'pendente' | 'concluido';
   feedback?: string;
   total_distance?: number;
   created_at?: string;
   updated_at?: string;
+  level?: string;
+  duration?: string;
+  exercises?: any[];
+
 }
 
 export interface WorkoutSession {

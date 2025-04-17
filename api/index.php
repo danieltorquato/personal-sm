@@ -200,6 +200,33 @@ try {
                     echo ApiResponse::notFound("Ação não encontrada");
             }
             break;
+            case 'pupil':
+                require_once "controllers/WorkoutController.php";
+                $controller = new WorkoutController($db);
+
+                switch ($action) {
+                    case 'workout-active':
+                        $type = $_GET['type'] ?? null;
+                        if (!$type) {
+                            echo ApiResponse::error("Tipo de treino não fornecido", 400);
+                            break;
+                        }
+
+                        echo $controller->getWorkoutActive($type);
+                        break;
+                    case 'sets':
+                        $workoutId = $_GET['workout_id'] ?? null;
+                        if (!$workoutId) {
+                            echo ApiResponse::error("ID do treino não fornecido", 400);
+                            break;
+                        }
+
+                        echo $controller->getSetsWorkout($workoutId);
+                        break;
+                    default:
+                        echo ApiResponse::notFound("Ação não encontrada");
+            }
+            break;
         case "anamnesis":
             require_once "controllers/AnamnesisController.php";
             $controller = new AnamnesisController($db);

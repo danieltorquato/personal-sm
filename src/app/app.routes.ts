@@ -112,8 +112,12 @@ export const routes: Routes = [
         loadComponent: () => import('./View/pages/pupil/profile/profile.page').then(m => m.PupilProfilePage)
       },
       {
-        path: 'current-workout',
+        path: 'current-workout/:id',
         loadComponent: () => import('./View/pages/pupil/current-workout/current-workout.page').then(m => m.CurrentWorkoutPage)
+      },
+      {
+        path: 'starting-training/:id',
+        loadComponent: () => import('./View/pages/pupil/starting-training/starting-training.page').then( m => m.StartingTrainingPage)
       },
       {
         path: 'workout-history',
@@ -146,6 +150,8 @@ export const routes: Routes = [
     path: '**',
     redirectTo: 'login'
   },
+
+
 
 
 ];

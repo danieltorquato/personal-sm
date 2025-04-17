@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { Workout, WorkoutSet, AssignedWorkout, WorkoutSession, ApiResponse, Lap } from '../Models/workout.model';
+import { catchError, throwError } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -74,7 +75,67 @@ export class WorkoutService {
    * Obtém um treino por ID
    */
   getWorkout(id: number): Observable<ApiResponse<Workout>> {
-    return this.http.get<ApiResponse<Workout>>(`${this.apiUrl}/workouts/get?id=${id}`);
+
+    const url = `${this.apiUrl}/pupil/workout-active`;
+    console.log('Chamando getWorkout URL:', url);
+
+    return new Observable<ApiResponse<Workout>>(observer => {
+      this.http.get(url).subscribe({
+        next: (response: any) => {
+          console.log('Resposta bruta getWorkout:', response);
+
+          try {
+            // Compatibilidade com diferentes formatos de resposta
+            // Alguns endpoints usam 'success', outros usam 'status: success'
+            const isSuccess = response.success === true || response.status === 'success';
+
+            if (isSuccess && response.data) {
+              // Converter para formato padrão da API
+              const normalizedResponse = {
+                success: true,
+                message: response.message || 'Treino obtido com sucesso',
+                data: response.data
+              } as ApiResponse<Workout>;
+              id = response.data.id
+              // Garantir que exercises seja um array
+              if (normalizedResponse.data && normalizedResponse.data.exercises === undefined) {
+                normalizedResponse.data.exercises = [];
+              }
+
+              observer.next(normalizedResponse);
+              observer.complete();
+            } else {
+              console.error('Dados inválidos na resposta:', response);
+
+              // Criar resposta de erro com uma estrutura compatível com o modelo Workout
+              const mockWorkout: Partial<Workout> = {
+
+                name: 'Treino não disponível',
+                type: 'Indisponível',
+                notes: 'Houve um erro ao buscar este treino',
+                exercises: []
+              };
+
+              const mockResponse = {
+                success: false,
+                message: 'Não foi possível obter os detalhes do treino',
+                data: mockWorkout as Workout
+              } as ApiResponse<Workout>;
+
+              observer.next(mockResponse);
+              observer.complete();
+            }
+          } catch (error) {
+            console.error('Erro ao processar resposta:', error);
+            observer.error(new Error('Erro ao processar resposta do servidor'));
+          }
+        },
+        error: (err) => {
+          console.error('Erro na requisição getWorkout:', err);
+          observer.error(err);
+        }
+      });
+    });
   }
 
   /**
@@ -172,13 +233,87 @@ export class WorkoutService {
     return this.http.get(url);
   }
 
-  // Obter todos os treinos (com filtro opcional de usuário)
-  getAllWorkouts(userId?: number): Observable<any> {
-    const url = userId
-      ? `${this.apiUrl}/workouts/list?user_id=${userId}`
-      : `${this.apiUrl}/workouts/list`;
+  /**
+   * Obtém todos os treinos (ou treinos de um usuário específico)
+   * Filtra apenas treinos ativos (situation='ativo')
+   */
+  getAllWorkouts(userId?: number): Observable<ApiResponse<Workout[]>> {
+    let url: string;
 
-    return this.http.get(url);
+    if (userId) {
+      // Tentar o endpoint correto para listar treinos por usuário
+      // Adicionando parâmetro para filtrar apenas treinos ativos
+      url = `${this.apiUrl}/workouts/list?user_id=${userId}&situation=ativo`;
+    } else {
+      // Endpoint para listar todos os treinos ativos
+      url = `${this.apiUrl}/workouts/list?situation=ativo`;
+    }
+
+    console.log('Chamando getAllWorkouts URL:', url);
+
+    return new Observable<ApiResponse<Workout[]>>(observer => {
+      this.http.get(url).pipe(
+        catchError((error) => {
+          // Se receber 404, tentar endpoint alternativo
+          if (error.status === 404 && userId) {
+            console.log('Endpoint não encontrado, tentando alternativa...');
+            const alternativeUrl = `${this.apiUrl}/workouts/list-by-user?user_id=${userId}&situation=ativo`;
+            console.log('Tentando endpoint alternativo:', alternativeUrl);
+            return this.http.get(alternativeUrl);
+          }
+          return throwError(() => error);
+        })
+      ).subscribe({
+        next: (response: any) => {
+          console.log('Resposta bruta getAllWorkouts:', response);
+
+          try {
+            // Compatibilidade com diferentes formatos de resposta
+            const isSuccess = response.success === true || response.status === 'success';
+
+            if (isSuccess && response.data) {
+              // Garantir que temos um array de treinos
+              let workouts = Array.isArray(response.data) ? response.data : [response.data];
+
+              // Filtrar apenas treinos ativos, caso o backend não tenha feito isso
+              workouts = workouts.filter((workout: any) =>
+                workout.situation === 'ativo' || workout.status === 'ativo');
+
+              // Converter para formato padrão da API
+              const normalizedResponse = {
+                success: true,
+                status: 'success',
+                message: response.message || 'Treinos obtidos com sucesso',
+                data: workouts
+              } as ApiResponse<Workout[]>;
+
+              observer.next(normalizedResponse);
+              observer.complete();
+            } else {
+              console.error('Dados inválidos na resposta getAllWorkouts:', response);
+
+              // Criar resposta vazia mas válida
+              const emptyResponse: ApiResponse<Workout[]> = {
+                success: false,
+                status: 'error',
+                message: 'Não foi possível obter a lista de treinos',
+                data: []
+              };
+
+              observer.next(emptyResponse);
+              observer.complete();
+            }
+          } catch (error) {
+            console.error('Erro ao processar resposta:', error);
+            observer.error(new Error('Erro ao processar resposta do servidor'));
+          }
+        },
+        error: (err) => {
+          console.error('Erro na requisição getAllWorkouts:', err);
+          observer.error(err);
+        }
+      });
+    });
   }
 
   // Verificar se um aluno tem treinos ativos
@@ -292,5 +427,74 @@ export class WorkoutService {
         observer.error(error);
       }
     });
+  }
+
+  /**
+   * Obtém o treino ativo de um usuário específico
+   * @param userId ID do usuário/aluno
+   * @returns Observable com o treino ativo
+   */
+  getActiveWorkout(type: string): Observable<ApiResponse<Workout>> {
+    if (!type) {
+      console.error('getActiveWorkout chamado sem ID de usuário válido');
+      throw new Error('ID do usuário é obrigatório');
+    }
+
+    const url = `${this.apiUrl}/pupil/workout-active?type=${type}`;
+    console.log('Chamando getActiveWorkout URL:', url);
+
+    return new Observable<ApiResponse<Workout>>(observer => {
+      this.http.get(url).subscribe({
+        next: (response: any) => {
+          console.log('Resposta bruta getActiveWorkout:', response);
+
+          try {
+            // Verificar se a resposta foi bem-sucedida
+            const isSuccess = response.success === true || response.status === 'success';
+
+            if (isSuccess && response.data) {
+              // Converter para formato padrão da API
+              const normalizedResponse = {
+                success: true,
+                status: 'success',
+                message: response.message || 'Treino ativo obtido com sucesso',
+                data: response.data
+              } as ApiResponse<Workout>;
+
+              // Garantir que exercises seja um array
+              if (normalizedResponse.data && normalizedResponse.data.exercises === undefined) {
+                normalizedResponse.data.exercises = [];
+              }
+
+              observer.next(normalizedResponse);
+              observer.complete();
+            } else {
+              console.warn('Nenhum treino ativo encontrado:', response);
+
+              // Criar resposta vazia mas válida
+              const emptyResponse = {
+                success: false,
+                status: 'error',
+                message: 'Nenhum treino ativo encontrado para este usuário',
+                data: null
+              } as unknown as ApiResponse<Workout>;
+
+              observer.next(emptyResponse);
+              observer.complete();
+            }
+          } catch (error) {
+            console.error('Erro ao processar resposta:', error);
+            observer.error(new Error('Erro ao processar resposta do servidor'));
+          }
+        },
+        error: (err) => {
+          console.error('Erro na requisição getActiveWorkout:', err);
+          observer.error(err);
+        }
+      });
+    });
+  }
+  getSetsWorkout(workoutId: number): Observable<ApiResponse<Workout>> {
+    return this.http.get<ApiResponse<Workout>>(`${this.apiUrl}/workouts/sets?workout_id=${workoutId}`);
   }
 }

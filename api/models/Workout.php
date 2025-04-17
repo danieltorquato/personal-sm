@@ -173,15 +173,29 @@ class Workout {
     }
 
     // Listar todos os treinos
-    public function readAll() {
-        // Query
+    public function readAll($situation = null) {
+        // Query base
         $query = "SELECT w.*, u.name as student_name
                  FROM " . $this->table_name . " w
                  LEFT JOIN users u ON w.user_id = u.id
-                 ORDER BY w.created_at DESC";
+                 WHERE 1=1";
+
+        // Adicionar filtro de situação se fornecido
+        if ($situation) {
+            $query .= " AND w.situation = :situation";
+        }
+
+        // Ordenação
+        $query .= " ORDER BY w.created_at DESC";
 
         // Preparar a query
         $stmt = $this->conn->prepare($query);
+
+        // Vincular parâmetros se necessário
+        if ($situation) {
+            $situation = htmlspecialchars(strip_tags($situation));
+            $stmt->bindParam(":situation", $situation);
+        }
 
         // Executar
         $stmt->execute();
@@ -190,13 +204,20 @@ class Workout {
     }
 
     // Listar treinos de um aluno
-    public function readByUserId($user_id) {
-        // Query
+    public function readByUserId($user_id, $situation = null) {
+        // Query base
         $query = "SELECT w.*, u.name as student_name
                  FROM " . $this->table_name . " w
                  LEFT JOIN users u ON w.user_id = u.id
-                 WHERE w.user_id = :user_id
-                 ORDER BY w.created_at DESC";
+                 WHERE w.user_id = :user_id";
+
+        // Adicionar filtro de situação se fornecido
+        if ($situation) {
+            $query .= " AND w.situation = :situation";
+        }
+
+        // Ordenação
+        $query .= " ORDER BY w.created_at DESC";
 
         // Preparar a query
         $stmt = $this->conn->prepare($query);
@@ -204,8 +225,14 @@ class Workout {
         // Sanitizar
         $user_id = htmlspecialchars(strip_tags($user_id));
 
-        // Vincular
+        // Vincular parâmetros
         $stmt->bindParam(":user_id", $user_id);
+
+        // Vincular situação se fornecida
+        if ($situation) {
+            $situation = htmlspecialchars(strip_tags($situation));
+            $stmt->bindParam(":situation", $situation);
+        }
 
         // Executar
         $stmt->execute();
@@ -459,7 +486,7 @@ class Workout {
         }
 
         // Ordenar por data agendada e data de criação
-        $query .= " ORDER BY aw.scheduled_date ASC, aw.created_at DESC";
+        $query .= " ORDER BY aw.due_date ASC, aw.created_at DESC";
 
         // Preparar a query
         $stmt = $this->conn->prepare($query);
@@ -644,6 +671,33 @@ class Workout {
         $session['sets'] = $sets;
 
         return $session;
+    }
+
+    // Buscar o treino ativo de um usuário
+    public function getActiveWorkout($type) {
+        // Query para obter o treino com situation='ativo' para o usuário
+        $query = "SELECT * FROM " . $this->table_name . "
+                 WHERE situation = 'ativo' AND type = :type
+                 LIMIT 0,1";
+
+        // Preparar a query
+        $stmt = $this->conn->prepare($query);
+
+        // Vincular
+        $stmt->bindParam(":type", $type);
+
+
+        // Executar
+        $stmt->execute();
+
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+    public function getSetsWorkout($workoutId) {
+        $query = "SELECT * FROM workout_sets WHERE workout_id = :workout_id ORDER BY order_index ASC";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(":workout_id", $workoutId);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }
 ?>
