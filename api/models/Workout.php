@@ -388,7 +388,7 @@ class Workout {
     // Finalizar uma sessão de treino
     public function finishWorkoutSession($session_id, $total_time, $total_distance, $notes = '') {
         // Query para atualizar a sessão
-        $query = "UPDATE workout_sessions
+        $query = "UPDATE pool_sessions
                  SET end_time = NOW(),
                      total_time = :total_time,
                      total_distance = :total_distance,
@@ -531,7 +531,7 @@ class Workout {
         }
 
         // Criar uma nova sessão de treino
-        $query = "INSERT INTO workout_sessions
+        $query = "INSERT INTO pool_sessions
                  (assigned_workout_id, start_time, status)
                  VALUES
                  (:assigned_workout_id, NOW(), 'em_andamento')";
@@ -710,15 +710,106 @@ class Workout {
 
     public function getSetsWorkout($workoutId) {
         $query = "SELECT ws.*, e.name as exercise_name, e.description, e.category,
-                 e.image_path as imageUrl, e.video_path as videoUrl, e.instructions
+                 e.image_path as imageUrl, e.video_path as videoUrl, e.instructions,
+                 ws.parcel as part
                  FROM workout_sets ws
                  JOIN exercises e ON ws.exercise_id = e.id
                  WHERE ws.workout_id = :workout_id
-                 ORDER BY ws.order_index ASC";
+                 ORDER BY ws.parcel ASC, ws.order_index ASC";
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(":workout_id", $workoutId);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Iniciar uma sessão de treino na academia
+     * @param int $workout_id ID do treino
+     * @param string $partial A parcela do treino (A, B, C, etc.)
+     * @return int|bool ID da sessão criada ou false em caso de erro
+     */
+    public function startGymSession($workout_id, $partial) {
+        // Query para inserir na tabela gym_sessions
+        $query = "INSERT INTO gym_sessions
+                 (workout_id, partial, created_at)
+                 VALUES
+                 (:workout_id, :partial, NOW())";
+
+        // Preparar a query
+        $stmt = $this->conn->prepare($query);
+
+        // Sanitizar parâmetros
+        $workout_id = htmlspecialchars(strip_tags($workout_id));
+        $partial = htmlspecialchars(strip_tags($partial));
+
+        // Vincular parâmetros
+        $stmt->bindParam(":workout_id", $workout_id);
+        $stmt->bindParam(":partial", $partial);
+
+        // Executar a query
+        if($stmt->execute()) {
+            return $this->conn->lastInsertId();
+        }
+
+        return false;
+    }
+
+    /**
+     * Finalizar uma sessão de treino na academia
+     * @param int $session_id ID da sessão
+     * @return bool Resultado da operação
+     */
+    public function completeGymSession($session_id) {
+        // Query para calcular o tempo de treino em minutos e atualizar a sessão
+        $query = "UPDATE gym_sessions
+                 SET completed_at = NOW(),
+                     minutes_workout = TIMESTAMPDIFF(MINUTE, created_at, NOW())
+                 WHERE id = :session_id";
+
+        // Preparar a query
+        $stmt = $this->conn->prepare($query);
+
+        // Sanitizar parâmetros
+        $session_id = htmlspecialchars(strip_tags($session_id));
+
+        // Vincular parâmetros
+        $stmt->bindParam(":session_id", $session_id);
+
+        // Executar a query
+        return $stmt->execute();
+    }
+
+    /**
+     * Obtém o ID da última sessão de treino criada para um determinado treino
+     * @param int $workout_id ID do treino
+     * @return int|bool ID da última sessão criada ou false se não encontrar
+     */
+    public function getLastGymSessionId($workout_id) {
+        // Query para buscar o último ID de sessão criada para este treino
+        $query = "SELECT id FROM gym_sessions
+                  WHERE workout_id = :workout_id
+                  ORDER BY created_at DESC
+                  LIMIT 1";
+
+        // Preparar a query
+        $stmt = $this->conn->prepare($query);
+
+        // Sanitizar parâmetros
+        $workout_id = htmlspecialchars(strip_tags($workout_id));
+
+        // Vincular parâmetros
+        $stmt->bindParam(":workout_id", $workout_id);
+
+        // Executar a query
+        $stmt->execute();
+
+        // Verificar se encontrou resultado
+        if ($stmt->rowCount() > 0) {
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            return $row['id'];
+        }
+
+        return false;
     }
 }
 ?>

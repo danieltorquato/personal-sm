@@ -655,5 +655,69 @@ class WorkoutController {
         $sets = $this->workout->getSetsWorkout($workoutId);
         return ApiResponse::success("Sets do treino obtidos com sucesso", $sets);
     }
+
+    /**
+     * Iniciar uma sessão de treino na academia
+     */
+    public function startGymSession() {
+        // Obter os dados enviados
+        $data = json_decode(file_get_contents("php://input"));
+
+        // Verificar se todos os dados necessários foram enviados
+        if(!$data || !isset($data->workout_id) || !isset($data->partial)) {
+            return ApiResponse::error("Dados incompletos. É necessário o ID do treino e a parcela selecionada.");
+        }
+
+        // Iniciar a sessão de treino
+        $session_id = $this->workout->startGymSession($data->workout_id, $data->partial);
+
+        if($session_id) {
+            return ApiResponse::success("Sessão de treino iniciada com sucesso", ["session_id" => $session_id]);
+        } else {
+            return ApiResponse::serverError("Erro ao iniciar a sessão de treino");
+        }
+    }
+
+    /**
+     * Finalizar uma sessão de treino na academia
+     */
+    public function completeGymSession() {
+        // Obter os dados enviados
+        $data = json_decode(file_get_contents("php://input"));
+
+        // Verificar se todos os dados necessários foram enviados
+        if(!$data || !isset($data->session_id)) {
+            return ApiResponse::error("ID da sessão de treino é obrigatório");
+        }
+
+        // Finalizar a sessão de treino
+        if($this->workout->completeGymSession($data->session_id)) {
+            return ApiResponse::success("Sessão de treino finalizada com sucesso");
+        } else {
+            return ApiResponse::serverError("Erro ao finalizar a sessão de treino");
+        }
+    }
+
+    /**
+     * Obtém o ID da última sessão de treino criada para um determinado treino
+     */
+    public function getLastGymSessionId() {
+        // Obter o ID do treino da query string
+        $workout_id = isset($_GET['workout_id']) ? $_GET['workout_id'] : null;
+
+        // Verificar se o ID do treino foi fornecido
+        if (!$workout_id) {
+            return ApiResponse::error("ID do treino não fornecido", 400);
+        }
+
+        // Buscar o último ID de sessão
+        $session_id = $this->workout->getLastGymSessionId($workout_id);
+
+        if ($session_id) {
+            return ApiResponse::success("ID da última sessão obtido com sucesso", ["session_id" => $session_id]);
+        } else {
+            return ApiResponse::notFound("Nenhuma sessão encontrada para este treino");
+        }
+    }
 }
 

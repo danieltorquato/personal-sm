@@ -37,6 +37,7 @@ export class AuthService {
   // URL da API real
   private apiUrl = environment.apiUrl; // Ajuste conforme necessário para sua API
   public currentUser: User | null = null;
+  public studentId: string | null = null;
 
   constructor(
     private http: HttpClient,

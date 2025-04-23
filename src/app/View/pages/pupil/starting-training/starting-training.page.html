@@ -48,6 +48,8 @@
       </div>
     </div>
 
+
+
     <!-- Workout info -->
     <div class="workout-info">
       <div class="info-card">
@@ -89,16 +91,35 @@
         </div>
       </div>
     </div>
-
+<!-- Divisão de treino com Segment -->
+<div class="workout-divisions" *ngIf="workout?.workout_division && workout.workout_division !== 'unico'">
+  <ion-segment [(ngModel)]="currentWorkoutPart" (ionChange)="segmentChanged($event)">
+    <ion-segment-button value="A" *ngIf="workout?.workout_division?.includes('A')">
+      <ion-label>A</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="B" *ngIf="workout?.workout_division?.includes('B')">
+      <ion-label>B</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="C" *ngIf="workout?.workout_division?.includes('C')">
+      <ion-label>C</ion-label>
+    </ion-segment-button>
+      <ion-segment-button value="D" *ngIf="workout?.workout_division?.includes('D')">
+      <ion-label>D</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="E" *ngIf="workout?.workout_division?.includes('E')">
+      <ion-label>E</ion-label>
+    </ion-segment-button>
+  </ion-segment>
+</div>
     <!-- Exercise preview -->
     <div class="exercise-preview">
       <div class="preview-header">
-        <h2>Exercícios programados</h2>
-        <span class="exercise-count">{{ workout.exercises?.length || 0 }} exercícios</span>
+        <h2>Exercícios {{ workout.workout_division !== 'unico' ? '- Parte ' + currentWorkoutPart : '' }}</h2>
+        <span class="exercise-count">{{ filteredExercises.length || 0 }} exercícios</span>
       </div>
 
       <ion-list class="exercise-list">
-        <ion-item *ngFor="let exercise of workout.exercises?.slice(0,3)">
+        <ion-item *ngFor="let exercise of filteredExercises?.slice(0,3)">
           <ion-icon name="fitness-outline" slot="start"></ion-icon>
           <ion-label>
             <h3>{{ exercise.name || 'Exercício' }}</h3>
@@ -106,9 +127,9 @@
           </ion-label>
         </ion-item>
 
-        <ion-item *ngIf="workout.exercises.length > 3 " class="more-exercises">
+        <ion-item *ngIf="filteredExercises && filteredExercises.length > 3" class="more-exercises">
           <ion-label class="more-text">
-            +{{ workout.exercises.length - 3 }} exercícios adicionais
+            +{{ filteredExercises.length - 3 }} exercícios adicionais
           </ion-label>
         </ion-item>
       </ion-list>
@@ -142,6 +163,7 @@
         <div class="exercise-slide">
           <div class="exercise-header">
             <h2>{{ exercise.name }}</h2>
+            <span *ngIf="exercise.part" class="exercise-part">Parte {{ exercise.part }}</span>
             <p *ngIf="exercise.instructions" class="exercise-instructions">{{ exercise.instructions }}</p>
           </div>
 
@@ -258,7 +280,7 @@
     <h4>Debug Info (Remover em produção)</h4>
     <p>Workout ID: {{ workout.id }}</p>
     <p>Workout Name: {{ workout.name }}</p>
-    <p>Total Exercises: {{ workout.exercises?.length || 0 }}</p>
+    <p>Total Exercises: {{ workout.exercises.length || 0 }}</p>
     <details>
       <summary>Exercícios (clique para expandir)</summary>
       <pre>{{ workout.exercises | json }}</pre>

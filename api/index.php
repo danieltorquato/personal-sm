@@ -228,10 +228,19 @@ try {
 
                         echo $controller->getSetsWorkout($workoutId);
                         break;
+                    case 'start-gym-session':
+                        echo $controller->startGymSession();
+                        break;
+                    case 'complete-gym-session':
+                        echo $controller->completeGymSession();
+                        break;
+                    case 'last-gym-session':
+                        echo $controller->getLastGymSessionId();
+                        break;
                     default:
                         echo ApiResponse::notFound("Ação não encontrada");
-            }
-            break;
+                }
+                break;
         case "anamnesis":
             require_once "controllers/AnamnesisController.php";
             $controller = new AnamnesisController($db);

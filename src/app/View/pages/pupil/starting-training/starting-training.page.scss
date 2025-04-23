@@ -269,30 +269,25 @@ ion-back-button {
 
 // Exercise Preview
 .exercise-preview {
-  margin-bottom: 2.5rem;
+  margin-top: 1rem;
 }
 
 .preview-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1rem;
+  padding: 0 1rem;
 
   h2 {
-    color: var(--color-text-light);
+    margin: 0;
     font-size: 1.2rem;
     font-weight: 600;
-    margin: 0;
+    color: var(--ion-color-dark);
   }
 
   .exercise-count {
-    color: var(--color-gold);
+    color: var(--ion-color-medium);
     font-size: 0.9rem;
-    font-weight: 600;
-    background: rgba(212, 175, 55, 0.1);
-    padding: 0.3rem 0.75rem;
-    border-radius: 50px;
-    border: 1px solid rgba(212, 175, 55, 0.3);
   }
 }
 
@@ -659,4 +654,54 @@ ion-back-button {
     font-weight: 600;
     text-align: center;
   }
+}
+
+.workout-segment {
+  margin: 1rem 0;
+  background: var(--ion-color-light);
+  border-radius: 8px;
+  padding: 4px;
+
+  ion-segment-button {
+    --background-checked: var(--ion-color-primary);
+    --color-checked: var(--ion-color-primary-contrast);
+    --indicator-color: transparent;
+    border-radius: 6px;
+    text-transform: none;
+    min-height: 40px;
+  }
+}
+
+// Estilos para a divisão de treino
+.workout-divisions {
+  margin: 1rem 0;
+
+  ion-segment {
+    --background: var(--ion-color-light);
+    border-radius: 8px;
+    margin: 0 auto;
+    max-width: 90%;
+
+    ion-segment-button {
+      --indicator-color: var(--ion-color-primary);
+      --color-checked: var(--ion-color-primary);
+      --color: var(--ion-color-medium);
+      --border-radius: 8px;
+      font-weight: 600;
+
+      &::part(indicator) {
+        height: 3px;
+      }
+    }
+  }
+}
+
+.exercise-part {
+  display: inline-block;
+  background-color: var(--ion-color-primary);
+  color: white;
+  font-size: 0.8rem;
+  padding: 3px 8px;
+  border-radius: 12px;
+  margin-bottom: 8px;
 }

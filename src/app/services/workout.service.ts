@@ -636,4 +636,50 @@ export class WorkoutService {
       });
     });
   }
+
+  /**
+   * Inicia uma sessão de treino na academia
+   * @param workoutId ID do treino
+   * @param partial Parcela do treino (A, B, C, etc.)
+   * @returns Observable com o ID da sessão criada
+   */
+  startGymSession(workoutId: number, partial: string): Observable<ApiResponse<{session_id: number}>> {
+    const url = `${this.apiUrl}/pupil/start-gym-session`;
+    const payload = {
+      workout_id: workoutId,
+      partial: partial
+    };
+
+    return this.http.post<ApiResponse<{session_id: number}>>(url, payload);
+  }
+
+  /**
+   * Finaliza uma sessão de treino na academia
+   * @param sessionId ID da sessão de treino
+   * @returns Observable com o resultado da operação
+   */
+  completeGymSession(sessionId: number): Observable<ApiResponse<null>> {
+    const url = `${this.apiUrl}/pupil/complete-gym-session`;
+    const payload = {
+      session_id: sessionId
+    };
+    console.log('Finalizando sessão de treino na academia:', payload);
+    console.log('URL:', url);
+    console.log('Payload:', payload);
+    console.log('Retorno:', this.http.post<ApiResponse<null>>(url, payload));
+
+    return this.http.post<ApiResponse<null>>(url, payload);
+  }
+
+  /**
+   * Obtém o ID da última sessão de treino criada para um determinado treino
+   * @param workoutId ID do treino
+   * @returns Observable com o ID da última sessão
+   */
+  getLastGymSessionId(workoutId: number): Observable<ApiResponse<{session_id: number}>> {
+    const url = `${this.apiUrl}/pupil/last-gym-session?workout_id=${workoutId}`;
+    console.log('Buscando última sessão de treino para workout_id:', workoutId);
+
+    return this.http.get<ApiResponse<{session_id: number}>>(url);
+  }
 }
