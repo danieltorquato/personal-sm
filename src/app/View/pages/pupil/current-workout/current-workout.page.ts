@@ -23,7 +23,8 @@ export class CurrentWorkoutPage implements OnInit {
     level: '',
     duration: '',
     created_at: new Date(),
-    notes: ''
+    notes: '',
+    last_parcel: '',
   };
 
   // IDs importantes
@@ -87,7 +88,7 @@ export class CurrentWorkoutPage implements OnInit {
       await loading.present();
 
       // Buscar o treino ativo do aluno
-      this.workoutService.getActiveWorkout(this.type).subscribe({
+      this.workoutService.getActiveWorkout(this.type, this.studentId).subscribe({
         next: async (response) => {
           await loading.dismiss();
           console.log('Resposta da API getActiveWorkout:', response);
@@ -102,7 +103,8 @@ export class CurrentWorkoutPage implements OnInit {
               level: workoutData.level || '',
               duration: workoutData.duration || '',
               created_at: workoutData.created_at || '',
-              notes: workoutData.notes || ''
+              notes: workoutData.notes || '',
+              last_parcel: workoutData.last_parcel,
             };
 
             this.workoutId = workoutData.id || 0;

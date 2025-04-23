@@ -30,6 +30,7 @@
         <div class="card-content">
           <ion-card-title class="workout-title">{{ workout.title }}</ion-card-title>
           <ion-card-subtitle class="workout-date">Válido até: {{ workout.validate_to | date:'dd/MM/yyyy' }}</ion-card-subtitle>
+          <ion-card-subtitle class="workout-date">Parcela Atual: {{ workout.last_parcel}}</ion-card-subtitle>
           <ion-icon name="chevron-forward-outline" class="arrow-icon"></ion-icon>
         </div>
         <div class="instructions">

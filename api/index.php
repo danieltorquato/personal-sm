@@ -207,12 +207,17 @@ try {
                 switch ($action) {
                     case 'workout-active':
                         $type = $_GET['type'] ?? null;
+                        $id = $_GET['user_id'] ?? null;
+                        if (!$id) {
+                            echo ApiResponse::error("ID do aluno não fornecido", 400);
+                            break;
+                        }
                         if (!$type) {
                             echo ApiResponse::error("Tipo de treino não fornecido", 400);
                             break;
                         }
 
-                        echo $controller->getWorkoutActive($type);
+                        echo $controller->getWorkoutActive($type, $id);
                         break;
                     case 'sets':
                         $workoutId = $_GET['workout_id'] ?? null;

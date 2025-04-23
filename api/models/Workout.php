@@ -674,10 +674,16 @@ class Workout {
     }
 
     // Buscar o treino ativo de um usuário
-    public function getActiveWorkout($type) {
+    public function getActiveWorkout($type, $user_id) {
         // Query para obter o treino com situation='ativo' para o usuário
-        $query = "SELECT * FROM " . $this->table_name . "
-                 WHERE situation = 'ativo' AND type = :type
+        $query = "SELECT w.*, u.name as student_name
+                 FROM " . $this->table_name . " w
+                 LEFT JOIN users u ON w.user_id = u.id
+                 WHERE w.situation = 'ativo'
+                 AND w.type = :type
+                 AND w.user_id = :user_id
+                 AND (w.validate_to IS NULL OR w.validate_to >= NOW())
+                 ORDER BY w.created_at DESC
                  LIMIT 0,1";
 
         // Preparar a query
@@ -685,13 +691,23 @@ class Workout {
 
         // Vincular
         $stmt->bindParam(":type", $type);
-
+        $stmt->bindParam(":user_id", $user_id);
 
         // Executar
         $stmt->execute();
 
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+        $workout = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($workout) {
+            // Buscar os exercícios do treino
+            $exercises = $this->getSetsWorkout($workout['id']);
+            $workout['exercises'] = $exercises;
+            return $workout;
+        }
+
+        return false;
     }
+
     public function getSetsWorkout($workoutId) {
         $query = "SELECT ws.*, e.name as exercise_name, e.description, e.category,
                  e.image_path as imageUrl, e.video_path as videoUrl, e.instructions

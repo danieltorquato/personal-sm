@@ -434,13 +434,14 @@ export class WorkoutService {
    * @param userId ID do usuário/aluno
    * @returns Observable com o treino ativo
    */
-  getActiveWorkout(type: string): Observable<ApiResponse<Workout>> {
+  getActiveWorkout(type: string, id: any): Observable<ApiResponse<Workout>> {
     if (!type) {
       console.error('getActiveWorkout chamado sem ID de usuário válido');
       throw new Error('ID do usuário é obrigatório');
     }
 
-    const url = `${this.apiUrl}/pupil/workout-active?type=${type}`;
+    const url = `${this.apiUrl}/pupil/workout-active?type=${type}&user_id=${id}`;
+
     console.log('Chamando getActiveWorkout URL:', url);
 
     return new Observable<ApiResponse<Workout>>(observer => {
@@ -450,7 +451,7 @@ export class WorkoutService {
 
           try {
             // Verificar se a resposta foi bem-sucedida
-            const isSuccess = response.success === true || response.status === 'success';
+            const isSuccess = response.status === 'success';
 
             if (isSuccess && response.data) {
               // Converter para formato padrão da API
