@@ -540,6 +540,8 @@ export class StartingTrainingPage implements OnInit, OnDestroy {
     }
 
     // Registrar o início da sessão de treino na API
+    console.log('Iniciando registro do início do treino...');
+    this.fetchLastSessionId(this.workout?.id as unknown as number);
     this.registerWorkoutStart();
     console.log('ID da sessão:', this.currentSessionId);
 
@@ -571,9 +573,9 @@ export class StartingTrainingPage implements OnInit, OnDestroy {
     const loadingRef = this.presentLoading('Registrando início do treino...');
 
     // Converter o ID do treino para número
-    const workoutId = typeof this.workout.id === 'string' ? parseInt(this.workout.id, 10) : this.workout.id;
+    const workoutId = this.workout && typeof this.workout.id === 'string' ? parseInt(this.workout.id, 10) : this.workout?.id;
 
-    const startSessionSub = this.workoutService.startGymSession(workoutId, this.currentWorkoutPart)
+    const startSessionSub = this.workoutService.startGymSession(workoutId as number, this.currentWorkoutPart)
       .pipe(
         catchError(err => {
           console.error('Erro ao registrar início do treino:', err);
@@ -589,11 +591,11 @@ export class StartingTrainingPage implements OnInit, OnDestroy {
         if (response && response.success) {
           // Se a resposta já tiver o ID da sessão, use-o
           if (response.data && response.data.session_id) {
-            this.currentSessionId = response.data.session_id;
+            this.currentSessionId = response.data?.session_id ?? null;
             console.log(`Sessão de treino iniciada com ID: ${this.currentSessionId}`);
           } else {
             // Caso contrário, busque o último ID de sessão criada
-            this.fetchLastSessionId(workoutId);
+            this.fetchLastSessionId(workoutId as number);
             console.log('ID da sessão:', this.currentSessionId);
           }
         }
@@ -614,8 +616,8 @@ export class StartingTrainingPage implements OnInit, OnDestroy {
         })
       )
       .subscribe(response => {
-        if (response && response.success && response.data) {
-          this.currentSessionId = response.data.session_id;
+        if (response || (response as any).success || (response as any).data) {
+          this.currentSessionId = (response.data?.session_id ?? 0) + 1;
           console.log(`ID da última sessão de treino obtido: ${this.currentSessionId}`);
         } else {
           console.warn('Não foi possível obter o ID da sessão de treino');
@@ -629,7 +631,9 @@ export class StartingTrainingPage implements OnInit, OnDestroy {
    * Finaliza o treino completo
    */
   finishWorkout() {
+    this.fetchLastSessionId(this.workout?.id as unknown as number);
 
+    console.log('ID da sessão atual:', this.currentSessionId);
       this.registerWorkoutCompletion();
       this.workoutFinished = true;
     this.presentToast('Treino concluído com sucesso!', 'success');
@@ -642,6 +646,8 @@ export class StartingTrainingPage implements OnInit, OnDestroy {
    * Registra a conclusão da sessão de treino no backend
    */
   private registerWorkoutCompletion() {
+
+
     // Verificar se o ID da sessão existe antes de enviar
     if (!this.currentSessionId) {
       console.log('ID da sessão não encontrado, tentando buscar...');
